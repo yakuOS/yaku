@@ -1,0 +1,10 @@
+---
+BasedOnStyle: LLVM
+UseTab: Never
+IndentWidth: 4
+---
+Language: Cpp
+PointerAlignment: Left
+ColumnLimit: 90
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
