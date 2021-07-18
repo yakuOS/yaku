@@ -10,7 +10,7 @@ asflags="-f elf32"
 
 builddir=build
 
-c_srcs="kernel/main.c"
+c_srcs="kernel/main.c kernel/terminal.c"
 asm_srcs="kernel/boot.asm"
 ld_script="kernel/link.ld"
 
