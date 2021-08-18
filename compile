@@ -4,14 +4,14 @@ cc=gcc
 ld=ld
 as=nasm
 
-cflags="-c -m32 -nostdlib -fno-builtin -ffreestanding -fno-stack-protector -Wall -Wextra"
-ldflags="-m elf_i386"
-asflags="-f elf32"
+cflags="-c -m64 -nostdlib -fno-builtin -ffreestanding -fno-stack-protector -Wall -Wextra"
+ldflags="-m elf_x86_64"
+asflags="-f elf64"
 
 builddir=build
 
 c_srcs="kernel/main.c kernel/terminal.c"
-asm_srcs="kernel/boot.asm"
+asm_srcs="kernel/boot.asm kernel/main64.asm"
 ld_script="kernel/link.ld"
 
 
