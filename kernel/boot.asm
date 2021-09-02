@@ -30,8 +30,9 @@ start:
     ; set stack pointer
     mov esp, stack_top
 
-    ; push multiboot info struct
-    push ebx
+    ; move mb info struct ptr
+    ; so we can later use it in the c code
+    mov edi, ebx
 
     call check_multiboot
     call check_cpuid
