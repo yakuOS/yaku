@@ -1,8 +1,9 @@
-global long_mode_start
+bits 64
+
 extern kmain
 
 section .text
-bits 64
+global long_mode_start
 long_mode_start:
 
     mov ax, 0
@@ -13,9 +14,5 @@ long_mode_start:
     mov gs, ax
 
     call kmain
-
-    ;Print "OKAY" to screen
-    ;mov rax, 0x2f592f412f4b2f4f
-    ;mov qword [0xB8000], rax
 
     hlt
