@@ -1,6 +1,6 @@
 kernel_asm_srcs = files([
     'boot.asm',
-    'main64.asm'
+    'main.asm'
 ])
 
 kernel_c_srcs = files([
