@@ -6,6 +6,8 @@ cc = find_program('gcc')
 
 mkrescue = find_program('grub-mkrescue')
 
+qemu = find_program('qemu-system-x86_64', required: false)
+
 as_gen = generator(as,
     output: '@PLAINNAME@.o',
     arguments : ['@INPUT@', '-o', '@OUTPUT@', '@EXTRA_ARGS@']
@@ -22,3 +24,11 @@ iso_target = custom_target('iso',
     output: 'yaku.iso',
     command: ['sh', '@SOURCE_ROOT@/make_iso.sh', '@OUTPUT@', kernel_target, '@PRIVATE_DIR@', '@SOURCE_ROOT@']
 )
+
+if qemu.found()
+    qemu_run_target = run_target('qemu-run',
+        command: [qemu, '-cdrom', iso_target]
+    )
+else
+    warning('the \'qemu-run\' target is not available because qemu could not be found')
+endif
