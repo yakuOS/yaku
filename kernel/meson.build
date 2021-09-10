@@ -1,11 +1,15 @@
 kernel_asm_srcs = files([
     'boot.asm',
-    'main.asm'
+    'main.asm',
+    'interrupts/isr.asm',
+    'interrupts/idt.asm'
 ])
 
 kernel_c_srcs = files([
     'main.c',
-    'terminal.c'
+    'terminal.c',
+    'interrupts/isr.c',
+    'interrupts/idt.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']
