@@ -1,13 +1,14 @@
 kernel_asm_srcs = files([
-    'boot.asm',
-    'main.asm',
+    'boot/boot32.asm',
+    'boot/boot64.asm',
+    'boot/multiboot.asm',
     'interrupts/isr.asm',
     'interrupts/idt.asm'
 ])
 
 kernel_c_srcs = files([
-    'main.c',
-    'terminal.c',
+    'kernel.c',
+    'drivers/vga_text.c',
     'interrupts/isr.c',
     'interrupts/idt.c'
 ])
@@ -23,6 +24,8 @@ kernel_include_flags = []
 foreach include_dir : kernel_third_party_include_dirs
     kernel_include_flags += ['-I', include_dir]
 endforeach
+kernel_include_flags += ['-I', meson.current_source_dir()]
+kernel_include_flags += ['-I', meson.current_source_dir() + '/misc']
 
 kernel_c_objs = cc_gen.process(kernel_c_srcs,
     extra_args: [kernel_ccflags, kernel_include_flags]

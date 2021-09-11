@@ -1,5 +1,6 @@
 #include "idt.h"
-#include "../types.h"
+
+#include <types.h>
 
 static idt_desc_t idt[IDT_MAX_DESCRIPTORS];
 
