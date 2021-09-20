@@ -10,7 +10,8 @@ kernel_c_srcs = files([
     'kernel.c',
     'drivers/vga_text.c',
     'interrupts/isr.c',
-    'interrupts/idt.c'
+    'interrupts/idt.c',
+    'interrupts/pic.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']
