@@ -2,14 +2,15 @@ extern isr_exception_handler
 
 %macro isr_err_stub 1
 isr_stub_%+%1:
-    call isr_exception_handler
-    iretq
+    push %1
+    jmp isr_xframe_assembler
 %endmacro
 
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
-    call isr_exception_handler
-    iretq
+    push 0
+    push %1
+    jmp isr_xframe_assembler
 %endmacro
 
 isr_no_err_stub 0
@@ -52,3 +53,71 @@ isr_stub_table:
     dq isr_stub_%+i
 %assign i i+1 
 %endrep
+
+%macro pushagrd 0
+push rax
+push rbx
+push rcx
+push rdx
+push rsi
+push rdi
+%endmacro
+
+%macro popagrd 0
+pop rdi
+pop rsi
+pop rdx
+pop rcx
+pop rbx
+pop rax
+%endmacro
+
+%macro pushacrd 0
+mov rax, cr0
+push rax
+mov rax, cr2
+push rax
+mov rax, cr3
+push rax
+mov rax, cr4
+push rax
+%endmacro
+
+
+%macro popacrd 0
+pop rax
+mov cr4, rax
+pop rax
+mov cr3, rax
+pop rax
+mov cr2, rax
+pop rax
+mov cr0, rax
+%endmacro
+
+isr_xframe_assembler:
+    push rbp
+    mov rbp, rsp
+    pushagrd
+    pushacrd
+    mov ax, ds
+    push rax
+    push qword 0
+    mov ax, 0x10
+    ; mov ds, ax
+    ; mov es, ax
+    ; mov ss, ax
+
+    lea rdi, [rsp + 0x10]
+    call isr_exception_handler
+
+    pop rax
+    pop rax
+    ; mov ds, ax
+    ; mov es, ax
+    popacrd
+    popagrd
+    pop rbp
+    add rsp, 0x10
+    iretq
+    
