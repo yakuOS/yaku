@@ -29,3 +29,5 @@ typedef struct {
         uint64_t dss;
     } base_frame;
 } isr_xframe_t;
+
+void isr_exception_handler(isr_xframe_t* frame);

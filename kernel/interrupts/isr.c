@@ -4,9 +4,7 @@
 #include <io.h>
 #include <printf.h>
 
-void isr_exception_handler(isr_xframe_t* frame);
 void isr_exception_handler(isr_xframe_t* frame) {
-
     switch (frame->base_frame.vector) {
     case 0:
         // vga_text_puts("ERROR - ISR: 0\n");
