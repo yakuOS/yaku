@@ -87,7 +87,6 @@ void pic_disable() {
     // pic_unmask_irq(15);
 }
 
-/* Helper func */
 static uint16_t __pic_get_irq_reg(uint16_t ocw3) {
     /* OCW3 to PIC CMD to get the register values.  PIC2 is chained, and
      * represents IRQs 8-15.  PIC1 is IRQs 0-7, with 2 being the chain */

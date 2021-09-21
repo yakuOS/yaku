@@ -1,7 +1,6 @@
 #pragma once
 #include <types.h>
 
-/// This structure represents the interrupt stack.
 typedef struct {
     struct {
         uint64_t cr4;
