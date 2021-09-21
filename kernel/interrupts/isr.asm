@@ -83,7 +83,6 @@ mov rax, cr4
 push rax
 %endmacro
 
-
 %macro popacrd 0
 pop rax
 mov cr4, rax
@@ -120,4 +119,3 @@ isr_xframe_assembler:
     pop rbp
     add rsp, 0x10
     iretq
-    

@@ -1,15 +1,15 @@
 #include "isr.h"
 #include "pic.h"
 #include <drivers/vga_text.h>
-#include <printf.h>
 #include <io.h>
+#include <printf.h>
 
 void isr_exception_handler(isr_xframe_t* frame);
 void isr_exception_handler(isr_xframe_t* frame) {
-    
-    switch (frame->base_frame.vector){
+
+    switch (frame->base_frame.vector) {
     case 0:
-        //vga_text_puts("ERROR - ISR: 0\n");
+        // vga_text_puts("ERROR - ISR: 0\n");
 
         break;
     case 1:
@@ -50,17 +50,17 @@ void isr_exception_handler(isr_xframe_t* frame) {
         break;
     case 13:
         //("ERROR - ISR: 13\n");
-        
-        //print byte sent by keyboard
+
+        // print byte sent by keyboard
         char buffer[20];
         sprintf(buffer, "%d", inb(0x60));
         vga_text_puts(buffer);
 
-        //send eoi
+        // send eoi
         outb(0x20, 0x20);
-        outb(0xa0, 0x20); 
+        outb(0xa0, 0x20);
 
-        __asm__ volatile ("cli; hlt"); // Completely hangs the computer
+        __asm__ volatile("cli; hlt"); // Completely hangs the computer
         break;
     case 14:
         vga_text_puts("ERROR - ISR: 14");
@@ -115,6 +115,6 @@ void isr_exception_handler(isr_xframe_t* frame) {
         break;
     case 31:
         vga_text_puts("ERROR - ISR: 31");
-        break;    
+        break;
     }
 }

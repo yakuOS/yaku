@@ -32,5 +32,5 @@ void idt_init() {
     }
 
     idt_reload(&idtr);
-    __asm__ volatile ("sti"); // set the interrupt flag
+    __asm__ volatile("sti"); // set the interrupt flag
 }
