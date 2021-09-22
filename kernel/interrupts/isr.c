@@ -55,10 +55,8 @@ void isr_exception_handler(isr_xframe_t* frame) {
         vga_text_puts(buffer);
 
         // send eoi
-        outb(0x20, 0x20);
-        outb(0xa0, 0x20);
+        pic_send_eoi(1);
 
-        __asm__ volatile("cli; hlt");
         break;
     case 14:
         vga_text_puts("ERROR - ISR: 14");
