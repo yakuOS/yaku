@@ -1,5 +1,5 @@
 #pragma once
-#include <io.h>
+
 #include <types.h>
 
 #define PIC_MASTER 0x20
@@ -24,12 +24,10 @@
 #define PIC_READ_IRR 0x0a /* OCW3 irq ready next CMD read */
 #define PIC_READ_ISR 0x0b /* OCW3 irq service next CMD read */
 
-void pic_disable();
+void pic_mask_irq(uint8_t irq);
+void pic_unmask_irq(uint8_t irq);
+void pic_remap_offsets(uint8_t offset);
 void pic_send_eoi(uint8_t irq);
-static uint16_t __pic_get_irq_reg(uint16_t ocw3);
+void pic_init(void);
 uint16_t pic_get_irr(void);
 uint16_t pic_get_isr(void);
-
-void IRQ_set_mask(unsigned char IRQline);
-void IRQ_clear_mask(unsigned char IRQline);
-void pic_remap_offsets(uint8_t offset);

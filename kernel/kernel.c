@@ -7,15 +7,17 @@
 #include <types.h>
 
 void kernel_main(multiboot_info_t* mb_info) {
-    pic_disable();
+    pic_init();
     idt_init();
     vga_text_init(mb_info->framebuffer_width, mb_info->framebuffer_height);
 
     vga_text_set_style(VGA_TEXT_COLOR_RED, VGA_TEXT_COLOR_BLACK);
 
     char buffer[20];
-    sprintf(buffer, "Hello, %s!", "there");
+    snprintf(buffer, 20, "Hello, %s!\n", "there");
     vga_text_puts(buffer);
-    
-    while(1) __asm__("hlt");
+
+    for (;;) {
+        asm("hlt");
+    }
 };
