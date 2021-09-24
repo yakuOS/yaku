@@ -6,7 +6,7 @@
 #include <printf.h>
 
 void isr_exception_handler(isr_xframe_t* frame) {
-    if (frame->base_frame.vector == 13) {
+    if (frame->base_frame.vector == 33) {
         uint8_t scan_code = io_inb(0x60);
 
         char buffer[15];
