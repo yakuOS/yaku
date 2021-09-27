@@ -43,18 +43,19 @@ void vga_text_putchar(char character) {
     if (character == '\n') {
         term_info.row++;
         term_info.column = 0;
-        return;
+    } else {
+        vga_text_putchar_at(character, term_info.row, term_info.column);
+
+        if (++term_info.column == term_info.width) {
+            term_info.column = 0;
+            term_info.row++;
+        }
     }
 
-    vga_text_putchar_at(character, term_info.row, term_info.column);
-
-    if (++term_info.column == term_info.width) {
-        term_info.column = 0;
-        if (++term_info.row == term_info.height) {
-            // scrolling will be implemented later
-            // for now, just clear the screen and begin at 0,0
-            vga_text_clear();
-        }
+    if (term_info.row == term_info.height) {
+        // scrolling will be implemented later
+        // for now, just clear the screen and begin at 0,0
+        vga_text_clear();
     }
 }
 

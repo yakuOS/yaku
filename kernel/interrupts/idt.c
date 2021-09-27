@@ -6,8 +6,6 @@ static idt_desc_t idt[IDT_MAX_DESCRIPTORS];
 
 static idtr_t idtr;
 
-static bool vectors[IDT_MAX_DESCRIPTORS];
-
 extern uint64_t isr_stub_table[];
 
 void idt_set_descriptor(uint8_t vector, uintptr_t isr, uint8_t flags) {
@@ -26,10 +24,10 @@ void idt_init() {
     idtr.base = (uintptr_t)&idt[0];
     idtr.limit = (uint16_t)sizeof(idt_desc_t) * IDT_MAX_DESCRIPTORS - 1;
 
-    for (uint8_t vector = 0; vector < IDT_CPU_EXCEPTION_COUNT; vector++) {
-        idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_EXCEPTION);
-        vectors[vector] = true;
+    for (uint8_t vector = 0; vector < IDT_CPU_EXCEPTION_COUNT + IDT_IRQ_COUNT; vector++) {
+        idt_set_descriptor(vector, isr_stub_table[vector], IDT_DESCRIPTOR_HARDWARE);
     }
 
     idt_reload(&idtr);
+    asm volatile("sti");
 }
