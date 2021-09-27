@@ -21,8 +21,6 @@ void isr_irq1(isr_xframe_t* frame) {
     char buffer[15];
     snprintf(buffer, 15, "SCANCODE: %d\n", scan_code);
     vga_text_puts(buffer);
-
-    pic_send_eoi(1);
 }
 
 void isr_irq2(isr_xframe_t* frame) {}

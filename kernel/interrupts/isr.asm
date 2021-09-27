@@ -1,4 +1,5 @@
 extern isr_exception_handler
+extern pic_send_eoi
 
 
 %macro pushagrd 0
@@ -86,6 +87,8 @@ isr_stub_%+%1:
     push %1
     isr_wrapper_before
     call isr_irq%+%2
+    mov rdi, %2
+    call pic_send_eoi
     isr_wrapper_after
 %endmacro
 
