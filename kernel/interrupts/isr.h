@@ -32,3 +32,20 @@ typedef struct {
 } isr_xframe_t;
 
 void isr_exception_handler(isr_xframe_t* frame);
+
+void isr_irq0(isr_xframe_t* frame);
+void isr_irq1(isr_xframe_t* frame);
+void isr_irq2(isr_xframe_t* frame);
+void isr_irq3(isr_xframe_t* frame);
+void isr_irq4(isr_xframe_t* frame);
+void isr_irq5(isr_xframe_t* frame);
+void isr_irq6(isr_xframe_t* frame);
+void isr_irq7(isr_xframe_t* frame);
+void isr_irq8(isr_xframe_t* frame);
+void isr_irq9(isr_xframe_t* frame);
+void isr_irq10(isr_xframe_t* frame);
+void isr_irq11(isr_xframe_t* frame);
+void isr_irq12(isr_xframe_t* frame);
+void isr_irq13(isr_xframe_t* frame);
+void isr_irq14(isr_xframe_t* frame);
+void isr_irq15(isr_xframe_t* frame);
