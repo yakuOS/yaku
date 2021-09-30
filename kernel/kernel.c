@@ -17,6 +17,7 @@ void kernel_main(multiboot_info_t* mb_info) {
     snprintf(buffer, 20, "Hello, %s!\n", "there");
     vga_text_puts(buffer);
 
+    int x = 1 / 0;
     for (;;) {
         asm("hlt");
     }

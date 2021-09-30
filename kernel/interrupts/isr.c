@@ -5,7 +5,7 @@
 #include <io.h>
 #include <printf.h>
 
-static const char *exception_messages[23] = {
+static const char* exception_messages[] = {
     "Divide-by-zero Error",
     "Debug",
     "Non-maskable Interrupt",
@@ -28,11 +28,10 @@ static const char *exception_messages[23] = {
     "SIMD Floating-Point Exception",
     "Virtualization Exception",
     "Security Exception",
-    "Reserved error"
+    "Reserved error",
 };
 
-const char *exception_message(uint64_t vector_number) {
-
+static const char* exception_message(uint64_t vector_number) {
     if (vector_number >= 21 && vector_number <= 29) {
         return "Reserved error";
     } else if (vector_number > 29) {
@@ -44,11 +43,11 @@ const char *exception_message(uint64_t vector_number) {
 
 void isr_exception_handler(isr_xframe_t* frame) {
 
-    const char *exception_msg = exception_message(30);
-    
+    const char* exception_msg = exception_message(frame->base_frame.vector);
+
     char buffer[50];
-    snprintf(buffer, 50, "EXCEPTION: %s (%llu, %llu)\n", exception_msg, frame->base_frame.vector,
-             frame->base_frame.error_code);
+    snprintf(buffer, 50, "EXCEPTION: %s (%llu, %llu)\n", exception_msg,
+             frame->base_frame.vector, frame->base_frame.error_code);
     vga_text_puts(buffer);
     asm("cli; hlt");
 }

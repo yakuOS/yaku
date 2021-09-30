@@ -31,8 +31,6 @@ typedef struct {
     } base_frame;
 } isr_xframe_t;
 
-const char *exception_message(uint64_t vector_number);
-
 void isr_exception_handler(isr_xframe_t* frame);
 
 void isr_irq0(isr_xframe_t* frame);
