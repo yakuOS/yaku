@@ -5,10 +5,49 @@
 #include <io.h>
 #include <printf.h>
 
+static const char* exception_messages[] = {
+    "Divide-by-zero Error",
+    "Debug",
+    "Non-maskable Interrupt",
+    "Breakpoint",
+    "Overflow",
+    "Bound Range Exceeded",
+    "Invalid Opcode",
+    "Device Not Available",
+    "Double Fault",
+    "Coprocessor Segment Overrun",
+    "Invalid TSS",
+    "Segment Not Present",
+    "Stack-Segment Fault",
+    "General Protection Fault",
+    "Page Fault",
+    "Reserved error",
+    "x87 Floating-Point Exception",
+    "Alignment Check",
+    "Machine Check",
+    "SIMD Floating-Point Exception",
+    "Virtualization Exception",
+    "Security Exception",
+    "Reserved error",
+};
+
+static const char* exception_message(uint64_t vector_number) {
+    if (vector_number >= 21 && vector_number <= 29) {
+        return "Reserved error";
+    } else if (vector_number > 29) {
+        return exception_messages[vector_number - 9];
+    } else {
+        return exception_messages[vector_number];
+    }
+}
+
 void isr_exception_handler(isr_xframe_t* frame) {
-    char buffer[20];
-    snprintf(buffer, 20, "EXCEPTION: %llu %llu\n", frame->base_frame.vector,
-             frame->base_frame.error_code);
+
+    const char* exception_msg = exception_message(frame->base_frame.vector);
+
+    char buffer[50];
+    snprintf(buffer, 50, "EXCEPTION: %s (%llu, %llu)\n", exception_msg,
+             frame->base_frame.vector, frame->base_frame.error_code);
     vga_text_puts(buffer);
     asm("cli; hlt");
 }
