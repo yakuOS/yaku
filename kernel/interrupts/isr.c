@@ -36,9 +36,9 @@ static const char* exception_message(uint64_t vector_number) {
         return "Reserved error";
     } else if (vector_number > 29) {
         return exception_messages[vector_number - 9];
+    } else {
+        return exception_messages[vector_number];
     }
-
-    return exception_messages[vector_number];
 }
 
 void isr_exception_handler(isr_xframe_t* frame) {
