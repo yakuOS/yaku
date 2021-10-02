@@ -9,6 +9,8 @@ kernel_asm_srcs = files([
 kernel_c_srcs = files([
     'kernel.c',
     'drivers/vga_text.c',
+    'drivers/pit.c',
+    'drivers/timer.c',
     'interrupts/isr.c',
     'interrupts/idt.c',
     'interrupts/pic.c'

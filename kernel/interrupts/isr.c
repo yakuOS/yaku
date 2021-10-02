@@ -1,6 +1,7 @@
 #include "isr.h"
 
 #include <drivers/vga_text.h>
+#include <drivers/pit.h>
 #include <interrupts/pic.h>
 #include <io.h>
 #include <printf.h>
@@ -52,7 +53,9 @@ void isr_exception_handler(isr_xframe_t* frame) {
     asm("cli; hlt");
 }
 
-void isr_irq0(isr_xframe_t* frame) {}
+void isr_irq0(isr_xframe_t* frame) {
+    pit_increase();
+}
 
 void isr_irq1(isr_xframe_t* frame) {
     uint8_t scan_code = io_inb(0x60);
