@@ -1,7 +1,7 @@
 #include "isr.h"
 
-#include <drivers/vga_text.h>
 #include <drivers/pit.h>
+#include <drivers/vga_text.h>
 #include <interrupts/pic.h>
 #include <io.h>
 #include <printf.h>
@@ -54,7 +54,7 @@ void isr_exception_handler(isr_xframe_t* frame) {
 }
 
 void isr_irq0(isr_xframe_t* frame) {
-    pit_increase();
+    pit_tick_increment();
 }
 
 void isr_irq1(isr_xframe_t* frame) {
