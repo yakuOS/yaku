@@ -31,3 +31,10 @@ void idt_init() {
     idt_reload(&idtr);
     asm volatile("sti");
 }
+
+void idt_cli() {
+    asm volatile("cli");
+}
+void idt_sti() {
+    asm volatile("sti");
+}
