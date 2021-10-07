@@ -11,6 +11,7 @@ kernel_c_srcs = files([
     'drivers/vga_text.c',
     'drivers/pit.c',
     'drivers/timer.c',
+    'drivers/input/ps2.c',
     'interrupts/isr.c',
     'interrupts/idt.c',
     'interrupts/pic.c'
