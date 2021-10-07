@@ -1,29 +1,34 @@
 #include "ps2.h"
+
 #include <interrupts/pic.h>
 #include <io.h>
 #include <types.h>
-/*
- Wait until the PS/2 controller's input buffer is clear.
- Use this before WRITING to the controller.
-*/
+
+static bool data_response_req; // if true don't handle irq as normal
+static bool dual_channel;
+static bool ps2_port1;
+static bool ps2_port2;
+
+// Wait until the PS/2 controller's input buffer is clear.
+// Use this before WRITING to the controller.
 uint8_t ps2_wait_input(void) {
     uint64_t timeout = 100000UL;
     while (--timeout) {
-        if (!(io_inb(PS2_STATUS) & 2))
+        if (!(io_inb(PS2_STATUS) & 2)) {
             return 0;
+        }
     }
     return 1;
 }
 
-/*
- Wait until the PS/2 controller's output buffer is filled.
- Use this before READING from the controller.
- */
+// Wait until the PS/2 controller's output buffer is filled.
+// Use this before READING from the controller.
 uint8_t ps2_wait_output(void) {
     uint64_t timeout = 100000UL;
     while (--timeout) {
-        if (io_inb(PS2_STATUS) & 1)
+        if (io_inb(PS2_STATUS) & 1) {
             return 0;
+        }
     }
     return 1;
 }
@@ -36,6 +41,7 @@ void ps2_disable(void) {
     pic_mask_irq(1);
     pic_mask_irq(12);
 }
+
 void ps2_enable(void) {
     pic_unmask_irq(1);
     pic_unmask_irq(12);
@@ -128,12 +134,14 @@ void ps2_init(void) {
     if (ps2_write_command_read_data(0xAB) == 0x00) {
         ps2_port1 = true;
     }
+
     if (dual_channel) {
         // port 2
         if (ps2_write_command_read_data(0xA9) == 0x00) {
             ps2_port2 = true;
         }
     }
+
     if (!ps2_port1 && !ps2_port2) {
         // panic(ps2 init: neither port passed test);
         return;
@@ -144,7 +152,7 @@ void ps2_init(void) {
         ps2_write_data(0xFF);
     }
 
-    // not implemented mouse yet
+    // mouse not implemented yet
     if (ps2_port2) {
         ps2_write_command(PS2_ENABLE_PORT2);
         // 0xD4: sends next byte to PS/2-Port: 2
