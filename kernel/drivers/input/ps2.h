@@ -2,6 +2,11 @@
 
 #include <types.h>
 
+
+/*
+these definitions were documented in:
+https://wiki.osdev.org/index.php?title=%228042%22_PS/2_Controller&action=history; "8042" PS/2 Controller; https://wiki.osdev.org/%228042%22_PS/2_Controller, 17.10.2021
+*/
 #define PS2_DATA 0x60
 #define PS2_STATUS 0x64
 #define PS2_COMMAND 0x64
