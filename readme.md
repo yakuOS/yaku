@@ -9,7 +9,7 @@ Table of contents
 <!--ts-->
    * [Citation](#Citing)
    * [Building](#build)
-   * Wiki
+   * [Wiki](#wiki)
 <!--te-->
 
 
