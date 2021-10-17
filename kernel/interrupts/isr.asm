@@ -74,7 +74,7 @@ isr_stub_%+%1:
 %endmacro
 
 ; this snippet (till end of file) was copied and adapted from:
-https://wiki.osdev.org/index.php?title=Interrupts_Tutorial&action=history; Interrupts Tutorial; https://wiki.osdev.org/Interrupts_tutorial, 01.09.2021
+; https://wiki.osdev.org/index.php?title=Interrupts_Tutorial&action=history; Interrupts Tutorial; https://wiki.osdev.org/Interrupts_tutorial, 01.09.2021
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
     push 0
