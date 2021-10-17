@@ -1,7 +1,10 @@
 extern isr_exception_handler
 extern pic_send_eoi
 
-
+/*
+this snippet was copied and adepted from:
+rizet; skylight; https://github.com/rizet/skylight/blob/trunk/glass/src/cpu/interrupts/isr.s, 10.09.2021
+*/
 %macro pushagrd 0
     push rax
     push rbx
@@ -72,6 +75,10 @@ isr_stub_%+%1:
     isr_wrapper_after
 %endmacro
 
+/* 
+this snippet (till end of file) was copied and adapted from:
+https://wiki.osdev.org/index.php?title=Interrupts_Tutorial&action=history; Interrupts Tutorial; https://wiki.osdev.org/Interrupts_tutorial, 01.09.2021
+*/
 %macro isr_no_err_stub 1
 isr_stub_%+%1:
     push 0
