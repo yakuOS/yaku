@@ -2,6 +2,10 @@
 
 #include <types.h>
 
+/*
+this snippet was copied and adapted from:
+rizet; skylight; https://github.com/rizet/skylight/blob/trunk/glass/src/cpu/interrupts/idt.s, 10.09.2021
+*/
 typedef struct {
     struct {
         uint64_t cr4;
