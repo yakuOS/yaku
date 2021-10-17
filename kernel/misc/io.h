@@ -1,5 +1,5 @@
 /*
-his snippet was copied from:
+this snippet was copied from:
 https://wiki.osdev.org/index.php?title=Inline_Assembly/Examples&action=history; Inline Assembly/Examples; https://wiki.osdev.org/Inline_Assembly/Examples, 17.10.2021
 */
 
