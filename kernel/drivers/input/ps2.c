@@ -9,6 +9,10 @@ static bool dual_channel;
 static bool ps2_port1;
 static bool ps2_port2;
 
+/*
+this snippet was copied and adapted from:
+K Lange; ps2hid.c; static int ps2_wait_input(void), 17.10.2021
+*/
 // Wait until the PS/2 controller's input buffer is clear.
 // Use this before WRITING to the controller.
 uint8_t ps2_wait_input(void) {
@@ -21,6 +25,10 @@ uint8_t ps2_wait_input(void) {
     return 1;
 }
 
+/*
+this snippet was copied and adapted from:
+K Lange; ps2hid.c; static int ps2_wait_output(void), 17.10.2021
+*/
 // Wait until the PS/2 controller's output buffer is filled.
 // Use this before READING from the controller.
 uint8_t ps2_wait_output(void) {
@@ -96,6 +104,11 @@ uint8_t ps2_write_data_arg(uint8_t cmdbyte, uint8_t arg) {
     return ps2_write_data(arg);
 }
 
+
+/*
+the idea to this snippet is from:
+https://wiki.osdev.org/index.php?title=%228042%22_PS/2_Controller&action=history; "8042" PS/2 Controller; https://wiki.osdev.org/%228042%22_PS/2_Controller, 17.10.2021
+*/
 void ps2_init(void) {
     ps2_write_command(PS2_DISABLE_PORT1);
     ps2_write_command(PS2_DISABLE_PORT2);
