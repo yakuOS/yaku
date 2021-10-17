@@ -1,3 +1,8 @@
+/*
+his snippet was copied and adapted from:
+https://wiki.osdev.org/index.php?title=Interrupts_Tutorial&action=history; Interrupts Tutorial; https://wiki.osdev.org/Interrupts_tutorial, 17.10.2021
+*/
+
 #include "idt.h"
 
 #include <types.h>
