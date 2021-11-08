@@ -43,13 +43,10 @@ static const char* exception_message(uint64_t vector_number) {
 }
 
 void isr_exception_handler(isr_context_t* ctx) {
-
     const char* exception_msg = exception_message(ctx->base_frame.vector);
+    serial_printf("EXCEPTION: %s (%llu, %llu)\n", exception_msg, ctx->base_frame.vector,
+                  ctx->base_frame.error_code);
 
-    char buffer[50];
-    snprintf(buffer, 50, "EXCEPTION: %s (%llu, %llu)\n", exception_msg,
-             ctx->base_frame.vector, ctx->base_frame.error_code);
-    serial_puts(buffer);
     asm("cli; hlt");
 }
 
@@ -59,10 +56,7 @@ void isr_irq0(isr_context_t* ctx) {
 
 void isr_irq1(isr_context_t* ctx) {
     uint8_t scan_code = io_inb(0x60);
-
-    char buffer[15];
-    snprintf(buffer, 15, "SCANCODE: %d\n", scan_code);
-    serial_puts(buffer);
+    serial_printf("SCANCODE: %d\n", scan_code);
 }
 
 void isr_irq2(isr_context_t* ctx) {}

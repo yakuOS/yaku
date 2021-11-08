@@ -1,6 +1,8 @@
 #include "serial.h"
 
 #include <io.h>
+#include <printf.h>
+#include <stdarg.h>
 #include <types.h>
 
 void serial_init(void) {
@@ -28,18 +30,33 @@ bool serial_is_transmit_empty(void) {
 }
 
 void serial_putc(char c) {
+    // also do carriage return, not only line feed
+    if (c == '\n') {
+        serial_putc('\r');
+    }
+
     while (serial_is_transmit_empty() == 0) {}
+
     io_outb(SERIAL_PORT, c);
 }
 
 void serial_puts(char* s) {
     while (*s) {
-        // also do carriage return, not only line feed
-        if (*s == '\n') {
-            serial_putc('\r');
-        }
-
         serial_putc(*s);
         s++;
     }
+}
+
+// out function wrapper for fctprintf
+static void _serial_putc(char c, void* arg) {
+    (void)arg;
+    serial_putc(c);
+}
+
+int serial_printf(char* format, ...) {
+    va_list args;
+    va_start(args, format);
+    int ret = vfctprintf(_serial_putc, NULL, format, args);
+    va_end(args);
+    return ret;
 }

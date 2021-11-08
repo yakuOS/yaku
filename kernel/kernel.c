@@ -20,9 +20,7 @@ void kernel_main(multiboot_info_t* mb_info) {
     pit_init(60);
     ps2_init();
 
-    char buffer[20];
-    snprintf(buffer, 20, "Hello, %s!\n", "there");
-    serial_puts(buffer);
+    serial_printf("Hello, %s!\n", "there");
 
     for (;;) {
         asm("hlt");
