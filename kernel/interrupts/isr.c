@@ -1,7 +1,7 @@
 #include "isr.h"
 
 #include <drivers/pit.h>
-#include <drivers/vga_text.h>
+#include <drivers/serial.h>
 #include <interrupts/pic.h>
 #include <io.h>
 #include <printf.h>
@@ -49,7 +49,7 @@ void isr_exception_handler(isr_context_t* ctx) {
     char buffer[50];
     snprintf(buffer, 50, "EXCEPTION: %s (%llu, %llu)\n", exception_msg,
              ctx->base_frame.vector, ctx->base_frame.error_code);
-    vga_text_puts(buffer);
+    serial_puts(buffer);
     asm("cli; hlt");
 }
 
@@ -62,7 +62,7 @@ void isr_irq1(isr_context_t* ctx) {
 
     char buffer[15];
     snprintf(buffer, 15, "SCANCODE: %d\n", scan_code);
-    vga_text_puts(buffer);
+    serial_puts(buffer);
 }
 
 void isr_irq2(isr_context_t* ctx) {}
