@@ -2,6 +2,7 @@
 
 #include <drivers/input/ps2.h>
 #include <drivers/pit.h>
+#include <drivers/serial.h>
 #include <drivers/vga_text.h>
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
@@ -9,6 +10,8 @@
 #include <types.h>
 
 void kernel_main(multiboot_info_t* mb_info) {
+    serial_init();
+
     vga_text_init(mb_info->framebuffer_width, mb_info->framebuffer_height);
     vga_text_set_style(VGA_TEXT_COLOR_RED, VGA_TEXT_COLOR_BLACK);
 
@@ -19,8 +22,8 @@ void kernel_main(multiboot_info_t* mb_info) {
 
     char buffer[20];
     snprintf(buffer, 20, "Hello, %s!\n", "there");
-    vga_text_puts(buffer);
-    
+    serial_puts(buffer);
+
     for (;;) {
         asm("hlt");
     }
