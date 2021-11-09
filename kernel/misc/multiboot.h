@@ -4,6 +4,10 @@
 
 #pragma pack(push, 1)
 
+#define MULTIBOOT_FB_TYPE_INDEXED 0
+#define MULTIBOOT_FB_TYPE_RGB 1
+#define MULTIBOOT_FB_TYPE_TEXT 2
+
 typedef struct {
     uint32_t tabsize, strsize, addr, _reserved;
 } multiboot_symbol_table_t;
@@ -27,8 +31,24 @@ typedef struct {
 
     uint64_t framebuffer_addr;
 
-    uint32_t framebuffer_pitch, framebuffer_width, framebuffer_height, framebuffer_bpp,
-        framebuffer_type;
+    uint32_t framebuffer_pitch, framebuffer_width, framebuffer_height;
+
+    uint8_t framebuffer_bpp, framebuffer_type;
+
+    union {
+        // indexed
+        struct {
+            uint32_t framebuffer_palette_addr;
+            uint16_t framebuffer_palette_num_colors;
+        };
+        // rgb
+        struct {
+            uint8_t framebuffer_red_field_position, framebuffer_red_mask_size,
+                framebuffer_green_field_position, framebuffer_green_mask_size,
+                framebuffer_blue_field_position, framebuffer_blue_mask_size;
+        };
+    };
+
 } multiboot_info_t;
 
 #pragma pack(pop)
