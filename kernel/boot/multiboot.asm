@@ -1,7 +1,7 @@
 MB_MAGIC         equ 0x1BADB002
 MB_PAGE_ALIGN    equ 1 << 0
 MB_MEM_INFO      equ 1 << 1
-MB_USE_GFX       equ 0  ; disable graphics for now
+MB_USE_GFX       equ 1 << 2
 MB_FLAGS         equ MB_PAGE_ALIGN | MB_MEM_INFO | MB_USE_GFX
 MB_CHECKSUM      equ -(MB_MAGIC + MB_FLAGS)
 
@@ -16,6 +16,6 @@ align 4
     dd 0     ; bss_end_addr
     dd 0     ; entry_addr
     dd 0     ; 0 = linear graphics
-    dd 1024  ; width
-    dd 768   ; height
+    dd 1920  ; width
+    dd 1080  ; height
     dd 32    ; color depth

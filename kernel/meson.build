@@ -12,6 +12,7 @@ kernel_c_srcs = files([
     'drivers/pit.c',
     'drivers/timer.c',
     'drivers/serial.c',
+    'drivers/fb.c',
     'drivers/input/ps2.c',
     'interrupts/isr.c',
     'interrupts/idt.c',
