@@ -15,7 +15,10 @@ kernel_c_srcs = files([
     'drivers/input/ps2.c',
     'interrupts/isr.c',
     'interrupts/idt.c',
-    'interrupts/pic.c'
+    'interrupts/pic.c',
+    'drivers/rtc.c',
+    'drivers/fpu.c',
+    'lib/time.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']
@@ -31,6 +34,7 @@ foreach include_dir : kernel_third_party_include_dirs
 endforeach
 kernel_include_flags += ['-I', meson.current_source_dir()]
 kernel_include_flags += ['-I', meson.current_source_dir() + '/misc']
+kernel_include_flags += ['-I', meson.current_source_dir() + '/lib']
 
 kernel_c_objs = cc_gen.process(kernel_c_srcs,
     extra_args: [kernel_ccflags, kernel_include_flags]
