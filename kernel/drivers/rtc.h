@@ -2,10 +2,10 @@
 
 #include <stdint.h>
 #include <types.h>
-#include <lib/time.h>
+#include <lib/datetime.h>
 
-#define REGISTER_PORT 0x70
-#define DATA_PORT     0x71
+#define RTC_REGISTER_PORT 0x70
+#define RTC_DATA_PORT     0x71
 
 #define RTC_SECONDS      0x00
 #define RTC_MINUTES      0x02
@@ -16,12 +16,12 @@
 #define RTC_YEAR         0x09
 #define RTC_CENTURY      0x32
 
-#define STATUS_REGISTER_A 0x0A
-#define STATUS_REGISTER_B 0x0B
-#define STATUS_REGISTER_C 0x0C
+#define RTC_STATUS_REGISTER_A 0x0A
+#define RTC_STATUS_REGISTER_B 0x0B
+#define RTC_STATUS_REGISTER_C 0x0C
 
-uint8_t bcd_to_bin(uint8_t bcd_data);
-uint8_t read_register(uint8_t reg);
-void read_rtc_time(datetime_t* rtc_time);
-void write_register(uint8_t reg, uint8_t data);
-void print_rtc();
+uint8_t rtc_bcd_to_bin(uint8_t bcd_data);
+uint8_t rtc_read_register(uint8_t reg);
+void rtc_read_time(datetime_t* rtc_time);
+void rtc_write_register(uint8_t reg, uint8_t data);
+void rtc_debug_print();

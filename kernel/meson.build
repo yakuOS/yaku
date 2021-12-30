@@ -18,7 +18,7 @@ kernel_c_srcs = files([
     'interrupts/pic.c',
     'drivers/rtc.c',
     'drivers/fpu.c',
-    'lib/time.c'
+    'lib/datetime.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']
