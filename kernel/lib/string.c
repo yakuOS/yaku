@@ -18,6 +18,9 @@ void memcpy(void* dest, const void* src, size_t n) {
     }
 }
 
+/**
+ * @return size_t length of string, not counting further than maxlen
+ */
 size_t strnlen(const char* s, size_t maxlen) {
     const char* p = s;
     while (maxlen-- && *p) {
@@ -26,6 +29,9 @@ size_t strnlen(const char* s, size_t maxlen) {
     return p - s;
 }
 
+/** 
+ * @return size_t length of string
+ */
 size_t strlen(const char* s) {
     const char* p = s;
     while (*p) {
