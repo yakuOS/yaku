@@ -15,7 +15,8 @@ kernel_c_srcs = files([
     'drivers/input/ps2.c',
     'interrupts/isr.c',
     'interrupts/idt.c',
-    'interrupts/pic.c'
+    'interrupts/pic.c',
+    'lib/string.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']
