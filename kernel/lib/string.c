@@ -20,15 +20,17 @@ void memcpy(void* dest, const void* src, size_t n) {
 
 size_t strnlen(const char* s, size_t maxlen) {
     const char* p = s;
-    while (maxlen-- && *p)
+    while (maxlen-- && *p) {
         p++;
+    }
     return p - s;
 }
 
 size_t strlen(const char* s) {
     const char* p = s;
-    while (*p)
+    while (*p) {
         p++;
+    }
     return p - s;
 }
 
@@ -41,5 +43,3 @@ char* strncat(char* s1, const char* s2, size_t n) {
     memcpy(s1, s2, ss);
     return s;
 }
-
-
