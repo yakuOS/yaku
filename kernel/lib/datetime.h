@@ -18,10 +18,6 @@ typedef struct {
     uint8_t century;
 } datetime_t;
 
-struct lolly {
-    int x;
-};
-
 bool leap_year(uint16_t year);
 uint32_t timestamp(datetime_t* datetime, bool gmt);
 void datetime_from_timestamp(uint32_t timestamp, datetime_t* final_date);
