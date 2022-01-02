@@ -8,6 +8,7 @@
 #include <interrupts/pic.h>
 #include <multiboot.h>
 #include <types.h>
+#include <math.h>
 
 void kernel_main(multiboot_info_t* mb_info) {
     serial_init();
