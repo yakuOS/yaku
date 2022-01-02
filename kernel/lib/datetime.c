@@ -3,7 +3,7 @@
 #include "drivers/vga_text.h"
 #include "stdint.h"
 #include "types.h"
-#include "string.h"
+#include <string.h>
 
 #define LEAP_YEAR(YEAR) ((YEAR > 0) && !(YEAR % 4) && ((YEAR % 100) || !(YEAR % 400)))
 
