@@ -77,7 +77,7 @@ char* strcat(char* s1, const char* s2) {
 
 char* strcat_inbetween(const char* s1, const char* s2, size_t index){
     if (index > strlen(s1)) {
-        return strcat(s1, s2);
+        index = strlen(s1);
     }
     char* str3;
     strncpy(str3, s1, index);
