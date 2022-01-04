@@ -474,7 +474,7 @@ static size_t _etoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
   }
 
   // determine the decimal exponent
-  // based on the algorithm by David Gay (https://www.ampl.com/netlib/fp/dtoa.c)
+  // based on the algorithm by David Gay (https://www.ampl.com/netfp/dtoa.c)
   union {
     uint64_t U;
     double   F;

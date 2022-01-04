@@ -3,11 +3,13 @@
 #include <interrupts/pic.h>
 #include <io.h>
 #include <types.h>
+#include <drivers/serial.h>
 
-static bool data_response_req; // if true don't handle irq as normal
+bool ps2_data_response_req=false; // if true don't handle irq as normal
 static bool dual_channel;
 static bool ps2_port1;
 static bool ps2_port2;
+uint8_t ps2_response_count=0;
 
 // Wait until the PS/2 controller's input buffer is clear.
 // Use this before WRITING to the controller.
@@ -74,10 +76,9 @@ uint8_t ps2_read_data(void) {
 }
 
 uint8_t ps2_write_data(uint8_t cmdbyte) {
-    data_response_req = true;
+    ps2_data_response_req = true;
     ps2_wait_input();
     io_outb(PS2_DATA, cmdbyte);
-    data_response_req = false;
     return ps2_read_data();
 }
 

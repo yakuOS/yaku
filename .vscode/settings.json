@@ -1,3 +1,11 @@
 {
-    "mesonbuild.buildFolder": "build"
+    "mesonbuild.buildFolder": "build",
+    "files.associations": {
+        "input_device.h": "c",
+        "serial.h": "c",
+        "pit.h": "c",
+        "ps2.h": "c",
+        "read_input.h": "c",
+        "cstring": "c"
+    }
 }
