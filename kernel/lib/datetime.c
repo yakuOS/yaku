@@ -1,29 +1,35 @@
 #include "datetime.h"
-#include "drivers/serial.h"
-#include "drivers/vga_text.h"
-#include "stdint.h"
-#include "types.h"
-#include <string.h>
 
-#define LEAP_YEAR(YEAR) ((YEAR > 0) && !(YEAR % 4) && ((YEAR % 100) || !(YEAR % 400)))
+#include <printf.h>
+#include <string.h>
+#include <types.h>
+
+#define IS_LEAP_YEAR(YEAR) ((YEAR > 0) && !(YEAR % 4) && ((YEAR % 100) || !(YEAR % 400)))
+#define DAYS_PER_YEAR 365
+#define SECONDS_PER_DAY 86400
 
 static const uint8_t months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-uint32_t timestamp(datetime_t* datetime, bool gmt) {
+uint32_t datetime_to_timestamp(datetime_t* datetime, bool gmt) {
 
     uint32_t timestamp = 0;
 
-    timestamp += (datetime->year - 1970) * (SECONDS_PER_DAY * DAYS_OF_YEAR);
+    timestamp += (datetime->year - 1970) * (SECONDS_PER_DAY * DAYS_PER_YEAR);
 
-    for (uint32_t year = 1970; year < datetime->year; year++)
-        if (LEAP_YEAR(year))
+    for (uint32_t year = 1970; year < datetime->year; year++) {
+        if (IS_LEAP_YEAR(year)) {
             timestamp += SECONDS_PER_DAY;
+        }
+    }
 
-    for (uint8_t month = 1; month < datetime->month; month++)
-        if (LEAP_YEAR(datetime->year) && month == 2)
+    for (uint8_t month = 1; month < datetime->month; month++) {
+        if (IS_LEAP_YEAR(datetime->year) && month == 2) {
             timestamp += SECONDS_PER_DAY * 29;
-        else
+
+        } else {
             timestamp += SECONDS_PER_DAY * months[month - 1];
+        }
+    }
 
     timestamp += (datetime->day_of_month - 1) * SECONDS_PER_DAY;
     timestamp += datetime->hour * 3600;
@@ -43,30 +49,35 @@ void datetime_from_timestamp(uint32_t timestamp, datetime_t* final_date) {
     currYear = 1970;
 
     while (daysTillNow >= 365) {
-        if (LEAP_YEAR(currYear))
+        if (IS_LEAP_YEAR(currYear)) {
             daysTillNow -= 366;
-        else
+
+        } else {
             daysTillNow -= 365;
+        }
         currYear += 1;
     }
 
     extraDays = daysTillNow + 1;
 
-    if (LEAP_YEAR(currYear))
+    if (IS_LEAP_YEAR(currYear)) {
         flag = 1;
+    }
 
     month = 0, index = 0;
     if (flag == 1) {
         while (true) {
 
             if (index == 1) {
-                if (extraDays - 29 < 0)
+                if (extraDays - 29 < 0) {
                     break;
+                }
                 month += 1;
                 extraDays -= 29;
             } else {
-                if (extraDays - months[index] < 0)
+                if (extraDays - months[index] < 0) {
                     break;
+                }
                 month += 1;
                 extraDays -= months[index];
             }
@@ -74,7 +85,6 @@ void datetime_from_timestamp(uint32_t timestamp, datetime_t* final_date) {
         }
     } else {
         while (true) {
-
             if (extraDays - months[index] < 0) {
                 break;
             }
@@ -88,10 +98,11 @@ void datetime_from_timestamp(uint32_t timestamp, datetime_t* final_date) {
         month += 1;
         date = extraDays;
     } else {
-        if (month == 2 && flag == 1)
+        if (month == 2 && flag == 1) {
             date = 29;
-        else
+        } else {
             date = months[month - 1];
+        }
     }
 
     hours = extraTime / 3600;
@@ -118,8 +129,7 @@ static void convert(uint16_t value, char* out, int* c) {
     }
 }
 
-void strftime(const char* format, datetime_t* datetime, char* dest, size_t dest_size) {
-
+void datetime_strftime(datetime_t* datetime, char* format, char* dest, size_t dest_size) {
     if (dest_size < strlen(format) + 2) {
         return;
     }
@@ -134,7 +144,6 @@ void strftime(const char* format, datetime_t* datetime, char* dest, size_t dest_
     int c = 0;
     int format_length = strlen(format);
     for (int i = 0; i < format_length; i++) {
-
         if (format[i] != '%') {
             dest[c++] = format[i];
         }

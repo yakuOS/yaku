@@ -1,11 +1,9 @@
 #include "rtc.h"
-#include "drivers/serial.h"
-#include "vga_text.h"
+
+#include <drivers/serial.h>
 #include <drivers/timer.h>
 #include <io.h>
 #include <lib/datetime.h>
-#include <printf.h>
-#include <stdint.h>
 #include <types.h>
 
 uint8_t rtc_update_in_progress_flag() {
@@ -102,8 +100,8 @@ void rtc_debug_print() {
 
     for (;;) {
         rtc_read_time(&rtc_time);
-        serial_printf("%02i:%02i:%02i - %02i.%02i.%04i\n", rtc_time.hour,
-                      rtc_time.minute, rtc_time.second, rtc_time.day_of_month, rtc_time.month,
+        serial_printf("%02i:%02i:%02i - %02i.%02i.%04i\n", rtc_time.hour, rtc_time.minute,
+                      rtc_time.second, rtc_time.day_of_month, rtc_time.month,
                       rtc_time.year);
         timer_sleep_ticks(10);
     }
