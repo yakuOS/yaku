@@ -22,7 +22,6 @@ kernel_c_srcs = files([
     'resources/keyboard_keymap.c',
     'resources/keyboard_stringmap.c',
     'lib/input/read_input.c',
-    'lib/string.c',
     'lib/input/input_to_text.c',
     'lib/datetime.c'
 ])
