@@ -13,15 +13,18 @@ kernel_c_srcs = files([
     'drivers/timer.c',
     'drivers/serial.c',
     'drivers/input/ps2.c',
-    'resources/keyboard_keymap.c',
-    'resources/keyboard_stringmap.c',
+    'drivers/rtc.c',
+    'drivers/fpu.c',
     'drivers/input/input_device.c',
-    'lib/input/read_input.c',
     'interrupts/isr.c',
     'interrupts/idt.c',
     'interrupts/pic.c',
+    'resources/keyboard_keymap.c',
+    'resources/keyboard_stringmap.c',
+    'lib/input/read_input.c',
     'lib/string.c',
     'lib/input/input_to_text.c',
+    'lib/datetime.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']
@@ -37,6 +40,7 @@ foreach include_dir : kernel_third_party_include_dirs
 endforeach
 kernel_include_flags += ['-I', meson.current_source_dir()]
 kernel_include_flags += ['-I', meson.current_source_dir() + '/misc']
+kernel_include_flags += ['-I', meson.current_source_dir() + '/lib']
 
 kernel_c_objs = cc_gen.process(kernel_c_srcs,
     extra_args: [kernel_ccflags, kernel_include_flags]
