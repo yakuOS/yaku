@@ -1,5 +1,6 @@
 #include "datetime.h"
 
+#include <drivers/serial.h>
 #include <printf.h>
 #include <string.h>
 #include <types.h>
@@ -117,65 +118,42 @@ void datetime_from_timestamp(uint32_t timestamp, datetime_t* final_date) {
     final_date->second = seconds;
 }
 
-static void convert(uint16_t value, char* out, int* c) {
-
-    char buf[5];
-    snprintf(buf, 5, "%02i", value);
-
-    uint32_t len = strlen(buf);
-
-    for (uint32_t i = 0; i < len; i++) {
-        out[(*c)++] = buf[i];
-    }
-}
-
 void datetime_strftime(datetime_t* datetime, char* format, char* dest, size_t dest_size) {
-    if (dest_size < strlen(format) + 2) {
-        return;
-    }
-
-    uint8_t day = datetime->day_of_month;
-    uint8_t month = datetime->month;
-    uint16_t year = datetime->year;
-    uint8_t hours = datetime->hour;
-    uint8_t minutes = datetime->minute;
-    uint8_t second = datetime->second;
-
-    int c = 0;
-    int format_length = strlen(format);
-    for (int i = 0; i < format_length; i++) {
-        if (format[i] != '%') {
-            dest[c++] = format[i];
+    size_t format_length = strlen(format);
+    size_t dest_idx = 0;
+    for (size_t i = 0; i < format_length; i++) {
+        if (dest_idx >= dest_size - 1) {
+            break;
         }
 
         if (format[i] == '%') {
-            switch (format[i + 1]) {
+            uint16_t value = 0;
+            switch (format[++i]) {
             case 'd':
-                convert(day, dest, &c);
-                i++;
+                value = datetime->day_of_month;
                 break;
             case 'm':
-                convert(month, dest, &c);
-                i++;
+                value = datetime->month;
                 break;
             case 'y':
-                convert(year, dest, &c);
-                i++;
+                value = datetime->year;
                 break;
             case 'M':
-                convert(minutes, dest, &c);
-                i++;
+                value = datetime->minute;
                 break;
             case 'H':
-                convert(hours, dest, &c);
-                i++;
+                value = datetime->hour;
                 break;
             case 'S':
-                convert(second, dest, &c);
-                i++;
+                value = datetime->second;
                 break;
             }
+
+            dest_idx += snprintf(dest + dest_idx, dest_size - dest_idx, "%02i", value);
+        } else {
+            dest[dest_idx++] = format[i];
         }
     }
-    dest[c] = '\0';
+
+    dest[dest_idx] = '\0';
 }
