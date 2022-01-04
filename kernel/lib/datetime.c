@@ -118,7 +118,11 @@ static void convert(uint16_t value, char* out, int* c) {
     }
 }
 
-void strftime(const char* format, datetime_t* datetime, char* dest) {
+void strftime(const char* format, datetime_t* datetime, char* dest, size_t dest_size) {
+
+    if (dest_size < strlen(format) + 2) {
+        return;
+    }
 
     uint8_t day = datetime->day_of_month;
     uint8_t month = datetime->month;

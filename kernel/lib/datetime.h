@@ -21,4 +21,4 @@ typedef struct {
 bool leap_year(uint16_t year);
 uint32_t timestamp(datetime_t* datetime, bool gmt);
 void datetime_from_timestamp(uint32_t timestamp, datetime_t* final_date);
-void strftime(const char* format, datetime_t* datetime, char* dest);
+void strftime(const char* format, datetime_t* datetime, char* dest, size_t dest_size);
