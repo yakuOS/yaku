@@ -18,6 +18,7 @@ start:
 
     call setup_page_tables
     call enable_paging
+    call enable_sse
 
     lgdt [gdt64.pointer]
     jmp gdt64.code:long_mode_start
@@ -109,6 +110,16 @@ enable_paging:
     or eax, 1 << 31
     mov cr0, eax
 
+    ret
+
+enable_sse:
+    mov eax, cr0
+    and ax, 0xFFFB
+    or ax, 0x2
+    mov cr0, eax
+    mov eax, cr4
+    or ax, 3 << 9
+    mov cr4, eax
     ret
 
 error:
