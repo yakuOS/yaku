@@ -1,7 +1,7 @@
 #include "input_device.h"
 #include <string.h>
 #include <types.h>
-input_device devices[64];
+input_device_t devices[64];
 uint8_t device_count = 0;
 
 /**
@@ -23,8 +23,8 @@ void input_device_set_keymap(uint8_t device_id, char keymap[512]) {
         devices[device_id].keymap[i] = keymap[i];
     }
 }
-input_device_info input_device_get_info() {
-    input_device_info info;
+input_device_info_t input_device_get_info() {
+    input_device_info_t info;
 
     for (int i = 0; i < device_count; i++) {
         info.id[i] = i;
@@ -37,8 +37,8 @@ input_device_info input_device_get_info() {
     return info;
 }
 
-input_device_info input_device_of_type_get_info(char* type) {
-    input_device_info info;
+input_device_info_t input_device_of_type_get_info(char* type) {
+    input_device_info_t info;
 
     for (int i = 0; i < device_count; i++) {
         if (strcmp(devices[i].type, type) == 0) {
@@ -54,7 +54,7 @@ input_device_info input_device_of_type_get_info(char* type) {
 }
 
 /**
- * @return id used to remove input_device_listener
+ * @return id used to remove input_device_listener_t
  */
 uint8_t input_device_add_listener(uint8_t device_id, char* name,
                                   void (*callback)(uint8_t)) {

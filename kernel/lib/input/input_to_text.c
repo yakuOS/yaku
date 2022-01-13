@@ -19,7 +19,7 @@ bool input_to_text_arrow_down_callback = false;
 
 char* input_to_text_field[1012];
 
-read_input_listener input_to_text_listener;
+read_input_listener_t input_to_text_listener;
 
 bool input_to_text_shift_pressed = false;
 bool input_to_text_caps_pressed = false;
@@ -71,7 +71,7 @@ void str_remove_inbetween(char* buffer, const char* str1, size_t index) {
     strcat(buffer, str1 + index + 1);
 }
 
-void input_to_text_handle_keystroke(char keystroke, read_input_listener* this) {
+void input_to_text_handle_keystroke(char keystroke, read_input_listener_t* this) {
     if (keystroke <= 0) {
         if (keystroke == -74) {
             input_to_text_shift_pressed = false;
