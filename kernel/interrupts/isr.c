@@ -1,5 +1,7 @@
 #include "isr.h"
 
+#include <drivers/input/input_device.h>
+#include <drivers/input/ps2.h>
 #include <drivers/pit.h>
 #include <drivers/serial.h>
 #include <interrupts/pic.h>
@@ -55,8 +57,19 @@ void isr_irq0(isr_context_t* ctx) {
 }
 
 void isr_irq1(isr_context_t* ctx) {
-    uint8_t scan_code = io_inb(0x60);
-    serial_printf("SCANCODE: %d\n", scan_code);
+    if (ps2_data_response_req == false) {
+        uint8_t scan_code = io_inb(0x60);
+        input_device_send_key(0, scan_code);
+    } else {
+        if (ps2_response_count == 1) {
+            ps2_response_count = 0;
+            ps2_data_response_req = false;
+            uint8_t scan_code = io_inb(0x60);
+        } else {
+            ps2_response_count++;
+            uint8_t scan_code = io_inb(0x60);
+        }
+    }
 }
 
 void isr_irq2(isr_context_t* ctx) {}

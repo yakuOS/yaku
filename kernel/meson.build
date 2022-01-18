@@ -13,11 +13,16 @@ kernel_c_srcs = files([
     'drivers/timer.c',
     'drivers/serial.c',
     'drivers/input/ps2.c',
+    'drivers/rtc.c',
+    'drivers/fpu.c',
+    'drivers/input/input_device.c',
     'interrupts/isr.c',
     'interrupts/idt.c',
     'interrupts/pic.c',
-    'drivers/rtc.c',
-    'drivers/fpu.c',
+    'resources/keyboard_keymap.c',
+    'resources/keyboard_stringmap.c',
+    'lib/input/read_input.c',
+    'lib/input/input_to_text.c',
     'lib/datetime.c'
 ])
 

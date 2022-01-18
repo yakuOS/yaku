@@ -30,3 +30,7 @@ uint8_t ps2_read_data(void);
 uint8_t ps2_write_data(uint8_t cmdbyte);
 uint8_t ps2_write_data_arg(uint8_t cmdbyte, uint8_t arg);
 void ps2_init(void);
+
+
+extern bool ps2_data_response_req;
+extern uint8_t ps2_response_count;
