@@ -1,7 +1,4 @@
 kernel_asm_srcs = files([
-    'boot/boot32.asm',
-    'boot/boot64.asm',
-    'boot/multiboot.asm',
     'interrupts/isr.asm',
     'interrupts/idt.asm'
 ])
@@ -48,7 +45,7 @@ kernel_c_objs = cc_gen.process(kernel_c_srcs,
 kernel_ld_script = files('link.ld')
 
 kernel_target = custom_target('kernel',
-    output: 'kernel.bin',
+    output: 'kernel.elf',
     input: [kernel_asm_objs, kernel_c_objs, kernel_third_party_objs],
-    command: [ld, '-m', 'elf_x86_64', '-T', kernel_ld_script, '-o', '@OUTPUT@', '@INPUT@']
+    command: [ld, '-T', kernel_ld_script, '-o', '@OUTPUT@', '@INPUT@']
 )

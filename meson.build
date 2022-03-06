@@ -20,9 +20,16 @@ cc_gen = generator(cc,
 
 subdir('kernel')
 
+limine_target = custom_target('limine',
+    output: 'limine',
+    command: [
+        'sh', '@SOURCE_ROOT@/make_limine.sh', '@OUTPUT@',
+    ]
+)
+
 iso_target = custom_target('iso',
     output: 'yaku.iso',
-    command: ['sh', '@SOURCE_ROOT@/make_iso.sh', '@OUTPUT@', kernel_target, '@PRIVATE_DIR@', '@SOURCE_ROOT@']
+    command: ['sh', '@SOURCE_ROOT@/make_iso.sh', '@OUTPUT@', kernel_target, '@PRIVATE_DIR@', '@SOURCE_ROOT@', limine_target]
 )
 
 if qemu.found()
