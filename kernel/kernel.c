@@ -57,12 +57,8 @@ void* stivale2_get_tag(stivale2_struct_t* stivale2_struct, uint64_t id) {
 
 void start(stivale2_struct_t* stivale2_struct) {
     serial_init();
-    pic_init();
     idt_init();
-
-    // TODO: fix idt so interrupts don't cause a crash
-    asm("cli");
-
+    pic_init();
     pit_init(60);
     ps2_init();
     input_device_create_device("keyboard", "keyboard", keyboard_keymap);
