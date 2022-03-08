@@ -1,6 +1,7 @@
 kernel_asm_srcs = files([
     'interrupts/isr.asm',
-    'interrupts/idt.asm'
+    'interrupts/idt.asm',
+    'drivers/sse.asm'
 ])
 
 kernel_c_srcs = files([
@@ -20,7 +21,8 @@ kernel_c_srcs = files([
     'resources/keyboard_stringmap.c',
     'lib/input/read_input.c',
     'lib/input/input_to_text.c',
-    'lib/datetime.c'
+    'lib/datetime.c',
+    'memory/pmm.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']

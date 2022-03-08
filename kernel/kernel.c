@@ -1,6 +1,3 @@
-#include "datetime.h"
-#include <printf.h>
-
 #include <drivers/input/input_device.h>
 #include <drivers/input/ps2.h>
 #include <drivers/pit.h>
@@ -8,9 +5,14 @@
 #include <drivers/vga_text.h>
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
+#include <memory/pmm.h>
+#include <printf.h>
 #include <resources/keyboard_keymap.h>
 #include <stivale2.h>
+#include <string.h>
 #include <types.h>
+
+extern int enable_sse();
 
 static uint8_t stack[8192];
 
@@ -56,14 +58,24 @@ void* stivale2_get_tag(stivale2_struct_t* stivale2_struct, uint64_t id) {
 }
 
 void start(stivale2_struct_t* stivale2_struct) {
+
+    enable_sse();
     serial_init();
-    idt_init();
     pic_init();
+    idt_init();
     pit_init(60);
+
+    stivale2_struct_tag_memmap_t* memory_map;
+    memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
+
+    pmm_init(memory_map);
     ps2_init();
     input_device_create_device("keyboard", "keyboard", keyboard_keymap);
 
-    serial_printf("Hello, %s!\n", "there");
+    char* message = malloc(1);
+    strcpy(message, "Hello, there!");
+
+    serial_printf("%s\n", message);
 
     for (;;) {
         asm("hlt");
