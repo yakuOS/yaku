@@ -1,6 +1,4 @@
 #include "datetime.h"
-#include "drivers/fpu.h"
-#include <math.h>
 #include <printf.h>
 
 #include <drivers/input/input_device.h>
@@ -12,7 +10,6 @@
 #include <interrupts/pic.h>
 #include <memory/pmm.h>
 #include <resources/keyboard_keymap.h>
-#include <stdint.h>
 #include <stivale2.h>
 #include <string.h>
 #include <types.h>
@@ -73,7 +70,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
 
-    mm_init(memory_map);
+    pmm_init(memory_map);
     ps2_init();
     input_device_create_device("keyboard", "keyboard", keyboard_keymap);
 

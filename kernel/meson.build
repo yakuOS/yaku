@@ -22,7 +22,6 @@ kernel_c_srcs = files([
     'lib/input/read_input.c',
     'lib/input/input_to_text.c',
     'lib/datetime.c',
-    'memory/init.c',
     'memory/pmm.c'
 ])
 
