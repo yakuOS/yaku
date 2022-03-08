@@ -1,6 +1,3 @@
-#include "datetime.h"
-#include <printf.h>
-
 #include <drivers/input/input_device.h>
 #include <drivers/input/ps2.h>
 #include <drivers/pit.h>
@@ -9,6 +6,7 @@
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
 #include <memory/pmm.h>
+#include <printf.h>
 #include <resources/keyboard_keymap.h>
 #include <stivale2.h>
 #include <string.h>

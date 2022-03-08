@@ -1,5 +1,6 @@
 #include "pmm.h"
-#include "drivers/serial.h"
+
+#include <drivers/serial.h>
 #include <math.h>
 #include <string.h>
 #include <types.h>
@@ -60,10 +61,10 @@ void pmm_init(stivale2_struct_tag_memmap_t* memory_map) {
     pmm_deinit_region(bitmap_location,
                       4096 * ceil(((double)pmm_get_block_count() / 8.0) / 4096.0));
 
-    serial_printf("Initialized memory manager with %i KB of memory.\nTotal memory blocks: "
-                  "%i\nAvailable memory blocks: %i\n\n",
-                  pmm_get_memory_size(), pmm_get_block_count(),
-                  pmm_get_free_block_count());
+    serial_printf(
+        "Initialized memory manager with %i KB of memory.\nTotal memory blocks: "
+        "%i\nAvailable memory blocks: %i\n\n",
+        pmm_get_memory_size(), pmm_get_block_count(), pmm_get_free_block_count());
 }
 
 void pmm_init_region(uint64_t* base, size_t size) {
