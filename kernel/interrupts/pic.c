@@ -60,10 +60,10 @@ void pic_remap_offsets(uint8_t offset) {
 }
 
 void pic_send_eoi(uint8_t irq) {
-    if (irq < 8) {
-        io_outb(PIC_MASTER_COMMAND, PIC_EOI);
+    if (irq >= 8) {
+        io_outb(PIC_SLAVE_COMMAND, PIC_EOI);
     }
-    io_outb(PIC_SLAVE_COMMAND, PIC_EOI);
+    io_outb(PIC_MASTER_COMMAND, PIC_EOI);
 }
 
 void pic_init(void) {
@@ -73,6 +73,20 @@ void pic_init(void) {
     }
     pic_unmask_irq(0);
     pic_unmask_irq(1);
+    pic_unmask_irq(2); // cascade irq for com between PICs (needed for IRQs >= 8)
+    // pic_unmask_irq(3);
+    // pic_unmask_irq(4);
+    // pic_unmask_irq(5);
+    // pic_unmask_irq(6);
+    // pic_unmask_irq(7);
+    // pic_unmask_irq(8);
+    // pic_unmask_irq(9);
+    // pic_unmask_irq(10);
+    // pic_unmask_irq(11);
+    pic_unmask_irq(12);
+    // pic_unmask_irq(13);
+    // pic_unmask_irq(14);
+    // pic_unmask_irq(15);
 }
 
 static uint16_t __pic_get_irq_reg(uint16_t ocw3) {

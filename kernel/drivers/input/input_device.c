@@ -7,14 +7,19 @@ uint8_t device_count = 0;
 /**
  * @return uint8_t device "id"
  */
-uint8_t input_device_create_device(char* name, char* type, char keymap[512]) {
+uint8_t input_device_create_device(char* name, char* type, char keymap[512],
+                                   void (*handler)(uint8_t)) {
     devices[device_count].name = name;
     devices[device_count].type = type;
-
-    for (int i = 0; i < 512; i++) {
-        devices[device_count].keymap[i] = keymap[i];
+    devices[device_count].has_keymap = false;
+    if (keymap != NULL) {
+        for (int i = 0; i < 512; i++) {
+            devices[device_count].keymap[i] = keymap[i];
+        }
+        devices[device_count].has_keymap = true;
     }
 
+    devices[device_count].handler = handler;
     device_count++;
     return device_count - 1;
 }
@@ -30,8 +35,11 @@ input_device_info_t input_device_get_info() {
         info.id[i] = i;
         info.name[i] = devices[i].name;
         info.type[i] = devices[i].type;
-        for (int j = 0; j < 512; j++) {
-            info.keymap[i][j] = devices[i].keymap[j];
+        info.has_keymap[i] = devices[i].has_keymap;
+        if (devices[i].has_keymap) {
+            for (int j = 0; j < 512; j++) {
+                info.keymap[i][j] = devices[i].keymap[j];
+            }
         }
     }
     return info;
@@ -53,33 +61,10 @@ input_device_info_t input_device_of_type_get_info(char* type) {
     return info;
 }
 
-/**
- * @return id used to remove input_device_listener_t
- */
-uint8_t input_device_add_listener(uint8_t device_id, char* name,
-                                  void (*callback)(uint8_t)) {
-    for (uint8_t i = 0; i < 64; i++) {
-        if (devices[device_id].listeners[i].used != true) {
-            devices[device_id].listeners[i].name = name;
-            devices[device_id].listeners[i].callback = callback;
-            devices[device_id].listeners[i].used = true;
-            return i;
-        }
-    }
-
-    return 0;
-}
-
-void input_device_remove_listener(uint8_t device_id, uint8_t listener_id) {
-    devices[device_id].listeners[listener_id].name = NULL;
-    devices[device_id].listeners[listener_id].callback = NULL;
-    devices[device_id].listeners[listener_id].used = false;
-}
-
 void input_device_send_key(uint8_t device_id, uint8_t key) {
-    for (uint8_t i = 0; i < 64; i++) {
-        if (devices[device_id].listeners[i].used == true) {
-            devices[device_id].listeners[i].callback(devices[device_id].keymap[key - 1]);
-        }
+    if (devices[device_id].has_keymap) {
+        devices[device_id].handler(devices[device_id].keymap[key - 1]);
+    } else {
+        devices[device_id].handler(key);
     }
 }

@@ -19,8 +19,9 @@ kernel_c_srcs = files([
     'interrupts/pic.c',
     'resources/keyboard_keymap.c',
     'resources/keyboard_stringmap.c',
-    'lib/input/read_input.c',
-    'lib/input/input_to_text.c',
+    'lib/input/input_event.c',
+    'lib/input/keyboard_handler.c',
+    'lib/input/mouse_handler.c',
     'lib/datetime.c',
     'memory/pmm.c'
 ])
