@@ -1,5 +1,6 @@
 #include "ps2.h"
 
+#include <drivers/serial.h>
 #include <interrupts/pic.h>
 #include <io.h>
 #include <types.h>
@@ -98,6 +99,7 @@ uint8_t ps2_write_data_arg(uint8_t cmdbyte, uint8_t arg) {
 }
 
 void ps2_init(void) {
+
     ps2_write_command(PS2_DISABLE_PORT1);
     ps2_write_command(PS2_DISABLE_PORT2);
 
@@ -160,6 +162,28 @@ void ps2_init(void) {
         ps2_responses_awaited = 1;
         ps2_write_command(0xD4);
         ps2_write_data(0xF6); // default
+
+        // enable scroll wheel (with weird sequence-> sample rate to 200, 100, 80)
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF3); // set sample rate
+        ps2_write_command(0xD4);
+        ps2_write_data(200); // 20 samples per second
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF3);
+        ps2_write_command(0xD4);
+        ps2_write_data(100);
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF3);
+        ps2_write_command(0xD4);
+        ps2_write_data(80);
+
+        ps2_responses_awaited = 2;
+        serial_printf("mouse id:\n");
+        // get mouse id
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF2);
+        ps2_responses_awaited = 1;
+
         ps2_write_command(0xD4);
         ps2_write_data(0xF4); // enable data reporting
         // 0xD4: sends next byte to PS/2-Port: 2
