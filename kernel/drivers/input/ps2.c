@@ -1,15 +1,16 @@
 #include "ps2.h"
 
+#include <drivers/serial.h>
 #include <interrupts/pic.h>
 #include <io.h>
 #include <types.h>
-#include <drivers/serial.h>
 
-bool ps2_data_response_req=false; // if true don't handle irq as normal
+bool ps2_data_response_req = false; // if true don't handle irq as normal
 static bool dual_channel;
 static bool ps2_port1;
 static bool ps2_port2;
-uint8_t ps2_response_count=0;
+uint8_t ps2_response_count = 0;
+uint8_t ps2_responses_awaited = 1; // ps2 irqs aren't handled ps2_response_awaited times
 
 // Wait until the PS/2 controller's input buffer is clear.
 // Use this before WRITING to the controller.
@@ -98,6 +99,7 @@ uint8_t ps2_write_data_arg(uint8_t cmdbyte, uint8_t arg) {
 }
 
 void ps2_init(void) {
+
     ps2_write_command(PS2_DISABLE_PORT1);
     ps2_write_command(PS2_DISABLE_PORT2);
 
@@ -117,11 +119,11 @@ void ps2_init(void) {
     uint8_t status = ps2_write_command_read_data(PS2_READ_CONFIG);
     status |= (PS2_PORT1_IRQ | PS2_PORT2_IRQ | PS2_PORT1_TLATE);
     ps2_write_command_arg(PS2_WRITE_CONFIG, status);
-
-    if (ps2_write_command_read_data(0xAA) != 0x55) {
-        // panic(ps2: self-test on init failed)
-        ;
-    }
+    status = ps2_write_command_read_data(PS2_READ_CONFIG);
+    // if (ps2_write_command_read_data(0xAA) != 0x55) {
+    //     // panic(ps2: self-test on init failed)
+    //     ;
+    // }
     // checks if it's a dual-channel ps2-controller
     if (!(ps2_write_command_read_data(0xAE) & (1 >> 5))) {
         ps2_write_command(PS2_DISABLE_PORT2);
@@ -129,7 +131,6 @@ void ps2_init(void) {
     } else {
         dual_channel = false;
     }
-
     // test PS/2 ports and exit init if both fail
     // port 1
     if (ps2_write_command_read_data(0xAB) == 0x00) {
@@ -147,7 +148,6 @@ void ps2_init(void) {
         // panic(ps2 init: neither port passed test);
         return;
     }
-
     if (ps2_port1) {
         ps2_write_command(PS2_ENABLE_PORT1);
         ps2_write_data(0xFF);
@@ -156,7 +156,38 @@ void ps2_init(void) {
     // mouse not implemented yet
     if (ps2_port2) {
         ps2_write_command(PS2_ENABLE_PORT2);
+        ps2_responses_awaited = 2;
+        ps2_write_command(0xD4);
+        ps2_write_data(0xFF); // reset
+        ps2_responses_awaited = 1;
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF6); // default
+
+        // enable scroll wheel (with weird sequence-> sample rate to 200, 100, 80)
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF3); // set sample rate
+        ps2_write_command(0xD4);
+        ps2_write_data(200); // 20 samples per second
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF3);
+        ps2_write_command(0xD4);
+        ps2_write_data(100);
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF3);
+        ps2_write_command(0xD4);
+        ps2_write_data(80);
+
+        ps2_responses_awaited = 2;
+        serial_printf("mouse id:\n");
+        // get mouse id
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF2);
+        ps2_responses_awaited = 1;
+
+        ps2_write_command(0xD4);
+        ps2_write_data(0xF4); // enable data reporting
         // 0xD4: sends next byte to PS/2-Port: 2
-        // ps2_write_command_arg(0xD4, 0xFF);
     }
+    ps2_responses_awaited = 0;
+    ps2_data_response_req = false;
 }
