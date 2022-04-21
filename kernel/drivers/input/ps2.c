@@ -178,7 +178,7 @@ void ps2_init(void) {
         ps2_write_data(80);
 
         ps2_responses_awaited = 2;
-        serial_printf("mouse id:\n");
+
         // get mouse id
         ps2_write_command(0xD4);
         ps2_write_data(0xF2);

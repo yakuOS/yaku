@@ -2,7 +2,7 @@
 
 #include <types.h>
 
-const enum keycode_enum {
+typedef enum {
     KB_ESC,
     KB_F1,
     KB_F2,
@@ -109,4 +109,4 @@ const enum keycode_enum {
     KP_0,
     KP_COMMA,
     KB_NONE,
-}; // https://de.wikipedia.org/wiki/Tastaturbelegung#Tastaturbelegung_T1
+} keyboard_keycode_t; // https://de.wikipedia.org/wiki/Tastaturbelegung#Tastaturbelegung_T1
