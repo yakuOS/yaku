@@ -1,3 +1,7 @@
+/*
+this snippet was copied and adapted from:
+https://wiki.osdev.org/index.php?title=8259_PIC&action=history; 8259 PIC; https://wiki.osdev.org/PIC, 17.10.2021
+*/
 #include "pic.h"
 
 #include <io.h>
