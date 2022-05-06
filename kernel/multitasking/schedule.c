@@ -19,21 +19,6 @@ void schedule_task(task_t* task) {
     }
 }
 
-// find tasks waiting for termination and terminate
-void scheduler_task() {
-    for (;;) {
-        task_t* task = current_task->next;
-        while (true) {
-            if (task->task_state == TASK_STATE_TERMINATED) {
-                task_terminate(task);
-                task = task->next;
-            } else {
-                task = task->next;
-            }
-        }
-    }
-}
-
 void schedule_set_task_terminated() {
     current_task->task_state = TASK_STATE_TERMINATED;
 }
@@ -47,7 +32,6 @@ void schedule_sleep(uint32_t ticks) {
 static enum task_priority task_repetition =
     TASK_PRIORITY_LOW; // counter for task repition
 void schedule_switch(uint64_t* rsp) {
-    // serial_printf("Switching");
     if (current_task == NULL || task_repetition++ < current_task->priority) {
         return;
     }
@@ -55,14 +39,21 @@ void schedule_switch(uint64_t* rsp) {
     task_repetition = TASK_PRIORITY_LOW;
     task_t* old_task = current_task;
     current_task = current_task->next;
-    if (current_task->task_state == TASK_STATE_WAITING) {
-        current_task->task_state = TASK_STATE_RUNNING;
-    }
     if (old_task->task_state != TASK_STATE_WAITING) {
         old_task->rsp = rsp;
     }
+    if (current_task->task_state == TASK_STATE_WAITING) {
+        current_task->task_state = TASK_STATE_RUNNING;
+    }
     if (current_task->task_state == TASK_STATE_TERMINATED) {
+        task_t* task_to_terminate = current_task;
         current_task = current_task->next;
+        if (current_task->next == current_task) {
+            task_terminate(task_to_terminate, old_task);
+            current_task = NULL;
+            return;
+        }
+        task_terminate(task_to_terminate, old_task);
     }
     if (current_task->task_state == TASK_STATE_SLEEP) {
         if (current_task->sleep_till > pit_tick_get()) {
@@ -71,14 +62,12 @@ void schedule_switch(uint64_t* rsp) {
             current_task->task_state = TASK_STATE_RUNNING;
         }
     }
-    // serial_printf("Switching to task %d\n", current_task->pid);
     pic_send_eoi(0);
-    switch_to_task(&current_task->rsp);
+    switch_to_task(current_task->rsp);
 }
 
 void schedule_init(void* kernel_function) {
     pic_mask_irq(0);
     task_add(kernel_function, TASK_PRIORITY_LOW, 0);
-    task_add(&scheduler_task, TASK_PRIORITY_LOW, 0);
     pic_unmask_irq(0);
 }

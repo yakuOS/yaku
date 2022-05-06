@@ -32,29 +32,29 @@ void task_sleep(task_t* task, uint32_t ticks) {
 }
 
 // removes task from schedule-linked-list and frees memory
-void task_terminate(task_t* task) {
+void task_terminate(task_t* task, task_t* task_pointing_to) {
     pic_mask_irq(0); // dont switch tasks anymore
     if (task == NULL) {
         return;
     }
-    bool task_found = false;
-    task_t* task_pointing_to = task;
-    while (!task_found) {
-        if (task_pointing_to->next == task) {
-            task_found = true;
-            task_pointing_to->next = task->next;
-        } else {
-            task_pointing_to = task_pointing_to->next;
-        }
+
+    if (task_pointing_to->next == task) {
+        task_pointing_to->next = task->next;
+    } else {
+        return;
     }
+
     free(task, sizeof(task_t) / 4096); // sizeof(task_t) is 8192 bytes
+    number_of_tasks--;
     pic_unmask_irq(0);
 }
 
 task_t* task_get_ptr_by_pid(uint32_t pid) {
-    task_t* task = current_task;
-    while (task->pid != pid) {
+    task_t* task = scheduler_get_current_task();
+    uint32_t counter = 0;
+    while (task->pid != pid || counter > number_of_tasks) {
         task = task->next;
+        counter++;
     }
     if (task->pid == pid) {
         return task;
@@ -62,9 +62,12 @@ task_t* task_get_ptr_by_pid(uint32_t pid) {
     return NULL;
 }
 task_t* task_get_ptr_by_parent_pid(uint32_t pid) {
-    task_t* task = current_task;
-    while (task->parent_pid != pid) {
+
+    task_t* task = scheduler_get_current_task();
+    uint32_t counter = 0;
+    while (task->parent_pid != pid || counter > number_of_tasks) {
         task = task->next;
+        counter++;
     }
     if (task->parent_pid == pid) {
         return task;
@@ -75,11 +78,21 @@ task_t* task_get_ptr_by_parent_pid(uint32_t pid) {
 void task_kill(uint32_t pid) {
     asm("cli");
     task_t* task = task_get_ptr_by_pid(pid);
-    task_terminate(task);
+    bool task_found = false;
+    task_t* task_pointing_to = task;
+    while (!task_found) {
+        if (task_pointing_to->next == task) {
+            task_found = true;
+            task_pointing_to->next = task->next;
+        } else {
+            task_pointing_to = task_pointing_to->next;
+        }
+    }
+    task_terminate(task, task_pointing_to);
     bool nothing_left = false;
     while (!nothing_left) {
         task = task_get_ptr_by_parent_pid(pid);
-        task_terminate(task);
+        task_terminate(task, task_pointing_to);
         if (task == NULL) {
             nothing_left = true;
         }

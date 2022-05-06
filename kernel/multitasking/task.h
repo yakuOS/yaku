@@ -30,7 +30,7 @@ typedef struct task {
 task_t* task_add(void* function, enum task_priority priority, uint32_t parent_pid);
 task_t* task_create(void* function);
 void task_exit();
-void task_terminate(task_t* task);
+void task_terminate(task_t* task, task_t* task_pointing_to);
 task_t* task_get_ptr_by_pid(uint32_t pid);
 task_t* task_get_ptr_by_parent_pid(uint32_t pid);
 void task_kill(uint32_t pid);

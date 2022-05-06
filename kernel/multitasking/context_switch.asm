@@ -65,7 +65,7 @@
 ; void switchTask(uint64_t *to_rsp);
 global switch_to_task
 switch_to_task:
-    mov rsp, [rdi] ; load rsp from to_rsp into rsp
+    mov rsp, rdi ; load rsp from to_rsp into rsp
     popa ; pop all registers
     sti
     iretq

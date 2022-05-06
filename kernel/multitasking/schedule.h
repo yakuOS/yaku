@@ -7,7 +7,6 @@
 #define SWITCH_INTERVAL_MS 100
 
 extern void switch_to_task(uint64_t* rsp);
-static struct task* current_task;
 void schedule_tasks();
 void scheduler_task();
 void schedule_set_task_terminated();
