@@ -6,6 +6,7 @@
 #include <drivers/serial.h>
 #include <interrupts/pic.h>
 #include <io.h>
+#include <multitasking/schedule.h>
 #include <printf.h>
 
 static const char* exception_messages[] = {
@@ -45,15 +46,19 @@ static const char* exception_message(uint64_t vector_number) {
 }
 
 void isr_exception_handler(isr_context_t* ctx) {
+    asm("cli");
     const char* exception_msg = exception_message(ctx->base_frame.vector);
     serial_printf("EXCEPTION: %s (%llu, %llu)\n", exception_msg, ctx->base_frame.vector,
                   ctx->base_frame.error_code);
-
-    asm("cli; hlt");
+    schedule_set_task_terminated();
+    asm("sti");
+    for (;;) {
+        asm("hlt");
+    }
 }
 
-void isr_irq0(isr_context_t* ctx) {
-    pit_tick_increment();
+void isr_irq0(uint64_t* rsp) {
+    pit_tick_increment(rsp);
 }
 
 void isr_irq1(isr_context_t* ctx) {

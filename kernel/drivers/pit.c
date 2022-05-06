@@ -1,6 +1,7 @@
 #include "pit.h"
 
 #include <io.h>
+#include <multitasking/schedule.h>
 #include <types.h>
 
 static uint32_t tick = 0;
@@ -16,9 +17,9 @@ void pit_init(uint32_t frequency) {
     io_outb(0x40, lower);
     io_outb(0x40, upper);
 }
-
-void pit_tick_increment(void) {
+void pit_tick_increment(uint64_t* rsp) {
     tick++;
+    schedule_switch(rsp);
 }
 
 uint32_t pit_tick_get(void) {
