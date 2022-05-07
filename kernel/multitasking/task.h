@@ -2,13 +2,14 @@
 #include <multitasking/schedule.h>
 #include <types.h>
 #define TASK_STACK_SIZE 1019
-#define MAX_TASKS 500
+#define TASKS_MAX 500
 
 enum task_state {
     TASK_STATE_RUNNING,
     TASK_STATE_SLEEP,
     TASK_STATE_TERMINATED,
     TASK_STATE_WAITING,
+    TASK_STATE_PAUSED
 };
 enum task_priority {
     TASK_PRIORITY_LOW,
@@ -35,3 +36,5 @@ task_t* task_get_ptr_by_pid(uint32_t pid);
 task_t* task_get_ptr_by_parent_pid(uint32_t pid);
 void task_kill(uint32_t pid);
 void task_sleep(task_t* task, uint32_t ticks);
+void task_pause(task_t* task);
+void task_resume(task_t* task);

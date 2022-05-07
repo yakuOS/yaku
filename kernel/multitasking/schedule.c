@@ -55,11 +55,22 @@ void schedule_switch(uint64_t* rsp) {
         }
         task_terminate(task_to_terminate, old_task);
     }
-    if (current_task->task_state == TASK_STATE_SLEEP) {
+
+    uint16_t counter = TASKS_MAX + 1;
+    while (current_task->task_state == TASK_STATE_PAUSED) {
+        current_task = current_task->next;
+        if (counter-- <= 0) {
+            serial_printf("Exception: All tasks paused!\n");
+            current_task = NULL;
+            return;
+        }
+    }
+    while (current_task->task_state == TASK_STATE_SLEEP && counter-- > 0) {
         if (current_task->sleep_till > pit_tick_get()) {
             current_task = current_task->next;
         } else {
             current_task->task_state = TASK_STATE_RUNNING;
+            current_task->sleep_till = 0;
         }
     }
     pic_send_eoi(0);

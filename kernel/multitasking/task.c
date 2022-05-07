@@ -10,7 +10,7 @@ static uint32_t number_of_tasks = 0;
 // create task and schedule it
 task_t* task_add(void* function, enum task_priority priority, uint32_t parent_pid) {
     asm("cli");
-    if (number_of_tasks == MAX_TASKS) {
+    if (number_of_tasks == TASKS_MAX) {
         serial_printf("Max tasks reached\n");
         asm("sti");
         return;
@@ -65,7 +65,7 @@ task_t* task_get_ptr_by_parent_pid(uint32_t pid) {
 
     task_t* task = scheduler_get_current_task();
     uint32_t counter = 0;
-    while (task->parent_pid != pid || counter > number_of_tasks) {
+    while (task->parent_pid != pid && counter > number_of_tasks) {
         task = task->next;
         counter++;
     }
@@ -89,6 +89,8 @@ void task_kill(uint32_t pid) {
         }
     }
     task_terminate(task, task_pointing_to);
+
+    // terminate tasks where parent_pid == pid
     bool nothing_left = false;
     while (!nothing_left) {
         task = task_get_ptr_by_parent_pid(pid);
@@ -107,11 +109,18 @@ void task_exit() {
         asm("hlt");
     }
 }
-
+void task_pause(task_t* task) {
+    task->task_state = TASK_STATE_PAUSED;
+}
+void task_resume(task_t* task) {
+    task->task_state =
+        TASK_STATE_SLEEP; // if it did not sleep before pause sleep_till is 0 -> thread
+                          // set to task_state_running on next task_switch
+}
 // allocates memory for task and sets its stack up
 task_t* task_create(void* function) {
     task_t* new_task = (task_t*)malloc(sizeof(task_t) / 4096); // sizeof(task_t) = 8192
-    memset(new_task->stack, 0, TASK_STACK_SIZE);
+    memset(&new_task->stack, 0, TASK_STACK_SIZE * 8);
     new_task->rsp =
         &(new_task->stack[TASK_STACK_SIZE -
                           21]); // 15 regs for poping in task_switch, 5 for return address
