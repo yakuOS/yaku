@@ -26,7 +26,7 @@ kernel_c_srcs = files([
     'lib/datetime.c',
     'memory/pmm.c',
     'multitasking/task.c',
-    'multitasking/schedule.c',
+    'multitasking/scheduler.c',
 ])
 
 kernel_asmflags = ['-f', 'elf64']

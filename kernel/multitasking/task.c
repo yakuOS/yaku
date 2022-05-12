@@ -2,7 +2,7 @@
 #include <drivers/pit.h>
 #include <drivers/serial.h>
 #include <interrupts/pic.h>
-#include <multitasking/schedule.h>
+#include <multitasking/scheduler.h>
 #include <thirdparty/string/string.h>
 
 static uint32_t number_of_tasks = 0;
@@ -10,19 +10,25 @@ static uint32_t number_of_tasks = 0;
 // create task and schedule it
 task_t* task_add(void* function, enum task_priority priority, uint32_t parent_pid) {
     asm("cli");
+
     if (number_of_tasks == TASKS_MAX) {
         serial_printf("Max tasks reached\n");
         asm("sti");
         return;
     }
+
     task_t* task = task_create(function);
+
     number_of_tasks++;
+
     task->priority = priority;
     task->parent_pid = parent_pid;
     task->pid = number_of_tasks;
     task->task_state = TASK_STATE_WAITING;
-    schedule_task(task);
+    scheduler_schedule_task(task);
+
     asm("sti");
+
     return task;
 }
 
@@ -34,6 +40,7 @@ void task_sleep(task_t* task, uint32_t ticks) {
 // removes task from schedule-linked-list and frees memory
 void task_terminate(task_t* task, task_t* task_pointing_to) {
     pic_mask_irq(0); // dont switch tasks anymore
+
     if (task == NULL) {
         return;
     }
@@ -45,39 +52,48 @@ void task_terminate(task_t* task, task_t* task_pointing_to) {
     }
 
     free(task, sizeof(task_t) / 4096); // sizeof(task_t) is 8192 bytes
+
     number_of_tasks--;
+
     pic_unmask_irq(0);
 }
 
 task_t* task_get_ptr_by_pid(uint32_t pid) {
     task_t* task = scheduler_get_current_task();
+
     uint32_t counter = 0;
     while (task->pid != pid || counter > number_of_tasks) {
         task = task->next;
         counter++;
     }
+
     if (task->pid == pid) {
         return task;
     }
+
     return NULL;
 }
 task_t* task_get_ptr_by_parent_pid(uint32_t pid) {
-
     task_t* task = scheduler_get_current_task();
+
     uint32_t counter = 0;
     while (task->parent_pid != pid && counter > number_of_tasks) {
         task = task->next;
         counter++;
     }
+
     if (task->parent_pid == pid) {
         return task;
     }
+
     return NULL;
 }
 
 void task_kill(uint32_t pid) {
     asm("cli");
+
     task_t* task = task_get_ptr_by_pid(pid);
+
     bool task_found = false;
     task_t* task_pointing_to = task;
     while (!task_found) {
@@ -88,6 +104,7 @@ void task_kill(uint32_t pid) {
             task_pointing_to = task_pointing_to->next;
         }
     }
+
     task_terminate(task, task_pointing_to);
 
     // terminate tasks where parent_pid == pid
@@ -99,12 +116,13 @@ void task_kill(uint32_t pid) {
             nothing_left = true;
         }
     }
+
     asm("sti");
 }
 
 // returned to at the end of a task, sets its state to terminated and waits
 void task_exit() {
-    schedule_set_task_terminated();
+    scheduler_set_task_terminated();
     for (;;) {
         asm("hlt");
     }
@@ -120,10 +138,13 @@ void task_resume(task_t* task) {
 // allocates memory for task and sets its stack up
 task_t* task_create(void* function) {
     task_t* new_task = (task_t*)malloc(sizeof(task_t) / 4096); // sizeof(task_t) = 8192
+
     memset(&new_task->stack, 0, TASK_STACK_SIZE * 8);
+
     new_task->rsp =
         &(new_task->stack[TASK_STACK_SIZE -
                           21]); // 15 regs for poping in task_switch, 5 for return address
+
     new_task->stack[TASK_STACK_SIZE - 1] = &task_exit;
     new_task->stack[TASK_STACK_SIZE - 2] = 0x30; // return SS
     new_task->stack[TASK_STACK_SIZE - 3] =
@@ -134,5 +155,6 @@ task_t* task_create(void* function) {
     new_task->stack[TASK_STACK_SIZE - 7] =
         &(new_task->stack[TASK_STACK_SIZE - 1]); // rbp popped manually
                                                  // TODO: add stack needed for iretq
+
     return new_task;
 }

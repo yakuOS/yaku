@@ -6,7 +6,7 @@
 #include <drivers/serial.h>
 #include <interrupts/pic.h>
 #include <io.h>
-#include <multitasking/schedule.h>
+#include <multitasking/scheduler.h>
 #include <printf.h>
 
 static const char* exception_messages[] = {
@@ -51,7 +51,7 @@ void isr_exception_handler(isr_context_t* ctx) {
     serial_printf("EXCEPTION: %s (%llu, %llu) in Task %d\n", exception_msg,
                   ctx->base_frame.vector, ctx->base_frame.error_code,
                   scheduler_get_current_task()->pid);
-    schedule_set_task_terminated();
+    scheduler_set_task_terminated();
     asm("sti");
     for (;;) {
         asm("hlt");

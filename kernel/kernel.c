@@ -8,7 +8,7 @@
 #include <lib/input/keyboard_handler.h>
 #include <lib/input/mouse_handler.h>
 #include <memory/pmm.h>
-#include <multitasking/schedule.h>
+#include <multitasking/scheduler.h>
 #include <multitasking/task.h>
 #include <printf.h>
 #include <resources/keyboard_keymap.h>
@@ -63,7 +63,7 @@ void* stivale2_get_tag(stivale2_struct_t* stivale2_struct, uint64_t id) {
 void test_task() {
     char* message = malloc(1);
     strcpy(message, "Hello, there!");
-    schedule_sleep(1000);
+    scheduler_sleep(1000);
     serial_printf("%s\n", message);
     free(message, 1);
 }
@@ -89,7 +89,7 @@ void start(stivale2_struct_t* stivale2_struct) {
                                &keyboard_handler);
     input_device_create_device("mouse", "mouse", NULL, &mouse_handler);
 
-    schedule_init(&kernel_function);
+    scheduler_init(&kernel_function);
     for (;;) {
         asm("hlt");
     }

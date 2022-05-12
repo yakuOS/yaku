@@ -1,5 +1,5 @@
 #pragma once
-#include <multitasking/schedule.h>
+#include <multitasking/scheduler.h>
 #include <types.h>
 #define TASK_STACK_SIZE 1019
 #define TASKS_MAX 500
