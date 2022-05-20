@@ -1,3 +1,4 @@
+#include <drivers/fb.h>
 #include <drivers/input/input_device.h>
 #include <drivers/input/ps2.h>
 #include <drivers/pit.h>
@@ -10,6 +11,7 @@
 #include <memory/pmm.h>
 #include <printf.h>
 #include <resources/keyboard_keymap.h>
+#include <runtime/windowmanager.h>
 #include <stivale2.h>
 #include <string.h>
 #include <types.h>
@@ -34,8 +36,8 @@ static stivale2_header_tag_framebuffer_t framebuffer_hdr_tag = {
             .next = (uintptr_t)&terminal_hdr_tag,
         },
     // pick best automatically
-    .framebuffer_width = 0,
-    .framebuffer_height = 0,
+    .framebuffer_width = 1280,
+    .framebuffer_height = 720,
     .framebuffer_bpp = 0,
 };
 
@@ -75,10 +77,15 @@ void start(stivale2_struct_t* stivale2_struct) {
     input_device_create_device("keyboard", "keyboard", keyboard_keymap,
                                &keyboard_handler);
     input_device_create_device("mouse", "mouse", NULL, &mouse_handler);
-    char* message = malloc(1);
-    strcpy(message, "Hello, there!");
 
-    serial_printf("%s\n", message);
+    stivale2_struct_tag_framebuffer_t* fb_tag;
+    fb_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
+    fb_init(fb_tag);
+
+    windowmanager_init();
+    windowmanager_create_window(500, 500);
+    windowmanager_create_window(200, 300);
+    windowmanager_run();
 
     for (;;) {
         asm("hlt");

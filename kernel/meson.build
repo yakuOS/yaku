@@ -14,6 +14,7 @@ kernel_c_srcs = files([
     'drivers/rtc.c',
     'drivers/fpu.c',
     'drivers/input/input_device.c',
+    'drivers/fb.c',
     'interrupts/isr.c',
     'interrupts/idt.c',
     'interrupts/pic.c',
@@ -23,7 +24,8 @@ kernel_c_srcs = files([
     'lib/input/keyboard_handler.c',
     'lib/input/mouse_handler.c',
     'lib/datetime.c',
-    'memory/pmm.c'
+    'memory/pmm.c',
+    'runtime/windowmanager.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']
