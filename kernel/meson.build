@@ -26,7 +26,7 @@ kernel_c_srcs = files([
     'lib/input/mouse_handler.c',
     'lib/datetime.c',
     'memory/pmm.c',
-    'runtime/windowmanager.c'
+    'runtime/windowmanager.c',
     'multitasking/task.c',
     'multitasking/scheduler.c',
 ])
