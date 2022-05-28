@@ -80,16 +80,52 @@ isr_stub_%+%1:
     call isr_exception_handler
     isr_wrapper_after
 %endmacro
+%macro pusha 0
+    push rbp
+    push rax
+    push rbx
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+%endmacro 
 
+%macro popa 0
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
+    pop rbx
+    pop rax
+    pop rbp
+%endmacro
+extern print_reg
 %macro isr_irq_stub 2
 isr_stub_%+%1:
-    push 0
-    push %1
-    isr_wrapper_before
+    cli
+    pusha
     call isr_irq%+%2
     mov rdi, %2
     call pic_send_eoi
-    isr_wrapper_after
+    popa
+    sti
+    iretq
 %endmacro
 
 
@@ -125,14 +161,32 @@ isr_no_err_stub 28
 isr_no_err_stub 29
 isr_err_stub    30
 isr_no_err_stub 31
-%assign vec 32
-%assign irq 0
-%rep 15
+%assign vec 33
+%assign irq 1
+%rep 14
     extern isr_irq%+irq
     isr_irq_stub vec, irq
     %assign vec vec+1
     %assign irq irq+1
 %endrep
+
+; sets up isr stub for irq 0
+%macro isr_irq_stub0 2
+isr_stub_%+%1:
+    cli
+    pusha
+    mov rdi, rsp
+    call isr_irq0
+    mov rdi, 0
+    call pic_send_eoi
+    popa
+    sti
+    iretq
+%endmacro
+%assign vec 32
+%assign irq 0
+extern isr_irq0
+isr_irq_stub0 vec, irq
 
 
 global isr_stub_table

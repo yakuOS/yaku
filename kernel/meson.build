@@ -1,7 +1,8 @@
 kernel_asm_srcs = files([
     'interrupts/isr.asm',
     'interrupts/idt.asm',
-    'drivers/sse.asm'
+    'drivers/sse.asm',
+    'multitasking/context_switch.asm',
 ])
 
 kernel_c_srcs = files([
@@ -26,10 +27,12 @@ kernel_c_srcs = files([
     'lib/datetime.c',
     'memory/pmm.c',
     'runtime/windowmanager.c'
+    'multitasking/task.c',
+    'multitasking/scheduler.c',
 ])
 
 kernel_asmflags = ['-f', 'elf64']
-kernel_ccflags = ['-c', '-m64', '-nostdlib', '-fno-builtin', '-ffreestanding', '-fno-stack-protector']
+kernel_ccflags = ['-c', '-m64', '-nostdlib', '-fno-builtin', '-ffreestanding', '-fno-stack-protector', '-mno-red-zone']
 
 kernel_asm_objs = as_gen.process(kernel_asm_srcs, extra_args: kernel_asmflags)
 

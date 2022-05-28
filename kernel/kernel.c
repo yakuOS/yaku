@@ -9,6 +9,8 @@
 #include <lib/input/keyboard_handler.h>
 #include <lib/input/mouse_handler.h>
 #include <memory/pmm.h>
+#include <multitasking/scheduler.h>
+#include <multitasking/task.h>
 #include <printf.h>
 #include <resources/keyboard_keymap.h>
 #include <runtime/windowmanager.h>
@@ -62,21 +64,22 @@ void* stivale2_get_tag(stivale2_struct_t* stivale2_struct, uint64_t id) {
 }
 
 void start(stivale2_struct_t* stivale2_struct) {
-
     enable_sse();
     serial_init();
     pic_init();
     idt_init();
-    pit_init(60);
+    pit_init(1000);
 
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
-
     pmm_init(memory_map);
+
+    asm("cli");
     ps2_init();
     input_device_create_device("keyboard", "keyboard", keyboard_keymap,
                                &keyboard_handler);
     input_device_create_device("mouse", "mouse", NULL, &mouse_handler);
+    asm("cli");
 
     stivale2_struct_tag_framebuffer_t* fb_tag;
     fb_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
