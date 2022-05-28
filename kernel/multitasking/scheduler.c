@@ -85,9 +85,3 @@ void scheduler_switch_task(uint64_t* rsp) {
     pic_send_eoi(0);
     switch_to_task(current_task->rsp);
 }
-
-void scheduler_init(void* kernel_function) {
-    pic_mask_irq(0);
-    task_add(kernel_function, TASK_PRIORITY_LOW, 0);
-    pic_unmask_irq(0);
-}
