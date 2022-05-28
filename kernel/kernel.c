@@ -79,7 +79,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     input_device_create_device("keyboard", "keyboard", keyboard_keymap,
                                &keyboard_handler);
     input_device_create_device("mouse", "mouse", NULL, &mouse_handler);
-    asm("cli");
+    asm("sti");
 
     stivale2_struct_tag_framebuffer_t* fb_tag;
     fb_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
