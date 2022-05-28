@@ -1,7 +1,9 @@
 #include "task.h"
+
 #include <drivers/pit.h>
 #include <drivers/serial.h>
 #include <interrupts/pic.h>
+#include <memory/pmm.h>
 #include <multitasking/scheduler.h>
 #include <thirdparty/string/string.h>
 
@@ -14,7 +16,7 @@ task_t* task_add(void* function, enum task_priority priority, uint32_t parent_pi
     if (number_of_tasks == TASKS_MAX) {
         serial_printf("Max tasks reached\n");
         asm("sti");
-        return;
+        return NULL;
     }
 
     task_t* task = task_create(function);
@@ -73,6 +75,7 @@ task_t* task_get_ptr_by_pid(uint32_t pid) {
 
     return NULL;
 }
+
 task_t* task_get_ptr_by_parent_pid(uint32_t pid) {
     task_t* task = scheduler_get_current_task();
 
@@ -127,34 +130,37 @@ void task_exit() {
         asm("hlt");
     }
 }
+
 void task_pause(task_t* task) {
     task->task_state = TASK_STATE_PAUSED;
 }
+
 void task_resume(task_t* task) {
     task->task_state =
         TASK_STATE_SLEEP; // if it did not sleep before pause sleep_till is 0 -> thread
                           // set to task_state_running on next task_switch
 }
+
 // allocates memory for task and sets its stack up
 task_t* task_create(void* function) {
     task_t* new_task = (task_t*)malloc(sizeof(task_t) / 4096); // sizeof(task_t) = 8192
 
     memset(&new_task->stack, 0, TASK_STACK_SIZE * 8);
 
-    new_task->rsp =
-        &(new_task->stack[TASK_STACK_SIZE -
-                          21]); // 15 regs for poping in task_switch, 5 for return address
+    // 15 regs for poping in task_switch, 5 for return address
+    new_task->rsp = &(new_task->stack[TASK_STACK_SIZE - 21]);
 
-    new_task->stack[TASK_STACK_SIZE - 1] = &task_exit;
+    new_task->stack[TASK_STACK_SIZE - 1] = (uint64_t)&task_exit;
     new_task->stack[TASK_STACK_SIZE - 2] = 0x30; // return SS
     new_task->stack[TASK_STACK_SIZE - 3] =
-        &(new_task->stack[TASK_STACK_SIZE - 1]);     // return RSP
-    new_task->stack[TASK_STACK_SIZE - 4] = 0x203;    //   return RFLAGS
-    new_task->stack[TASK_STACK_SIZE - 5] = 0x28;     // return cs
-    new_task->stack[TASK_STACK_SIZE - 6] = function; // return address -> rip
+        (uint64_t) & (new_task->stack[TASK_STACK_SIZE - 1]);   // return RSP
+    new_task->stack[TASK_STACK_SIZE - 4] = 0x203;              // return RFLAGS
+    new_task->stack[TASK_STACK_SIZE - 5] = 0x28;               // return cs
+    new_task->stack[TASK_STACK_SIZE - 6] = (uint64_t)function; // return address -> rip
     new_task->stack[TASK_STACK_SIZE - 7] =
-        &(new_task->stack[TASK_STACK_SIZE - 1]); // rbp popped manually
-                                                 // TODO: add stack needed for iretq
+        (uint64_t) &
+        (new_task->stack[TASK_STACK_SIZE - 1]); // rbp popped manually
+                                                // TODO: add stack needed for iretq
 
     return new_task;
 }

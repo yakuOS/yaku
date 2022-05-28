@@ -1,4 +1,5 @@
 #include "scheduler.h"
+
 #include <drivers/pit.h>
 #include <drivers/serial.h>
 #include <drivers/timer.h>

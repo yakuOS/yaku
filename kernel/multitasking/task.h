@@ -1,6 +1,8 @@
 #pragma once
+
 #include <multitasking/scheduler.h>
 #include <types.h>
+
 #define TASK_STACK_SIZE 1019
 #define TASKS_MAX 500
 
@@ -11,12 +13,14 @@ enum task_state {
     TASK_STATE_WAITING,
     TASK_STATE_PAUSED
 };
+
 enum task_priority {
     TASK_PRIORITY_LOW,
     TASK_PRIORITY_MEDIUM,
     TASK_PRIORITY_HIGH,
     TASK_PRIORITY_VERY_HIGH
 };
+
 typedef struct task {
     uint64_t* rsp;
     uint64_t stack[TASK_STACK_SIZE];
