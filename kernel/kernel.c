@@ -8,6 +8,8 @@
 #include <lib/input/keyboard_handler.h>
 #include <lib/input/mouse_handler.h>
 #include <memory/pmm.h>
+#include <multitasking/scheduler.h>
+#include <multitasking/task.h>
 #include <printf.h>
 #include <resources/keyboard_keymap.h>
 #include <stivale2.h>
@@ -58,14 +60,25 @@ void* stivale2_get_tag(stivale2_struct_t* stivale2_struct, uint64_t id) {
         current_tag = (void*)current_tag->next;
     }
 }
-
+void test_task() {
+    char* message = malloc(1);
+    strcpy(message, "Hello, there!");
+    scheduler_sleep(1000);
+    serial_printf("%s\n", message);
+    free(message, 1);
+}
+void kernel_function() {
+    task_add(&test_task, TASK_PRIORITY_LOW, 0);
+    for (;;) {
+        asm("hlt");
+    }
+}
 void start(stivale2_struct_t* stivale2_struct) {
-
     enable_sse();
     serial_init();
     pic_init();
     idt_init();
-    pit_init(60);
+    pit_init(1000);
 
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
@@ -75,11 +88,8 @@ void start(stivale2_struct_t* stivale2_struct) {
     input_device_create_device("keyboard", "keyboard", keyboard_keymap,
                                &keyboard_handler);
     input_device_create_device("mouse", "mouse", NULL, &mouse_handler);
-    char* message = malloc(1);
-    strcpy(message, "Hello, there!");
 
-    serial_printf("%s\n", message);
-
+    scheduler_init(&kernel_function);
     for (;;) {
         asm("hlt");
     }

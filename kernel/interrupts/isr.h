@@ -33,7 +33,7 @@ typedef struct {
 
 void isr_exception_handler(isr_context_t* ctx);
 
-void isr_irq0(isr_context_t* ctx);
+void isr_irq0(uint64_t* rsp);
 void isr_irq1(isr_context_t* ctx);
 void isr_irq2(isr_context_t* ctx);
 void isr_irq3(isr_context_t* ctx);
