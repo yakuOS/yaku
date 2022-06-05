@@ -61,6 +61,16 @@ void pmm_init(stivale2_struct_tag_memmap_t* memory_map) {
     pmm_deinit_region(bitmap_location,
                       4096 * ceil(((double)pmm_get_block_count() / 8.0) / 4096.0));
 
+    pmm_deinit_region((uint64_t*)0xB4000, 4096);
+    pmm_deinit_region((uint64_t*)0xB5000, 4096);
+    pmm_deinit_region((uint64_t*)0xB6000, 4096);
+    pmm_deinit_region((uint64_t*)0xB7000, 4096);
+    pmm_deinit_region((uint64_t*)0xBC000, 4096);
+    pmm_deinit_region((uint64_t*)0xBD000, 4096);
+    pmm_deinit_region((uint64_t*)0xBE000, 4096);
+    pmm_deinit_region((uint64_t*)0xC4000, 4096);
+    pmm_deinit_region((uint64_t*)0xC5000, 4096);
+
     serial_printf(
         "Initialized memory manager with %i KB of memory.\nTotal memory blocks: "
         "%i\nAvailable memory blocks: %i\n\n",
