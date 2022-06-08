@@ -1,5 +1,5 @@
 # Sources we used
-(It is possible that some sources are used in more places than mentioned)
+(It is possible that some sources are used in more places than mentioned) \
 A source that brought us through the whole process of programming a os was [osdev.org](https://www.osdev.org/)
 ```bash
 │   kernel.c
