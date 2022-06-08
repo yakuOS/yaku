@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <runtime/windowmanager.h>
+#include <string.h>
 
 cube_vec3_t cube_rotate_point(cube_vec3_t point, cube_vec3_t rot) {
     cube_vec3_t result;
@@ -43,7 +44,7 @@ void cube_main() {
 
     cube_vec3_t rotated_corners[8];
 
-    cube_vec3_t current_rotation = {0.0};
+    cube_vec3_t current_rotation = {0};
 
     cube_vec3_t rotation_speed = {
         .x = 0.03,

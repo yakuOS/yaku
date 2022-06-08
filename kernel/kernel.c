@@ -9,18 +9,13 @@
 #include <lib/input/keyboard_handler.h>
 #include <lib/input/mouse_handler.h>
 #include <memory/pmm.h>
-#include <multitasking/scheduler.h>
 #include <multitasking/task.h>
 #include <printf.h>
 #include <resources/keyboard_keymap.h>
-#include <runtime/windowmanager.h>
+#include <runtime/runtime.h>
 #include <stivale2.h>
 #include <string.h>
 #include <types.h>
-
-// programs (will be read from hard drive later)
-#include <runtime/programs/cube.h>
-#include <runtime/programs/gradient.h>>
 
 extern int enable_sse();
 
@@ -89,12 +84,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     fb_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
     fb_init(fb_tag);
 
-    windowmanager_init();
-    task_add(&windowmanager_run, TASK_PRIORITY_VERY_HIGH, 0);
-
-    // programs startup
-    // task_add(&cube_main, TASK_PRIORITY_MEDIUM, 0);
-    task_add(&gradient_main, TASK_PRIORITY_MEDIUM, 0);
+    task_add(&runtime_start, TASK_PRIORITY_VERY_HIGH, 0);
 
     for (;;) {
         asm("hlt");

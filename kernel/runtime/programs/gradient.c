@@ -11,7 +11,6 @@ void gradient_main(void) {
     uint8_t tick = 0;
     int delta = 1;
     for (;;) {
-        serial_printf("%d\n", tick);
         for (size_t x = 0; x < window->buffer.width; x++) {
             for (size_t y = 0; y < window->buffer.height; y++) {
                 uint32_t color = 0xFF000000 | (x << 16) | (y << 8) | tick;
