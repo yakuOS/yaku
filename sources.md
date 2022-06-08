@@ -34,8 +34,8 @@ A source that brought us through the whole process of programming a os was [osde
 │   │
 │   └───input
 │   │         mouse_handler 
-│   │         https://wiki.osdev.org/Mouse_Input
-│   │         https://wiki.osdev.org/PS/2_Mouse
+│   │           https://wiki.osdev.org/Mouse_Input
+│   │           https://wiki.osdev.org/PS/2_Mouse
 │   │   write_to_drive+file
 │   │     https://www.cplusplus.com/reference/cstdio/
 │   │   getopt
