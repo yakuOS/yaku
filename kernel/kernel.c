@@ -1,3 +1,4 @@
+#include <drivers/fb.h>
 #include <drivers/input/input_device.h>
 #include <drivers/input/ps2.h>
 #include <drivers/pit.h>
@@ -8,10 +9,10 @@
 #include <lib/input/keyboard_handler.h>
 #include <lib/input/mouse_handler.h>
 #include <memory/pmm.h>
-#include <multitasking/scheduler.h>
 #include <multitasking/task.h>
 #include <printf.h>
 #include <resources/keyboard_keymap.h>
+#include <runtime/runtime.h>
 #include <stivale2.h>
 #include <string.h>
 #include <types.h>
@@ -36,8 +37,8 @@ static stivale2_header_tag_framebuffer_t framebuffer_hdr_tag = {
             .next = (uintptr_t)&terminal_hdr_tag,
         },
     // pick best automatically
-    .framebuffer_width = 0,
-    .framebuffer_height = 0,
+    .framebuffer_width = 1280,
+    .framebuffer_height = 720,
     .framebuffer_bpp = 0,
 };
 
@@ -66,7 +67,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     serial_init();
     pic_init();
     idt_init();
-    pit_init(1000);
+    pit_init(500);
 
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
@@ -78,6 +79,12 @@ void start(stivale2_struct_t* stivale2_struct) {
                                &keyboard_handler);
     input_device_create_device("mouse", "mouse", NULL, &mouse_handler);
     asm("sti");
+
+    stivale2_struct_tag_framebuffer_t* fb_tag;
+    fb_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
+    fb_init(fb_tag);
+
+    task_add(&runtime_start, TASK_PRIORITY_VERY_HIGH, 0);
 
     for (;;) {
         asm("hlt");
