@@ -27,6 +27,9 @@ kernel_c_srcs = files([
     'lib/datetime.c',
     'memory/pmm.c',
     'runtime/windowmanager.c',
+    'runtime/drawutils.c',
+    'runtime/programs/cube.c',
+    'runtime/programs/gradient.c',
     'multitasking/task.c',
     'multitasking/scheduler.c',
 ])

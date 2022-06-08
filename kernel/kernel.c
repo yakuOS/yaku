@@ -18,6 +18,10 @@
 #include <string.h>
 #include <types.h>
 
+// programs (will be read from hard drive later)
+#include <runtime/programs/cube.h>
+#include <runtime/programs/gradient.h>>
+
 extern int enable_sse();
 
 static uint8_t stack[8192];
@@ -68,7 +72,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     serial_init();
     pic_init();
     idt_init();
-    pit_init(1000);
+    pit_init(500);
 
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
@@ -86,9 +90,11 @@ void start(stivale2_struct_t* stivale2_struct) {
     fb_init(fb_tag);
 
     windowmanager_init();
-    windowmanager_create_window(500, 500);
-    windowmanager_create_window(200, 300);
-    windowmanager_run();
+    task_add(&windowmanager_run, TASK_PRIORITY_VERY_HIGH, 0);
+
+    // programs startup
+    // task_add(&cube_main, TASK_PRIORITY_MEDIUM, 0);
+    task_add(&gradient_main, TASK_PRIORITY_MEDIUM, 0);
 
     for (;;) {
         asm("hlt");

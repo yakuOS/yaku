@@ -22,12 +22,8 @@ void fb_draw_pixel(int x, int y, uint32_t color) {
 }
 
 void fb_draw_buffer(void* buffer) {
-    for (size_t y = 0; y < fb_tag->framebuffer_height; y++) {
-        for (size_t x = 0; x < fb_tag->framebuffer_width; x++) {
-            fb_draw_pixel(x, y, *(uint32_t*)buffer);
-            buffer += 4;
-        }
-    }
+    memcpy(fb_tag->framebuffer_addr, buffer,
+           fb_tag->framebuffer_pitch * fb_tag->framebuffer_height);
 }
 
 uint16_t fb_get_width() {
