@@ -27,7 +27,6 @@ void windowmanager_init(void) {
     // workaround because weird things with the memmap, this is on purpose
     buffer = malloc(buffer_width * buffer_height * 4 / PMM_BLOCK_SIZE + 1);
     buffer = malloc(buffer_width * buffer_height * 4 / PMM_BLOCK_SIZE + 1);
-    asm("cli");
 }
 
 void windowmanager_run(void) {
@@ -81,11 +80,8 @@ void windowmanager_run(void) {
             }
         }
 
-        // workaround 2 because weird things with the interrupt handling
-        asm("cli");
         windowmanager_draw();
         fb_draw_buffer(buffer);
-        asm("sti");
     }
 }
 
