@@ -1,4 +1,5 @@
 # Sources we used
+Here are the sources which we used to inform our selfs and inspired our code from (altered or copied) 
 (It is possible that some sources are used in more places than mentioned) \
 A source that brought us through the whole process of programming a os was [osdev.org](https://www.osdev.org/)
 ```bash
