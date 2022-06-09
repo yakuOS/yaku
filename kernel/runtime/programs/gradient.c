@@ -26,6 +26,6 @@ void gradient_main(void) {
             delta = 1;
         }
 
-        task_sleep(scheduler_get_current_task(), 50);
+        scheduler_sleep(5);
     }
 }
