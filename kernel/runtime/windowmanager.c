@@ -7,12 +7,14 @@
 #include <memory/pmm.h>
 #include <multitasking/scheduler.h>
 #include <multitasking/task.h>
+#include <resources/cursor.h>
 #include <resources/yaku_logo.h>
 #include <runtime/drawutils.h>
 #include <string.h>
 #include <types.h>
 
 static window_t windows[64];
+static window_t* current_window;
 static framebuffer_t buffer;
 static int cursor_pos_x;
 static int cursor_pos_y;
@@ -31,7 +33,7 @@ void windowmanager_init(void) {
 void windowmanager_run(void) {
     windowmanager_startup_screen();
     fb_draw_buffer(buffer.buffer);
-    scheduler_sleep(1000);
+    // scheduler_sleep(1000);
 
     for (;;) {
         windowmanager_handle_events();
@@ -52,24 +54,24 @@ void windowmanager_startup_screen() {
 void windowmanager_handle_events() {
     input_event_t event;
     if (input_event_get_event(&event)) {
+
+        // window movement
         if (event.kind == EVENT_MOUSE_MOTION) {
-            if (click_down) {
-                window_t* window =
-                    windowmanager_get_window_at(cursor_pos_x, cursor_pos_y);
-                if (window != NULL) {
-                    window->x += event.mouse_motion.x_rel;
-                    window->y -= event.mouse_motion.y_rel;
-                    if (window->x < 0) {
-                        window->x = 0;
+            if (current_window && click_down) {
+                if (current_window != NULL) {
+                    current_window->x += event.mouse_motion.x_rel;
+                    current_window->y -= event.mouse_motion.y_rel;
+                    if (current_window->x < 0) {
+                        current_window->x = 0;
                     }
-                    if (window->y < 0) {
-                        window->y = 0;
+                    if (current_window->y < 0) {
+                        current_window->y = 0;
                     }
-                    if (window->x >= buffer.width) {
-                        window->x = buffer.width - 1;
+                    if (current_window->x >= buffer.width) {
+                        current_window->x = buffer.width - 1;
                     }
-                    if (window->y >= buffer.height) {
-                        window->y = buffer.height - 1;
+                    if (current_window->y >= buffer.height) {
+                        current_window->y = buffer.height - 1;
                     }
                 }
             }
@@ -92,6 +94,8 @@ void windowmanager_handle_events() {
             if (event.mouse_button.button == MOUSE_BUTTON_LEFT) {
                 if (event.mouse_button.s_kind == MOUSE_BUTTON_DOWN) {
                     click_down = true;
+                    current_window =
+                        windowmanager_get_window_at(cursor_pos_x, cursor_pos_y);
                 } else {
                     click_down = false;
                 }
@@ -107,15 +111,20 @@ void windowmanager_draw(void) {
 
     // windows
     for (size_t i = 0; i < 64; i++) {
-        if (windows[i].width == 0) {
+        if (windows[i].width == 0 || &windows[i] == current_window) {
             continue;
         }
         windowmanager_draw_window(&windows[i]);
     }
 
+    if (current_window) {
+        windowmanager_draw_window(current_window);
+    }
+
     // cursor
-    drawutils_draw_rect_filled(buffer, cursor_pos_x - 5, cursor_pos_y - 5, 10, 10,
-                               RGB(255, 255, 255));
+    drawutils_draw_image_rgba(buffer, cursor_pos_x - CURSOR_WIDTH / 2,
+                              cursor_pos_y - CURSOR_HEIGHT / 2, CURSOR_WIDTH,
+                              CURSOR_HEIGHT, (const uint32_t*)cursor);
 
     // task bar
     drawutils_draw_bordered_rect_default(buffer, 0, buffer.height - 30, buffer.width, 30);
@@ -150,7 +159,16 @@ void windowmanager_draw_window(window_t* window) {
 }
 
 window_t* windowmanager_get_window_at(size_t x, size_t y) {
-    for (size_t i = 0; i < 64; i++) {
+
+    // current window is rendered on top, so it has priority
+    if (current_window && x >= current_window->x &&
+        x < current_window->x + current_window->width && y >= current_window->y &&
+        y < current_window->y + current_window->height) {
+        return current_window;
+    }
+
+    // other windows, in reverse order
+    for (size_t i = 63; i >= 0; i--) {
         if (windows[i].width == 0) {
             continue;
         }
@@ -159,6 +177,8 @@ window_t* windowmanager_get_window_at(size_t x, size_t y) {
             return &windows[i];
         }
     }
+
+    // no window found
     return NULL;
 }
 

@@ -76,6 +76,11 @@ void drawutils_draw_image_rgba(framebuffer_t buffer, size_t x, size_t y, size_t 
             uint8_t r = color & 0xFF;
             uint8_t g = (color >> 8) & 0xFF;
             uint8_t b = (color >> 16) & 0xFF;
+            uint8_t a = (color >> 24) & 0xFF;
+
+            if (a == 0) {
+                continue;
+            }
 
             drawutils_draw_pixel(buffer, x + j, y + i, RGB(r, g, b));
         }
