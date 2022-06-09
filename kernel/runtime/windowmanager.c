@@ -5,6 +5,9 @@
 #include <lib/input/mouse_handler.h>
 #include <math.h>
 #include <memory/pmm.h>
+#include <multitasking/scheduler.h>
+#include <multitasking/task.h>
+#include <resources/yaku_logo.h>
 #include <runtime/drawutils.h>
 #include <string.h>
 #include <types.h>
@@ -26,11 +29,24 @@ void windowmanager_init(void) {
 }
 
 void windowmanager_run(void) {
+    windowmanager_startup_screen();
+    fb_draw_buffer(buffer.buffer);
+    scheduler_sleep(1000);
+
     for (;;) {
         windowmanager_handle_events();
         windowmanager_draw();
         fb_draw_buffer(buffer.buffer);
     }
+}
+
+void windowmanager_startup_screen() {
+    drawutils_draw_rect_filled(buffer, 0, 0, buffer.width, buffer.height,
+                               RGB(255, 255, 255));
+
+    drawutils_draw_image_rgba(buffer, (buffer.width - YAKU_LOGO_WIDTH) / 2,
+                              (buffer.height - YAKU_LOGO_HEIGHT) / 2, YAKU_LOGO_WIDTH,
+                              YAKU_LOGO_HEIGHT, (const uint32_t*)yaku_logo);
 }
 
 void windowmanager_handle_events() {

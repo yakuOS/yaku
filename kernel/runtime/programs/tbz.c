@@ -9,15 +9,6 @@ void tbz_main() {
 
     drawutils_draw_rect_filled(window->buffer, 0, 0, 350, 150, RGB(255, 255, 255));
 
-    for (size_t x = 0; x < TBZ_LOGO_WIDTH; x++) {
-        for (size_t y = 0; y < TBZ_LOGO_HEIGHT; y++) {
-            uint32_t color = ((uint32_t*)tbz_logo)[(y * TBZ_LOGO_WIDTH) + x];
-
-            uint8_t r = color & 0xFF;
-            uint8_t g = (color >> 8) & 0xFF;
-            uint8_t b = (color >> 16) & 0xFF;
-
-            drawutils_draw_pixel(window->buffer, x + 25, y + 12, RGB(r, g, b));
-        }
-    }
+    drawutils_draw_image_rgba(window->buffer, 25, 12, TBZ_LOGO_WIDTH, TBZ_LOGO_HEIGHT,
+                              (const uint32_t*)tbz_logo);
 }
