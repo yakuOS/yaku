@@ -33,7 +33,7 @@ void windowmanager_init(void) {
 void windowmanager_run(void) {
     windowmanager_startup_screen();
     fb_draw_buffer(buffer.buffer);
-    // scheduler_sleep(1000);
+    scheduler_sleep(1000);
 
     for (;;) {
         windowmanager_handle_events();
@@ -132,7 +132,6 @@ void windowmanager_draw(void) {
 
 void windowmanager_draw_window(window_t* window) {
     // window border
-
     drawutils_draw_rect(buffer, window->x, window->y, window->width, window->height, 1,
                         RGB(195, 195, 195));
 
@@ -159,7 +158,6 @@ void windowmanager_draw_window(window_t* window) {
 }
 
 window_t* windowmanager_get_window_at(size_t x, size_t y) {
-
     // current window is rendered on top, so it has priority
     if (current_window && x >= current_window->x &&
         x < current_window->x + current_window->width && y >= current_window->y &&
