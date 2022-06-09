@@ -109,13 +109,23 @@ void drawutils_draw_char(framebuffer_t buffer, size_t x, size_t y, char c,
 
 void drawutils_draw_string(framebuffer_t buffer, size_t x, size_t y, char* str,
                            uint8_t scaling, uint32_t color) {
-    while (*str) {
-        drawutils_draw_char(buffer, x, y, *str, scaling, color);
-        x += 8 * scaling;
-        str++;
+    size_t old_x = x;
+
+    for (; *str; str++) {
+        if (*str == '\n') {
+            x = old_x;
+            y += 12 * scaling;
+        } else {
+            drawutils_draw_char(buffer, x, y, *str, scaling, color);
+            x += 8 * scaling;
+        }
     }
 }
 
 void drawutils_draw_pixel(framebuffer_t buffer, size_t x, size_t y, uint32_t color) {
+    if (x >= buffer.width || y >= buffer.height) {
+        return;
+    }
+
     ((uint32_t*)buffer.buffer)[y * buffer.width + x] = color;
 }

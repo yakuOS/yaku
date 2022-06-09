@@ -103,6 +103,12 @@ void windowmanager_handle_events() {
                 }
             }
         }
+        // TODO: also forward other events
+        else if (event.kind == EVENT_KEYBOARD) {
+            if (current_window != NULL && current_window->on_event != NULL) {
+                current_window->on_event(current_window, event);
+            }
+        }
     }
 }
 
@@ -208,6 +214,7 @@ window_t* windowmanager_create_window(size_t width, size_t height, char* title) 
             windows[i].width = width + 4;        // +4 for border
             windows[i].height = height + 4 + 30; // +4 for border, +30 for bar
             windows[i].title = title;
+            windows[i].on_event = NULL;
             windows[i].buffer.height = height;
             windows[i].buffer.width = width;
             windows[i].buffer.buffer =

@@ -1,13 +1,16 @@
 #pragma once
 
+#include <input/input_event.h>
 #include <runtime/drawutils.h>
 #include <types.h>
 
-typedef struct {
+typedef struct window {
     int x, y;
     size_t width, height, index;
     framebuffer_t buffer;
     char* title;
+    void (*on_event)(struct window* window, input_event_t event);
+    void* data;
 } window_t;
 
 void windowmanager_init(void);

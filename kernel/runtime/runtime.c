@@ -5,6 +5,7 @@
 
 // programs (will be read from hard drive later)
 #include <runtime/programs/cube.h>
+#include <runtime/programs/editor.h>
 #include <runtime/programs/gradient.h>
 #include <runtime/programs/tbz.h>
 
@@ -14,6 +15,7 @@ void runtime_start() {
 
     // program startup
     // task_add(&cube_main, TASK_PRIORITY_MEDIUM, 0);
-    task_add(&gradient_main, TASK_PRIORITY_MEDIUM, 0);
-    task_add(&tbz_main, TASK_PRIORITY_MEDIUM, 0);
+    task_add(&gradient_main, TASK_PRIORITY_LOW, 0);
+    task_add(&tbz_main, TASK_PRIORITY_LOW, 0);
+    task_add(&editor_main, TASK_PRIORITY_LOW, 0);
 }

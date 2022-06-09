@@ -36,6 +36,7 @@ kernel_c_srcs = files([
     'runtime/programs/tbz.c',
     'runtime/programs/cube.c',
     'runtime/programs/gradient.c',
+    'runtime/programs/editor.c',
     'multitasking/task.c',
     'multitasking/scheduler.c',
 ])
