@@ -74,7 +74,7 @@ void mouse_handler(uint8_t byte) {
     if (mouse_handler_byte_count == 2) {
         if (byte > 0) {
             if (mouse_handler_x_negative) {
-                mouse_handler_x_delta = -(int32_t)byte;
+                mouse_handler_x_delta = (int32_t)byte | 0xFFFFFF00;
             } else {
                 mouse_handler_x_delta = (int32_t)byte;
             }
@@ -83,7 +83,7 @@ void mouse_handler(uint8_t byte) {
     if (mouse_handler_byte_count == 3) {
         if (byte > 0) {
             if (mouse_handler_y_negative) {
-                mouse_handler_y_delta = -(int32_t)byte;
+                mouse_handler_y_delta = (int32_t)byte | 0xFFFFFF00;
             } else {
                 mouse_handler_y_delta = (int32_t)byte;
             }
