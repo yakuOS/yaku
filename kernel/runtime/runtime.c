@@ -13,7 +13,7 @@ void runtime_start() {
     task_add(&windowmanager_run, TASK_PRIORITY_VERY_HIGH, 0);
 
     // program startup
-    task_add(&cube_main, TASK_PRIORITY_MEDIUM, 0);
+    // task_add(&cube_main, TASK_PRIORITY_MEDIUM, 0);
     task_add(&gradient_main, TASK_PRIORITY_MEDIUM, 0);
     task_add(&tbz_main, TASK_PRIORITY_MEDIUM, 0);
 }
