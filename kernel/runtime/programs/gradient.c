@@ -6,7 +6,7 @@
 #include <runtime/windowmanager.h>
 
 void gradient_main(void) {
-    window_t* window = windowmanager_create_window(250, 250);
+    window_t* window = windowmanager_create_window(250, 250, "Gradient");
 
     uint8_t tick = 0;
     int delta = 1;

@@ -1,5 +1,6 @@
 #include "drawutils.h"
 
+#include <resources/font8x8.h>
 #include <types.h>
 
 void drawutils_draw_bordered_rect(framebuffer_t buffer, int x, int y, int width,
@@ -84,6 +85,34 @@ void drawutils_draw_image_rgba(framebuffer_t buffer, size_t x, size_t y, size_t 
 
             drawutils_draw_pixel(buffer, x + j, y + i, RGB(r, g, b));
         }
+    }
+}
+
+void drawutils_draw_char(framebuffer_t buffer, size_t x, size_t y, char c,
+                         uint8_t scaling, uint32_t color) {
+    if (c < 0x20 || c > 0x7F) {
+        return;
+    }
+
+    const uint8_t* char_bitmap = font8x8[c];
+
+    // scaling 2 means 4 pixels for each pixel in the bitmap
+    for (size_t i = 0; i < 8; i++) {
+        for (size_t j = 0; j < 8; j++) {
+            if (char_bitmap[i] & (1 << j)) {
+                drawutils_draw_rect_filled(buffer, x + j * scaling, y + i * scaling,
+                                           scaling, scaling, color);
+            }
+        }
+    }
+}
+
+void drawutils_draw_string(framebuffer_t buffer, size_t x, size_t y, char* str,
+                           uint8_t scaling, uint32_t color) {
+    while (*str) {
+        drawutils_draw_char(buffer, x, y, *str, scaling, color);
+        x += 8 * scaling;
+        str++;
     }
 }
 

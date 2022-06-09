@@ -24,6 +24,7 @@ kernel_c_srcs = files([
     'resources/tbz_logo.c',
     'resources/yaku_logo.c',
     'resources/cursor.c',
+    'resources/font8x8.c',
     'lib/input/input_event.c',
     'lib/input/keyboard_handler.c',
     'lib/input/mouse_handler.c',

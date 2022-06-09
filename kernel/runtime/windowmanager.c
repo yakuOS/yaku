@@ -1,7 +1,9 @@
 #include "windowmanager.h"
 
 #include <drivers/fb.h>
+#include <drivers/rtc.h>
 #include <drivers/serial.h>
+#include <lib/datetime.h>
 #include <lib/input/mouse_handler.h>
 #include <math.h>
 #include <memory/pmm.h>
@@ -128,6 +130,20 @@ void windowmanager_draw(void) {
 
     // task bar
     drawutils_draw_bordered_rect_default(buffer, 0, buffer.height - 30, buffer.width, 30);
+
+    // time and date
+    datetime_t datetime;
+    rtc_read_time(&datetime);
+
+    char time_str[9];
+    char date_str[9];
+    datetime_strftime(&datetime, "%H:%M:%S", time_str, 9);
+    datetime_strftime(&datetime, "%d.%m.%Y", date_str, 9);
+
+    drawutils_draw_string(buffer, buffer.width - (8 * 8 + 5), buffer.height - 25,
+                          time_str, 1, RGB(255, 255, 255));
+    drawutils_draw_string(buffer, buffer.width - (8 * 8 + 5), buffer.height - 13,
+                          date_str, 1, RGB(255, 255, 255));
 }
 
 void windowmanager_draw_window(window_t* window) {
@@ -151,6 +167,10 @@ void windowmanager_draw_window(window_t* window) {
     // bar
     drawutils_draw_rect_filled(buffer, window->x + 2, window->y + 2, window->width - 4,
                                30, RGB(0, 0, 130));
+
+    // title
+    drawutils_draw_string(buffer, window->x + 2 + 7, window->y + 2 + 7, window->title, 2,
+                          RGB(255, 255, 255));
 
     // cross box
     drawutils_draw_bordered_rect_default(buffer, window->x + window->width - 27,
@@ -180,13 +200,14 @@ window_t* windowmanager_get_window_at(size_t x, size_t y) {
     return NULL;
 }
 
-window_t* windowmanager_create_window(size_t width, size_t height) {
+window_t* windowmanager_create_window(size_t width, size_t height, char* title) {
     for (size_t i = 0; i < 64; i++) {
         if (windows[i].width == 0) {
             windows[i].x = 0;
             windows[i].y = 0;
             windows[i].width = width + 4;        // +4 for border
             windows[i].height = height + 4 + 30; // +4 for border, +30 for bar
+            windows[i].title = title;
             windows[i].buffer.height = height;
             windows[i].buffer.width = width;
             windows[i].buffer.buffer =

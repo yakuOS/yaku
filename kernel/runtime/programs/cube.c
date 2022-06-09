@@ -27,7 +27,7 @@ void cube_main() {
     // TODO: make this work
     return;
 
-    window_t* window = windowmanager_create_window(250, 250);
+    window_t* window = windowmanager_create_window(250, 250, "Cube");
 
     // clang-format off
     cube_vec3_t cube_corners[8] = {

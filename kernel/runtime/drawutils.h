@@ -28,4 +28,10 @@ void drawutils_draw_rect(framebuffer_t buffer, size_t x, size_t y, size_t width,
 void drawutils_draw_image_rgba(framebuffer_t buffer, size_t x, size_t y, size_t width,
                                size_t height, const uint32_t* image);
 
+void drawutils_draw_char(framebuffer_t buffer, size_t x, size_t y, char c,
+                         uint8_t scaling, uint32_t color);
+
+void drawutils_draw_string(framebuffer_t buffer, size_t x, size_t y, char* str,
+                           uint8_t scaling, uint32_t color);
+
 void drawutils_draw_pixel(framebuffer_t buffer, size_t x, size_t y, uint32_t color);
