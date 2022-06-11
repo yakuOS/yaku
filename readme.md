@@ -14,10 +14,15 @@ Table of contents
 
 
 
-## Build
+## Build and Run
 1. 'meson build'
-2. meson compile kernel -C build
+2. meson compile kernel -C build qemu-run
 
+## Functions
+- Interrupt Handling
+- Multitasking
+- Window Manager
+- 
 
 ## Wiki
 <ul>
@@ -27,3 +32,4 @@ Table of contents
     </ul>
   </li>
 </ul>
+
