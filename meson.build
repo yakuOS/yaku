@@ -4,8 +4,6 @@ as = find_program('nasm')
 ld = find_program('ld')
 cc = find_program('gcc')
 
-mkrescue = find_program('grub-mkrescue')
-
 qemu = find_program('qemu-system-x86_64', required: false)
 
 as_gen = generator(as,
