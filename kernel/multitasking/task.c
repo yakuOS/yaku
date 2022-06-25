@@ -10,7 +10,7 @@
 static uint32_t number_of_tasks = 0;
 
 // create task and schedule it
-task_t* task_add(void* function, enum task_priority priority, uint32_t parent_pid) {
+task_t* task_add(void* function, task_parameters_t* parameters, enum task_priority priority, uint32_t parent_pid) {
     asm("cli");
 
     if (number_of_tasks == TASKS_MAX) {
@@ -19,7 +19,7 @@ task_t* task_add(void* function, enum task_priority priority, uint32_t parent_pi
         return NULL;
     }
 
-    task_t* task = task_create(function);
+    task_t* task = task_create(function, parameters);
 
     number_of_tasks++;
 
@@ -142,7 +142,7 @@ void task_resume(task_t* task) {
 }
 
 // allocates memory for task and sets its stack up
-task_t* task_create(void* function) {
+task_t* task_create(void* function, task_parameters_t* parameters) {
     task_t* new_task = (task_t*)malloc(sizeof(task_t) / 4096); // sizeof(task_t) = 8192
 
     memset(&new_task->stack, 0, TASK_STACK_SIZE * 8);
@@ -161,6 +161,16 @@ task_t* task_create(void* function) {
         (uint64_t) &
         (new_task->stack[TASK_STACK_SIZE - 1]); // rbp popped manually
                                                 // TODO: add stack needed for iretq
+
+    if (parameters != NULL) {
+        // add parameters to stack so they get popped into the right registers on first task_switch
+        new_task->stack[TASK_STACK_SIZE - 13] = parameters->first;
+        new_task->stack[TASK_STACK_SIZE - 12] = parameters->second;
+        new_task->stack[TASK_STACK_SIZE - 11] = parameters->third;
+        new_task->stack[TASK_STACK_SIZE - 10] = parameters->fourth;
+        new_task->stack[TASK_STACK_SIZE - 14] = parameters->fifth;
+        new_task->stack[TASK_STACK_SIZE - 15] = parameters->sixth;
+    }
 
     return new_task;
 }
