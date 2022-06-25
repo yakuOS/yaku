@@ -32,6 +32,8 @@ void idt_init() {
          vector < IDT_CPU_EXCEPTION_COUNT + IDT_IRQ_COUNT; vector++) {
         idt_set_descriptor(vector, isr_stub_table[vector], IDT_ATTRIBUTE_INT_GATE);
     }
+    idt_set_descriptor(128, isr_stub_table[47], IDT_ATTRIBUTE_INT_GATE);
+    
 
     idt_reload(&idtr);
     asm volatile("sti");

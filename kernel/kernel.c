@@ -84,7 +84,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     fb_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
     fb_init(fb_tag);
 
-    task_add(&runtime_start, TASK_PRIORITY_VERY_HIGH, 0);
+    task_add(&runtime_start, NULL, TASK_PRIORITY_VERY_HIGH, 0);
 
     for (;;) {
         asm("hlt");

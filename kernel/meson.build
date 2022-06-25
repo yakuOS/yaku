@@ -39,6 +39,7 @@ kernel_c_srcs = files([
     'runtime/programs/editor.c',
     'multitasking/task.c',
     'multitasking/scheduler.c',
+    'drivers/syscall_handlers/syscall.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']

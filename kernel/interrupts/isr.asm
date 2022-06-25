@@ -115,7 +115,6 @@ isr_stub_%+%1:
     pop rax
     pop rbp
 %endmacro
-extern print_reg
 %macro isr_irq_stub 2
 isr_stub_%+%1:
     cli
@@ -127,6 +126,40 @@ isr_stub_%+%1:
     sti
     iretq
 %endmacro
+extern isr_syscall
+isr_stub_128: ; syscall software interrupt
+    push rbp
+    ; push rax
+    push rbx
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
+    call isr_syscall
+    pop r15
+    pop r14
+    pop r13
+    pop r12
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
+    pop rbx
+    ; pop rax ;<- return value of isr_syscall should stay there
+    pop rbp
+    iretq
 
 
 isr_no_err_stub 0
@@ -161,6 +194,8 @@ isr_no_err_stub 28
 isr_no_err_stub 29
 isr_err_stub    30
 isr_no_err_stub 31
+
+
 %assign vec 33
 %assign irq 1
 %rep 14
@@ -196,3 +231,4 @@ isr_stub_table:
         dq isr_stub_%+i
         %assign i i+1
     %endrep
+dq isr_stub_128
