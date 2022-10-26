@@ -320,3 +320,9 @@ size_t write_to_drive_fread(uint8_t* ptr, size_t size_of_element,
     free(buffer);
     return number_of_elements;
 }
+
+
+
+int write_to_drive_init(){
+    
+}

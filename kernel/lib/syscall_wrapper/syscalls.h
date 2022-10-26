@@ -10,6 +10,16 @@ enum syscalls {
     SYS_get_time,
     SYS_get_ticks,
     SYS_get_window_buffer
+
+    // SYS_open
+    // SYS_write
+    // SYS_puts as library that calls write
+    // SYS_read 
+    // SYS_getc as library that calls read
+    // SYS_lseek - end offset calls getattr and size = end offset
+    // SYS_tell as library that calls lseek (lseek returns the new position) 
+    // SYS_rewind
+    // SYS_close
 };
 
-extern uint64_t syscall();
+extern uint64_t syscall(enum syscall syscall, ...);
