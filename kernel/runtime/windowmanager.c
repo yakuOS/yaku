@@ -28,8 +28,9 @@ void windowmanager_init(void) {
     cursor_pos_x = buffer.width / 2;
     cursor_pos_y = buffer.height / 2;
     // workaround because weird things with the memmap, this is on purpose
-    malloc(buffer.width * buffer.height * 4 / PMM_BLOCK_SIZE + 1);
-    buffer.buffer = malloc(buffer.width * buffer.height * 4 / PMM_BLOCK_SIZE + 1);
+    malloc(buffer.width * buffer.height * 4);
+    malloc(buffer.width * buffer.height * 4);
+    buffer.buffer = malloc(buffer.width * buffer.height * 4);
 }
 
 void windowmanager_run(void) {
@@ -217,8 +218,7 @@ window_t* windowmanager_create_window(size_t width, size_t height, char* title) 
             windows[i].on_event = NULL;
             windows[i].buffer.height = height;
             windows[i].buffer.width = width;
-            windows[i].buffer.buffer =
-                malloc(width * height * sizeof(uint32_t) / PMM_BLOCK_SIZE + 1);
+            windows[i].buffer.buffer = malloc(width * height * sizeof(uint32_t));
 
             memset(windows[i].buffer.buffer, 0, width * height * sizeof(uint32_t));
 

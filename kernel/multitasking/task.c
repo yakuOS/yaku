@@ -24,7 +24,9 @@ task_t* task_add(void* function, task_parameters_t* parameters, enum task_priori
     number_of_tasks++;
 
     task->priority = priority;
-    task->parent_pid = parent_pid;
+    if (scheduler_get_current_task() != NULL) {
+        task->parent_pid = scheduler_get_current_task()->pid;
+    }
     task->pid = number_of_tasks;
     task->task_state = TASK_STATE_WAITING;
     scheduler_schedule_task(task);
@@ -38,7 +40,9 @@ void task_sleep(task_t* task, uint32_t ticks) {
     task->sleep_till = pit_tick_get() + ticks;
     task->task_state = TASK_STATE_SLEEP;
 }
-
+void task_change_priority(task_t* task, enum task_priority priority) {
+    task->priority = priority;
+}
 // removes task from schedule-linked-list and frees memory
 void task_terminate(task_t* task, task_t* task_pointing_to) {
     pic_mask_irq(0); // dont switch tasks anymore
@@ -53,7 +57,7 @@ void task_terminate(task_t* task, task_t* task_pointing_to) {
         return;
     }
 
-    free(task, sizeof(task_t) / 4096); // sizeof(task_t) is 8192 bytes
+    free(task); // sizeof(task_t) is 8192 bytes
 
     number_of_tasks--;
 
@@ -93,6 +97,9 @@ task_t* task_get_ptr_by_parent_pid(uint32_t pid) {
 }
 
 void task_kill(uint32_t pid) {
+    if (pid == 0) {
+        return;
+    }
     asm("cli");
 
     task_t* task = task_get_ptr_by_pid(pid);
@@ -114,7 +121,7 @@ void task_kill(uint32_t pid) {
     bool nothing_left = false;
     while (!nothing_left) {
         task = task_get_ptr_by_parent_pid(pid);
-        task_terminate(task, task_pointing_to);
+        task_kill(task->pid);
         if (task == NULL) {
             nothing_left = true;
         }

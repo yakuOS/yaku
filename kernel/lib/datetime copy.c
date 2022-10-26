@@ -143,9 +143,6 @@ void datetime_strftime(datetime_t* datetime, char* format, char* dest, size_t de
             case 'y':
                 value = datetime->year;
                 break;
-            case 'Y':
-                value = datetime->year - 2000;
-                break;
             case 'M':
                 value = datetime->minute;
                 break;

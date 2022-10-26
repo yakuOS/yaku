@@ -3,6 +3,7 @@ kernel_asm_srcs = files([
     'interrupts/idt.asm',
     'drivers/sse.asm',
     'multitasking/context_switch.asm',
+    'drivers/lba/lba.asm',
 ])
 
 kernel_c_srcs = files([
@@ -39,6 +40,16 @@ kernel_c_srcs = files([
     'runtime/programs/editor.c',
     'multitasking/task.c',
     'multitasking/scheduler.c',
+    'drivers/lba/lba.c',
+    'lib/atoi.c',
+    'lib/getopt.c',
+    'lib/uuid.c',
+    'lib/write_to_drive.c',
+    'echfs/mkfs.echfs.c',
+    'echfs/echfs-fuse.c',
+    'echfs/part.c',
+    'lib/file.c',
+    'virtual_fs/virtual_fs.c',
     'drivers/syscall_handlers/syscall.c'
 ])
 

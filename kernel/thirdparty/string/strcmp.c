@@ -1,5 +1,4 @@
 #include <string.h>
-
 /*
  * PJ: my own strcmp implementation
  *
