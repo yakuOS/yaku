@@ -347,17 +347,37 @@ size_t write_to_drive_fread(uint8_t* ptr, size_t size_of_element,
     return number_of_elements;
 }
 
+int write_to_drive_readdir(const char* path, void* buf, fuse_fill_dir_t fill, off_t offset, struct fuse_file_info *file_info){
+    
+    if (strlen(path)>0 && strcmp(path,"/")!=0){
+        return -1;
+    }
+    if (offset == 0 && drive_present(primary_controller, first_drive)) {
+        serial_printf("drive 1 present");
+        fill(buf, "first_drive", NULL, 0, 0);
+    }
+    if (offset < 2 && drive_present(primary_controller, second_drive)) {
+        fill(buf, "second_drive", NULL, 1, 0);
+    }
+    if (offset < 3 && drive_present(secondary_controller, first_drive)) {
+        fill(buf, "third_drive", NULL, 2, 0);
+    }
+    if (offset < 4 && drive_present(secondary_controller, second_drive)) {
+        fill(buf, "fourth_drive", NULL, 3, 0);
+    }
+    return 0;
+}
+
 static struct fuse_operations operations = {
     .open = write_to_drive_fopen,
     //.opendir = echfs_opendir,
     //.fgetattr = echfs_fgetattr,
     //.getattr = echfs_getattr,
-    //.readdir = echfs_readdir,
-    // .release = write_to_drive_release,
+    .readdir = write_to_drive_readdir,
+    .release = write_to_drive_release,
     // //.releasedir = echfs_releasedir,
     // //.read = echfs_read,
-    // .write = write_to_drive_fwrite,
-    // //.create = echfs_create,
+    .write = write_to_drive_fwrite,
     // //.unlink = echfs_unlink,
     // //.utimens = echfs_utimens,
     // //.truncate = echfs_truncate,
@@ -369,5 +389,5 @@ static struct fuse_operations operations = {
 };
 
 int write_to_drive_init() {
-    create_virtual_file(&operations, ENDPOINT_TYPE_FILE_U, "/lba_drive");
+    create_virtual_file(&operations, ENDPOINT_TYPE_DIRECTORY_U, "/lba_drive");
 }

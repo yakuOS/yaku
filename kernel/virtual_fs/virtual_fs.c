@@ -6,12 +6,10 @@
 
 struct virtual_fs_directory_entry* virtual_fs_root;
 
-
 struct create_fs_directory_entry_path_result {
     struct virtual_fs_directory_entry* parent;
     char name[MAX_NAME_LENGTH];
 };
-
 
 struct virtual_fs_directory_entry*
 virtual_fs_get_directory_entry(struct virtual_fs_directory* directory, char* name) {
@@ -23,7 +21,8 @@ virtual_fs_get_directory_entry(struct virtual_fs_directory* directory, char* nam
     return NULL;
 }
 
-// fills struct with directory the entry to be created is in and with name of entry to be created
+// fills struct with directory the entry to be created is in and with name of entry to be
+// created
 struct create_fs_directory_entry_path_result*
 create_fs_entry_path_resolver(char* path, struct virtual_fs_directory_entry* parent) {
     struct create_fs_directory_entry_path_result* result =
@@ -52,7 +51,8 @@ create_fs_entry_path_resolver(char* path, struct virtual_fs_directory_entry* par
     }
     return result;
 }
-// fills struct with endpoint pointer, directory of the endpoint and path relative to endpoint
+// fills struct with endpoint pointer, directory of the endpoint and path relative to
+// endpoint
 struct endpoint_path_result* virtual_fs_endpoint_path_resolver(char* path) {
     struct endpoint_path_result* result = malloc(sizeof(struct endpoint_path_result));
     memset(result, 0, sizeof(struct endpoint_path_result));
@@ -196,7 +196,9 @@ uint8_t virtual_fs_init() {
 //     if (result->endpoint == NULL) {
 //         virtual_fs_create_directory((char*)path);
 //     } else {
-//         ((struct virtual_fs_endpoint*) result->endpoint->pointer)->fuse_ops.mkdir(result->endpoint_path_to_be_passed, mode);
+//         ((struct virtual_fs_endpoint*)
+//         result->endpoint->pointer)->fuse_ops.mkdir(result->endpoint_path_to_be_passed,
+//         mode);
 //     }
 //     return 0;
 // }
@@ -205,20 +207,23 @@ uint8_t virtual_fs_init() {
 //     if (result->endpoint == NULL) {
 //         virtual_fs_remove_directory((char*)path);
 //     } else {
-//         ((struct virtual_fs_endpoint*) result->endpoint->pointer)->fuse_ops.rmdir(result->endpoint_path_to_be_passed);
+//         ((struct virtual_fs_endpoint*)
+//         result->endpoint->pointer)->fuse_ops.rmdir(result->endpoint_path_to_be_passed);
 //     }
 // }
 
-
-int virtual_fs_open(const char *file_path, struct fuse_file_info *file_info, struct fuse_operations* fuse_ops, char* endpoint_path_buffer){
+int virtual_fs_open(const char* file_path, struct fuse_file_info* file_info,
+                    struct fuse_operations* fuse_ops, char* endpoint_path_buffer) {
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
 
-    if (path->parent==NULL || path->endpoint==NULL || path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+    if (path->parent == NULL || path->endpoint == NULL ||
+        path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
         free(path);
         return;
     }
 
-    struct virtual_fs_endpoint* endpoint = (struct virtual_fs_endpoint*)path->endpoint->pointer;
+    struct virtual_fs_endpoint* endpoint =
+        (struct virtual_fs_endpoint*)path->endpoint->pointer;
     if (endpoint->fuse_ops.open == NULL) {
         free(path);
         return;
@@ -231,16 +236,18 @@ int virtual_fs_open(const char *file_path, struct fuse_file_info *file_info, str
     return 0;
 }
 
-int virtual_fs_create(const char *file_path, mode_t mode,
-        struct fuse_file_info *file_info){
+int virtual_fs_create(const char* file_path, mode_t mode,
+                      struct fuse_file_info* file_info) {
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
 
-    if (path->parent==NULL || path->endpoint==NULL || path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+    if (path->parent == NULL || path->endpoint == NULL ||
+        path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
         free(path);
         return;
     }
 
-    struct virtual_fs_endpoint* endpoint = (struct virtual_fs_endpoint*)path->endpoint->pointer;
+    struct virtual_fs_endpoint* endpoint =
+        (struct virtual_fs_endpoint*)path->endpoint->pointer;
 
     if (endpoint->fuse_ops.create == NULL) {
         free(path);
@@ -252,15 +259,17 @@ int virtual_fs_create(const char *file_path, mode_t mode,
     return 0;
 }
 
-int virtual_fs_unlink(const char *file_path){
+int virtual_fs_unlink(const char* file_path) {
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
 
-    if (path->parent==NULL || path->endpoint==NULL || path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+    if (path->parent == NULL || path->endpoint == NULL ||
+        path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
         free(path);
         return;
     }
 
-    struct virtual_fs_endpoint* endpoint = (struct virtual_fs_endpoint*)path->endpoint->pointer;
+    struct virtual_fs_endpoint* endpoint =
+        (struct virtual_fs_endpoint*)path->endpoint->pointer;
 
     if (endpoint->fuse_ops.unlink == NULL) {
         free(path);
@@ -272,15 +281,17 @@ int virtual_fs_unlink(const char *file_path){
     return 0;
 }
 
-int virtual_fs_mkdir(const char *file_path, mode_t mode){
+int virtual_fs_mkdir(const char* file_path, mode_t mode) {
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
 
-    if (path->parent==NULL || path->endpoint==NULL || path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+    if (path->parent == NULL || path->endpoint == NULL ||
+        path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
         free(path);
         return;
     }
 
-    struct virtual_fs_endpoint* endpoint = (struct virtual_fs_endpoint*)path->endpoint->pointer;
+    struct virtual_fs_endpoint* endpoint =
+        (struct virtual_fs_endpoint*)path->endpoint->pointer;
 
     if (endpoint->fuse_ops.mkdir == NULL) {
         free(path);
@@ -292,15 +303,17 @@ int virtual_fs_mkdir(const char *file_path, mode_t mode){
     return 0;
 }
 
-int virtual_fs_rmdir(const char *file_path){
+int virtual_fs_rmdir(const char* file_path) {
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
 
-    if (path->parent==NULL || path->endpoint==NULL || path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+    if (path->parent == NULL || path->endpoint == NULL ||
+        path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
         free(path);
         return;
     }
 
-    struct virtual_fs_endpoint* endpoint = (struct virtual_fs_endpoint*)path->endpoint->pointer;
+    struct virtual_fs_endpoint* endpoint =
+        (struct virtual_fs_endpoint*)path->endpoint->pointer;
 
     if (endpoint->fuse_ops.rmdir == NULL) {
         free(path);
@@ -309,5 +322,29 @@ int virtual_fs_rmdir(const char *file_path){
 
     endpoint->fuse_ops.rmdir(path->endpoint_path_to_be_passed);
     free(path);
+    return 0;
+}
+
+int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
+                       off_t offset, struct fuse_file_info* fi) {
+    struct endpoint_path_result* result = virtual_fs_endpoint_path_resolver(path);
+
+    if (result->parent == NULL || result->endpoint == NULL ||
+        result->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+        free(result);
+        return;
+    }
+
+    struct virtual_fs_endpoint* endpoint =
+        (struct virtual_fs_endpoint*)result->endpoint->pointer;
+    if (endpoint->fuse_ops.readdir == NULL || endpoint->type != ENDPOINT_TYPE_DIRECTORY) {
+        free(result);
+        return;
+    }
+    serial_printf("readdir 1\n");
+    endpoint->fuse_ops.readdir(result->endpoint_path_to_be_passed, buffer, filler, offset,
+                               fi);
+    serial_printf("readdir 2\n");
+    free(result);
     return 0;
 }

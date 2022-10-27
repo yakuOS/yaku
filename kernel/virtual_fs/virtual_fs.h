@@ -48,3 +48,4 @@ int virtual_fs_create(const char* path, mode_t mode, struct fuse_file_info* fi);
 int virtual_fs_unlink(const char* path);
 int virtual_fs_mkdir(const char* path, mode_t mode);
 int virtual_fs_rmdir(const char* path);
+int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info* fi);

@@ -98,6 +98,8 @@ void start(stivale2_struct_t* stivale2_struct) {
     pmm_init(memory_map);
     virtual_fs_init();
     write_to_drive_init();
+    serial_printf("disk inited\n");
+    virtual_fs_readdir("/lba_drive", NULL, fill_dir, 0, NULL);
     // virtual_fs_create_directory("/hallo");
     // virtual_fs_create_endpoint(NULL, ENDPOINT_TYPE_FILE, "/hallo/b");
     // asm("cli");
