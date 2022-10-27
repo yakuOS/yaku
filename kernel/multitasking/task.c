@@ -148,6 +148,21 @@ void task_resume(task_t* task) {
                           // set to task_state_running on next task_switch
 }
 
+int32_t task_add_file(task_t* task, FILE* file) {
+    for (uint32_t i = 0; i < TASK_FILES_MAX; i++) {
+        if (task->files[i] == NULL) {
+            task->files[i] = file;
+            return (int32_t)i;
+        }
+    }
+    return -1;
+}
+
+int task_remove_file(task_t* task, uint64_t file_id) {
+    free(task->files[file_id]);
+    task->files[file_id] = NULL;
+}
+
 // allocates memory for task and sets its stack up
 task_t* task_create(void* function, task_parameters_t* parameters) {
     task_t* new_task = (task_t*)malloc(sizeof(task_t) / 4096); // sizeof(task_t) = 8192

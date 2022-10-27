@@ -2,10 +2,11 @@
 
 #include <multitasking/scheduler.h>
 #include <types.h>
+#include <virtual_fs/FILE.h>
 
 #define TASK_STACK_SIZE 1019
 #define TASKS_MAX 500
-
+#define TASK_FILES_MAX 100
 enum task_state {
     TASK_STATE_RUNNING,
     TASK_STATE_SLEEP,
@@ -30,8 +31,8 @@ typedef struct task {
     enum task_state task_state;
     enum task_priority priority;
     struct task* next;
-    // FILES [100]
-    // char* workdir
+    FILE* files[100];
+    char workdir[100];
 } task_t;
 typedef struct task_parameters {
     uint64_t first; // rdi
@@ -58,3 +59,5 @@ void task_kill(uint32_t pid);
 void task_sleep(task_t* task, uint32_t ticks);
 void task_pause(task_t* task);
 void task_resume(task_t* task);
+int32_t task_add_file(task_t* task, FILE* file);
+int task_remove_file(task_t* task, uint64_t file_id);

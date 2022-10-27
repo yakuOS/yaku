@@ -210,7 +210,7 @@ uint8_t virtual_fs_init() {
 // }
 
 
-int virtual_fs_open(const char *file_path, struct fuse_file_info *file_info){
+int virtual_fs_open(const char *file_path, struct fuse_file_info *file_info, struct fuse_operations* fuse_ops, char* endpoint_path_buffer){
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
 
     if (path->parent==NULL || path->endpoint==NULL || path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
@@ -224,7 +224,10 @@ int virtual_fs_open(const char *file_path, struct fuse_file_info *file_info){
         return;
     }
     endpoint->fuse_ops.open(path->endpoint_path_to_be_passed, file_info);
+    memcpy(fuse_ops, &endpoint->fuse_ops, sizeof(struct fuse_operations));
+    strcpy(endpoint_path_buffer, path->endpoint_path_to_be_passed);
     free(path);
+
     return 0;
 }
 

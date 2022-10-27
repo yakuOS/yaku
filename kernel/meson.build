@@ -4,6 +4,7 @@ kernel_asm_srcs = files([
     'drivers/sse.asm',
     'multitasking/context_switch.asm',
     'drivers/lba/lba.asm',
+    'lib/syscall_wrapper/syscall.asm',
 ])
 
 kernel_c_srcs = files([
@@ -45,9 +46,6 @@ kernel_c_srcs = files([
     'lib/getopt.c',
     'lib/uuid.c',
     'lib/write_to_drive.c',
-    'echfs/mkfs.echfs.c',
-    'echfs/echfs-fuse.c',
-    'echfs/part.c',
     'lib/file.c',
     'virtual_fs/virtual_fs.c',
     'drivers/syscall_handlers/syscall.c'
