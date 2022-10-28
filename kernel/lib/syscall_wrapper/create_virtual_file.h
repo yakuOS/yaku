@@ -1,6 +1,5 @@
 #pragma once
 #include <lib/fuse.h>
-#include "syscall_wrappers.h"
 #include "syscalls.h"
 enum endpoint_type_U { ENDPOINT_TYPE_DIRECTORY_U, ENDPOINT_TYPE_FILE_U };
 

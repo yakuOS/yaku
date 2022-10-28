@@ -44,6 +44,8 @@ uint8_t virtual_fs_init();
 struct endpoint_path_result* virtual_fs_endpoint_path_resolver(char* path);
 
 int virtual_fs_open(const char *file_path, struct fuse_file_info *file_info, struct fuse_operations* fuse_ops, char* endpoint_path_buffer);
+int virtual_fs_opendir(const char* file_path, struct fuse_file_info* file_info,
+                       struct fuse_operations* fuse_ops, char* endpoint_path_buffer);
 int virtual_fs_create(const char* path, mode_t mode, struct fuse_file_info* fi);
 int virtual_fs_unlink(const char* path);
 int virtual_fs_mkdir(const char* path, mode_t mode);

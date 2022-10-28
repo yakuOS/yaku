@@ -96,6 +96,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
     pmm_init(memory_map);
+    lba_init();
     virtual_fs_init();
     write_to_drive_init();
     serial_printf("disk inited\n");

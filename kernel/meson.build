@@ -48,7 +48,6 @@ kernel_c_srcs = files([
     'lib/write_to_drive.c',
     'lib/file.c',
     'virtual_fs/virtual_fs.c',
-    'drivers/syscall_handlers/syscall.c'
 ])
 
 kernel_asmflags = ['-f', 'elf64']
@@ -66,6 +65,11 @@ kernel_include_flags += ['-I', meson.current_source_dir()]
 kernel_include_flags += ['-I', meson.current_source_dir() + '/misc']
 kernel_include_flags += ['-I', meson.current_source_dir() + '/lib']
 
+subdir('drivers/syscall_handlers')
+foreach syscall_handler : kernel_syscall_handlers_c_srcs
+    kernel_c_srcs += 'drivers/syscall_handlers/' + syscall_handler
+endforeach
+ 
 kernel_c_objs = cc_gen.process(kernel_c_srcs,
     extra_args: [kernel_ccflags, kernel_include_flags]
 )

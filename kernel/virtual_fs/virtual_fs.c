@@ -236,6 +236,29 @@ int virtual_fs_open(const char* file_path, struct fuse_file_info* file_info,
     return 0;
 }
 
+int virtual_fs_opendir(const char* file_path, struct fuse_file_info* file_info,
+                       struct fuse_operations* fuse_ops, char* endpoint_path_buffer) {
+    struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
+    if (path->parent == NULL || path->endpoint == NULL ||
+        path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+        free(path);
+        return;
+    }
+
+    struct virtual_fs_endpoint* endpoint =
+        (struct virtual_fs_endpoint*)path->endpoint->pointer;
+    if (endpoint->fuse_ops.open == NULL) {
+        free(path);
+        return;
+    }
+    endpoint->fuse_ops.opendir(path->endpoint_path_to_be_passed, file_info);
+    memcpy(fuse_ops, &endpoint->fuse_ops, sizeof(struct fuse_operations));
+    strcpy(endpoint_path_buffer, path->endpoint_path_to_be_passed);
+    free(path);
+
+    return 0;
+}
+
 int virtual_fs_create(const char* file_path, mode_t mode,
                       struct fuse_file_info* file_info) {
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
@@ -341,10 +364,8 @@ int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
         free(result);
         return;
     }
-    serial_printf("readdir 1\n");
     endpoint->fuse_ops.readdir(result->endpoint_path_to_be_passed, buffer, filler, offset,
                                fi);
-    serial_printf("readdir 2\n");
     free(result);
     return 0;
 }

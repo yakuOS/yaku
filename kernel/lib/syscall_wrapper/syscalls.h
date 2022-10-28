@@ -1,6 +1,6 @@
 #pragma once
 #include <types.h>
-#include "create_virtual_file.h"
+
 enum syscalls {
     SYS_create_task,
     SYS_sleep,
@@ -13,14 +13,11 @@ enum syscalls {
     SYS_get_window_buffer,
     SYS_create_virtual_file,
     SYS_create_virtual_directory,
-    SYS_open, 
-    SYS_write, 
-    SYS_puts,// as library that calls write
-    SYS_read, 
-    SYS_getc,// as library that calls read, 
-    SYS_lseek,// - end offset calls getattr and size = end offset, 
-    SYS_tell,// as library that calls lseek (lseek returns the new position) , 
-    SYS_rewind, 
+    SYS_open,
+    SYS_getdents, 
+    SYS_write,
+    SYS_read,
+    SYS_lseek,// - end offset calls getattr and size = end offset
     SYS_close
 };
 

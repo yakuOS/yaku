@@ -6,7 +6,6 @@ enum access_mode { R, W }; // Read, Write
 struct drive_image {
     enum access_mode access_mode;
     enum drive drive;
-    uint64_t byte_pointer_position;
     bool occupied;
 };
 

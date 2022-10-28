@@ -1,6 +1,7 @@
 #include "write_to_drive.h"
 #include <drivers/lba/lba.h>
 #include <drivers/serial.h>
+#include <lib/stat.h>
 #include <lib/syscall_wrapper/create_virtual_file.h>
 #include <memory/pmm.h>
 #include <thirdparty/string/string.h>
@@ -22,7 +23,7 @@ int16_t get_handle() {
     return -1;
 }
 
-int write_to_drive_fopen(const char* drive, struct fuse_file_info* fh) {
+int write_to_drive_open(const char* drive, struct fuse_file_info* fh) {
     if (drive[0] == '/')
         drive++;
     enum drive drive_to_open;
@@ -64,8 +65,8 @@ void write_to_drive_release(const char* path, struct fuse_file_info* fh) {
     memset(&drive_images[fh->fh], 0, sizeof(struct drive_image));
 }
 
-
-// uint8_t write_to_drive_fseek(struct drive_image* drive_image, int64_t offset /*in bytes*/,
+// uint8_t write_to_drive_fseek(struct drive_image* drive_image, int64_t offset /*in
+// bytes*/,
 //                              enum origin origin) {
 //     if (origin == SEEK_SET) {
 //         if (offset < 0) {
@@ -116,7 +117,8 @@ void write_to_drive_release(const char* path, struct fuse_file_info* fh) {
 //             if (!drive_present(secondary_controller, second_drive)) {
 //                 return 0;
 //             }
-//             if (get_drive_size(secondary_controller, second_drive) * 512 + offset < 0) {
+//             if (get_drive_size(secondary_controller, second_drive) * 512 + offset < 0)
+//             {
 //                 return 0;
 //             }
 //             drive_image->byte_pointer_position =
@@ -127,8 +129,8 @@ void write_to_drive_release(const char* path, struct fuse_file_info* fh) {
 //     return 0;
 // }
 
-off_t write_to_drive_fwrite(const char* path, const char* buf, size_t size, off_t offset,
-                              struct fuse_file_info* fh) {
+off_t write_to_drive_write(const char* path, const char* buf, size_t size, off_t offset,
+                           struct fuse_file_info* fh) {
     struct drive_image* image = &drive_images[fh->fh];
     if (image->access_mode != W) {
         return 0;
@@ -140,27 +142,26 @@ off_t write_to_drive_fwrite(const char* path, const char* buf, size_t size, off_
     uint8_t* ptr = (uint8_t*)buf;
 
     if (size % 512 == 0) { // if the size of the element is a multiple of
-                                      // 512 just write the buffer to the drive
+                           // 512 just write the buffer to the drive
         if (image->drive == drive_first) {
 
-            lba_write_primary_controller_first_drive(
-                sector_to_write_to, size / 512, ptr);
+            lba_write_primary_controller_first_drive(sector_to_write_to, size / 512, ptr);
         } else if (image->drive == drive_second) {
-            lba_write_primary_controller_second_drive(
-                sector_to_write_to, size / 512, ptr);
+            lba_write_primary_controller_second_drive(sector_to_write_to, size / 512,
+                                                      ptr);
         } else if (image->drive == drive_third) {
-            lba_write_secondary_controller_first_drive(
-                sector_to_write_to, size / 512, ptr);
+            lba_write_secondary_controller_first_drive(sector_to_write_to, size / 512,
+                                                       ptr);
         } else if (image->drive == drive_fourth) {
-            lba_write_secondary_controller_second_drive(
-                sector_to_write_to, size / 512, ptr);
+            lba_write_secondary_controller_second_drive(sector_to_write_to, size / 512,
+                                                        ptr);
         }
     } else { // else read the sector from the drive, add the buffer to it and write it
              // back to the drive
-        uint8_t buffer[(size) +
-                       (512 - ((size) %
-                               512))]; // buffer with size of element*number_of_elements
-                                       // rounded up to 512 (sector size)
+        uint8_t
+            buffer[(size) + (512 - ((size) % 512))]; // buffer with size of
+                                                     // element*number_of_elements rounded
+                                                     // up to 512 (sector size)
         if (image->drive == drive_first) {
             lba_read_primary_controller_first_drive(
                 sector_to_write_to, size / 512 + 1,
@@ -169,111 +170,32 @@ off_t write_to_drive_fwrite(const char* path, const char* buf, size_t size, off_
                                    // != 0, we need to read one sector more than
                                    // size
         } else if (image->drive == drive_second) {
-            lba_read_primary_controller_second_drive(
-                sector_to_write_to, size / 512 + 1,
-                (uint8_t*)buffer);
+            lba_read_primary_controller_second_drive(sector_to_write_to, size / 512 + 1,
+                                                     (uint8_t*)buffer);
         } else if (image->drive == drive_third) {
-            lba_read_secondary_controller_first_drive(
-                sector_to_write_to, size / 512 + 1,
-                (uint8_t*)buffer);
+            lba_read_secondary_controller_first_drive(sector_to_write_to, size / 512 + 1,
+                                                      (uint8_t*)buffer);
         } else if (image->drive == drive_fourth) {
-            lba_read_secondary_controller_second_drive(
-                sector_to_write_to, size / 512 + 1,
-                (uint8_t*)buffer);
+            lba_read_secondary_controller_second_drive(sector_to_write_to, size / 512 + 1,
+                                                       (uint8_t*)buffer);
         }
         for (uint64_t i = byte_in_sector_to_write_to;
              i < byte_in_sector_to_write_to + size; i++) {
             buffer[i] = ptr[i - byte_in_sector_to_write_to];
         }
         if (image->drive == drive_first) {
-            lba_write_primary_controller_first_drive(
-                sector_to_write_to, size / 512 + 1,
-                (uint8_t*)buffer);
+            lba_write_primary_controller_first_drive(sector_to_write_to, size / 512 + 1,
+                                                     (uint8_t*)buffer);
         } else if (image->drive == drive_second) {
-            lba_write_primary_controller_second_drive(
-                sector_to_write_to, size / 512 + 1,
-                (uint8_t*)buffer);
+            lba_write_primary_controller_second_drive(sector_to_write_to, size / 512 + 1,
+                                                      (uint8_t*)buffer);
         } else if (image->drive == drive_third) {
-            lba_write_secondary_controller_first_drive(
-                sector_to_write_to, size / 512 + 1,
-                (uint8_t*)buffer);
+            lba_write_secondary_controller_first_drive(sector_to_write_to, size / 512 + 1,
+                                                       (uint8_t*)buffer);
         } else if (image->drive == drive_fourth) {
-            lba_write_secondary_controller_second_drive(
-                sector_to_write_to, size / 512 + 1,
-                (uint8_t*)buffer);
+            lba_write_secondary_controller_second_drive(sector_to_write_to,
+                                                        size / 512 + 1, (uint8_t*)buffer);
         }
-        image->byte_pointer_position += size;
-    }
-    return 1;
-}
-
-uint8_t write_to_drive_fputs(char* str, struct drive_image* image) {
-    uint64_t size_of_element = strlen(str);
-    uint8_t string_buffer[size_of_element];
-    strncpy((char*)string_buffer, str, size_of_element);
-    if (image->access_mode != W) {
-        return 0;
-    }
-    uint64_t byte_to_write_to = image->byte_pointer_position;
-    uint64_t sector_to_write_to = byte_to_write_to / 512;
-    uint64_t byte_in_sector_to_write_to = byte_to_write_to % 512;
-    if (size_of_element % 512 == 0) { // if the size of the element is a multiple of
-                                      // 512 just write the buffer to the drive
-        if (image->drive == drive_first) {
-            lba_write_primary_controller_first_drive(
-                sector_to_write_to, size_of_element / 512, (uint8_t*)string_buffer);
-        } else if (image->drive == drive_second) {
-            lba_write_primary_controller_second_drive(
-                sector_to_write_to, size_of_element / 512, (uint8_t*)string_buffer);
-        } else if (image->drive == drive_third) {
-            lba_write_secondary_controller_first_drive(
-                sector_to_write_to, size_of_element / 512, (uint8_t*)string_buffer);
-        } else if (image->drive == drive_fourth) {
-            lba_write_secondary_controller_second_drive(
-                sector_to_write_to, size_of_element / 512, (uint8_t*)string_buffer);
-        }
-        image->byte_pointer_position += size_of_element;
-    } else { // else read the sector from the drive, add the buffer to it and write it
-             // back to the drive
-        uint8_t buffer[(size_of_element) +
-                       (512 - ((size_of_element) %
-                               512))]; // buffer with size of element*number_of_elements
-                                       // rounded up to 512 (sector size)
-        if (image->drive == drive_first) {
-            lba_read_primary_controller_first_drive(
-                sector_to_write_to, size_of_element / 512 + 1,
-                (uint8_t*)buffer); // size / 512+1->
-                                   // because size % 512
-                                   // != 0, we need to read one sector more than
-                                   // size
-        } else if (image->drive == drive_second) {
-            lba_read_primary_controller_second_drive(
-                sector_to_write_to, size_of_element / 512 + 1, (uint8_t*)buffer);
-        } else if (image->drive == drive_third) {
-            lba_read_secondary_controller_first_drive(
-                sector_to_write_to, size_of_element / 512 + 1, (uint8_t*)buffer);
-        } else if (image->drive == drive_fourth) {
-            lba_read_secondary_controller_second_drive(
-                sector_to_write_to, size_of_element / 512 + 1, (uint8_t*)buffer);
-        }
-        for (uint64_t i = byte_in_sector_to_write_to;
-             i < byte_in_sector_to_write_to + size_of_element; i++) {
-            buffer[i] = string_buffer[i - byte_in_sector_to_write_to];
-        }
-        if (image->drive == drive_first) {
-            lba_write_primary_controller_first_drive(
-                sector_to_write_to, size_of_element / 512 + 1, (uint8_t*)buffer);
-        } else if (image->drive == drive_second) {
-            lba_write_primary_controller_second_drive(
-                sector_to_write_to, size_of_element / 512 + 1, (uint8_t*)buffer);
-        } else if (image->drive == drive_third) {
-            lba_write_secondary_controller_first_drive(
-                sector_to_write_to, size_of_element / 512 + 1, (uint8_t*)buffer);
-        } else if (image->drive == drive_fourth) {
-            lba_write_secondary_controller_second_drive(
-                sector_to_write_to, size_of_element / 512 + 1, (uint8_t*)buffer);
-        }
-        image->byte_pointer_position += size_of_element;
     }
     return 1;
 }
@@ -281,47 +203,26 @@ uint8_t write_to_drive_fputs(char* str, struct drive_image* image) {
 uint8_t write_to_drive_fflush(struct drive_image* image) {
     return 1;
 }
+int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offset,
+                        struct fuse_file_info* file_info) {
 
-uint8_t write_to_drive_fgetc(struct drive_image* image) {
-    uint64_t byte_to_read_from = image->byte_pointer_position;
-    uint64_t sector_to_read_from = byte_to_read_from / 512;
-    uint64_t byte_in_sector_to_read_from = byte_to_read_from % 512;
-    uint8_t buffer[512];
-    if (image->drive == drive_first) {
-        lba_read_primary_controller_first_drive(sector_to_read_from, 1, (uint8_t*)buffer);
-    } else if (image->drive == drive_second) {
-        lba_read_primary_controller_second_drive(sector_to_read_from, 1,
-                                                 (uint8_t*)buffer);
-    } else if (image->drive == drive_third) {
-        lba_read_secondary_controller_first_drive(sector_to_read_from, 1,
-                                                  (uint8_t*)buffer);
-    } else if (image->drive == drive_fourth) {
-        lba_read_secondary_controller_second_drive(sector_to_read_from, 1,
-                                                   (uint8_t*)buffer);
-    }
-    image->byte_pointer_position++;
-    return buffer[byte_in_sector_to_read_from];
-}
+    struct drive_image* image = &drive_images[file_info->fh];
 
-size_t write_to_drive_fread(uint8_t* ptr, size_t size_of_element,
-                            size_t number_of_elements, struct drive_image* image) {
-
-    uint64_t byte_to_read_from = image->byte_pointer_position;
+    uint64_t byte_to_read_from = (uint64_t)offset;
     uint64_t sector_to_read_from = byte_to_read_from / 512;
     uint64_t byte_in_sector_to_read_from = byte_to_read_from % 512;
     uint8_t* buffer /*[(size_of_element * number_of_elements) +
                     (512 - ((size_of_element * number_of_elements) %
                             512))]*/
         = (uint8_t*)malloc(
-            (size_of_element * number_of_elements) +
-            (512 - ((size_of_element * number_of_elements) %
-                    512))); // buffer with size of element*number_of_elements
-                            // rounded up to 512 (sector size)
+            (to_read) +
+            (512 - ((to_read) % 512))); // buffer with size of element*number_of_elements
+                                        // rounded up to 512 (sector size)
     uint64_t sectors_to_read = 0;
-    if (size_of_element % 512 == 0) {
-        sectors_to_read = number_of_elements * size_of_element / 512;
+    if (to_read % 512 == 0) {
+        sectors_to_read = to_read / 512;
     } else {
-        sectors_to_read = number_of_elements * size_of_element / 512 + 1;
+        sectors_to_read = to_read / 512 + 1;
     }
     if (image->drive == drive_first) {
         lba_read_primary_controller_first_drive(sector_to_read_from, sectors_to_read,
@@ -339,21 +240,20 @@ size_t write_to_drive_fread(uint8_t* ptr, size_t size_of_element,
 
     // copy the data from where to read from to the buffer
     for (uint64_t i = byte_in_sector_to_read_from;
-         i < byte_in_sector_to_read_from + size_of_element * number_of_elements; i++) {
-        ptr[i - byte_in_sector_to_read_from] = buffer[i];
+         i < byte_in_sector_to_read_from + to_read; i++) {
+        buf[i - byte_in_sector_to_read_from] = buffer[i];
     }
-    image->byte_pointer_position += size_of_element * number_of_elements;
     free(buffer);
-    return number_of_elements;
+    return to_read;
 }
 
-int write_to_drive_readdir(const char* path, void* buf, fuse_fill_dir_t fill, off_t offset, struct fuse_file_info *file_info){
-    
-    if (strlen(path)>0 && strcmp(path,"/")!=0){
+int write_to_drive_readdir(const char* path, void* buf, fuse_fill_dir_t fill,
+                           off_t offset, struct fuse_file_info* file_info) {
+
+    if (strlen(path) > 0 && strcmp(path, "/") != 0) {
         return -1;
     }
     if (offset == 0 && drive_present(primary_controller, first_drive)) {
-        serial_printf("drive 1 present");
         fill(buf, "first_drive", NULL, 0, 0);
     }
     if (offset < 2 && drive_present(primary_controller, second_drive)) {
@@ -368,16 +268,43 @@ int write_to_drive_readdir(const char* path, void* buf, fuse_fill_dir_t fill, of
     return 0;
 }
 
+int write_to_drive_fgetattr(const char* path, struct stat* stat,
+                            struct fuse_file_info* file_info) {
+    struct drive_image* image = &drive_images[file_info->fh];
+    stat->st_blksize = 512;
+
+    if (image->drive == drive_first) {
+        stat->st_size = get_drive_size(primary_controller, first_drive);
+        stat->st_blksize = 512;
+        stat->st_blocks = stat->st_size / 512;
+    } else if (image->drive == drive_second) {
+        stat->st_size = get_drive_size(primary_controller, second_drive);
+        stat->st_blksize = 512;
+        stat->st_blocks = stat->st_size / 512;
+    } else if (image->drive == drive_third) {
+        stat->st_size = get_drive_size(secondary_controller, first_drive);
+        stat->st_blksize = 512;
+        stat->st_blocks = stat->st_size / 512;
+    } else if (image->drive == drive_fourth) {
+        stat->st_size = get_drive_size(secondary_controller, second_drive);
+        stat->st_blksize = 512;
+        stat->st_blocks = stat->st_size / 512;
+    }
+}
+int write_to_drive_opendir(const char* dir_path, struct fuse_file_info* file_info) {
+    return 0;
+}
+
 static struct fuse_operations operations = {
-    .open = write_to_drive_fopen,
-    //.opendir = echfs_opendir,
-    //.fgetattr = echfs_fgetattr,
-    //.getattr = echfs_getattr,
+    .open = write_to_drive_open,
+    .opendir = write_to_drive_opendir,
+    .fgetattr = write_to_drive_fgetattr,
+    // .getattr = write_to_drive_getattr,
     .readdir = write_to_drive_readdir,
     .release = write_to_drive_release,
     // //.releasedir = echfs_releasedir,
-    // //.read = echfs_read,
-    .write = write_to_drive_fwrite,
+    .read = write_to_drive_read,
+    .write = write_to_drive_write,
     // //.unlink = echfs_unlink,
     // //.utimens = echfs_utimens,
     // //.truncate = echfs_truncate,
@@ -385,7 +312,7 @@ static struct fuse_operations operations = {
     // //.mkdir = echfs_mkdir,
     // //.rmdir = echfs_rmdir,
     // //.rename = echfs_rename,
-    // .flush = write_to_drive_fflush,
+    .flush = write_to_drive_fflush,
 };
 
 int write_to_drive_init() {

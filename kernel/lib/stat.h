@@ -5,7 +5,7 @@ struct time{
     uint64_t tv_nsec;
 };
 struct stat{
-    uint32_t st_mode;
+    mode_t st_mode;
     struct time st_mtim;
     struct time st_ctim;
     struct time st_atim;
