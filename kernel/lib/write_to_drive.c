@@ -243,7 +243,6 @@ int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offse
     for (uint64_t i = byte_in_sector_to_read_from;
          i < byte_in_sector_to_read_from + to_read; i++) {
         buf[i - byte_in_sector_to_read_from] = buffer[i];
-        serial_printf("read %x\n", buffer[i]);
     }
     free(buffer);
     return to_read;
@@ -276,19 +275,19 @@ int write_to_drive_fgetattr(const char* path, struct stat* stat,
     stat->st_blksize = 512;
 
     if (image->drive == drive_first) {
-        stat->st_size = get_drive_size(primary_controller, first_drive);
+        stat->st_size = get_drive_size(primary_controller, first_drive)*512;
         stat->st_blksize = 512;
         stat->st_blocks = stat->st_size / 512;
     } else if (image->drive == drive_second) {
-        stat->st_size = get_drive_size(primary_controller, second_drive);
+        stat->st_size = get_drive_size(primary_controller, second_drive)*512;
         stat->st_blksize = 512;
         stat->st_blocks = stat->st_size / 512;
     } else if (image->drive == drive_third) {
-        stat->st_size = get_drive_size(secondary_controller, first_drive);
+        stat->st_size = get_drive_size(secondary_controller, first_drive)*512;
         stat->st_blksize = 512;
         stat->st_blocks = stat->st_size / 512;
     } else if (image->drive == drive_fourth) {
-        stat->st_size = get_drive_size(secondary_controller, second_drive);
+        stat->st_size = get_drive_size(secondary_controller, second_drive)*512;
         stat->st_blksize = 512;
         stat->st_blocks = stat->st_size / 512;
     }
