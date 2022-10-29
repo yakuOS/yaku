@@ -70,6 +70,8 @@ int echfs_mkfs_main(int argc, char** argv) {
     // fseek(image, 0, SEEK_SET);
     // fwrite(boot_sector, 512, 1, image);
 
+    serial_printf("formatting image \"%s\", size %lu kB\n", argv[1], imgsize/1024);
+
     fseek(image, 4, SEEK_SET);
     fputs("_ECH_FS_", image);
     wr_qword(12, blocks);                           // blocks
@@ -80,19 +82,14 @@ int echfs_mkfs_main(int argc, char** argv) {
 
     uint64_t fatsize = (blocks * sizeof(uint64_t)) / bytesperblock;
     uint64_t dirsize = blocks / (100 / reserved_factor);
-    uint64_t buffer[64];
-    for (uint64_t i = 0; i < 64; i++) {
+    uint64_t buffer[bytesperblock/sizeof(uint64_t)]; // one block
+    for (uint64_t i = 0; i < bytesperblock/sizeof(uint64_t); i++) { // bytesperblock/sizeof(uint64_t) = uint64_t per block
         buffer[i] = 0xfffffffffffffff0;
     }
-    serial_printf("%s: info: writing FAT...\n", argv[0]);
-    serial_printf("%lu", (RESERVED_BLOCKS + fatsize + dirsize));
-    for (uint64_t i = 0; i < (RESERVED_BLOCKS + fatsize + dirsize); i+=64) {
+    for (uint64_t i = 0; i < (RESERVED_BLOCKS + fatsize + dirsize); i+=(bytesperblock/sizeof(uint64_t))) {
         // wr_qword(loc, 0xfffffffffffffff0);
         wr_blocks(loc, 1, (uint8_t*)buffer);
-        loc += sizeof(uint64_t)*64;
-        if (i %100000 == 0) {
-            serial_printf("progress formation: %d%%\n", (i*100)/(RESERVED_BLOCKS + fatsize + dirsize));
-        }
+        loc += sizeof(uint64_t)*(bytesperblock/sizeof(uint64_t));
     }
     fflush(image);
     fclose(image);

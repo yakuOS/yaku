@@ -50,7 +50,6 @@ kernel_c_srcs = files([
     'virtual_fs/virtual_fs.c',
     'echfs/echfs-fuse.c',
     'echfs/mkfs.echfs.c',
-    'echfs/echfs-utils.c',
     'echfs/part.c',
     'lib/stdio.c',
 ])

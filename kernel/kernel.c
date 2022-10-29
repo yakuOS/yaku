@@ -101,13 +101,13 @@ void start(stivale2_struct_t* stivale2_struct) {
     lba_init();
     virtual_fs_init();
     write_to_drive_init();
-    // char* argv[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
-    // echfs_mkfs_main(4, argv);
+    char* argv[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
+    echfs_mkfs_main(4, argv);
 
-    char* argv [4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
-    int argc = 0;
-    echfs_fuse_main(argc, argv);
-    serial_printf("echfs fuse main done\n");
+    // char* argv [4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
+    // int argc = 0;
+    // echfs_fuse_main(argc, argv);
+    // serial_printf("echfs fuse main done\n");
 
     // char* args[5] = {"", "", "format", "512"};
     // echfs_utils_main(4, args);
