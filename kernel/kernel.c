@@ -26,6 +26,7 @@
 #include <types.h>
 // #include <drivers/lba/lba.h>
 #include <echfs/echfs-fuse.h>
+#include <echfs/echfs-utils.h>
 #include <lib/write_to_drive.h>
 #include <virtual_fs/virtual_fs.h>
 
@@ -99,13 +100,16 @@ void start(stivale2_struct_t* stivale2_struct) {
     lba_init();
     virtual_fs_init();
     write_to_drive_init();
-    char* argv[4] = {"echfs", "", "512", "1"};
+    char* argv[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
     echfs_mkfs_main(4, argv);
 
     // char* argv [4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
     // int argc = 0;
     // echfs_fuse_main(argc, argv);
     // serial_printf("echfs fuse main done\n");
+
+    // char* args[5] = {"", "", "format", "512"};
+    // echfs_utils_main(4, args);
 
     // virtual_fs_create_directory("/hallo");
     // virtual_fs_create_endpoint(NULL, ENDPOINT_TYPE_FILE, "/hallo/b");
@@ -153,8 +157,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     // // fread(buffer, 1, 1, image);
     // // fopen("/b.txt", "w");
     // // fwrite(buffer, 11, 1, fopen("/b.txt", "w"));
-    // // char* args[5] = {"-v", "", "import", "/b.txt","r.a"};
-    // // echfs_utils_main(5, args);
+    
     // // char* args[5] = {"-v", "", "import", "/b.txt","r.a"};
     // // echfs_utils_main(5, args);
     // // char* args[4] = {"-v", "", "ls", "/"};

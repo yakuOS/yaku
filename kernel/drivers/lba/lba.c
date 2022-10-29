@@ -33,8 +33,8 @@ void lba_init() {
             uint16_t buffer[256];
             if (lba_identify(primary_controller, first_drive, &buffer[0])) {
                 primary_controller_drive_size[0] =
-                    (uint64_t)buffer[100] << 32 | (uint64_t)buffer[101] << 16 |
-                    (uint64_t)buffer[102] << 0;// get size in sectors
+                    (uint64_t)buffer[102] << 32 | (uint64_t)buffer[101] << 16 |
+                    (uint64_t)buffer[100] << 0;// get size in sectors
             }
         }
         // test if second drive is present
@@ -45,8 +45,8 @@ void lba_init() {
             uint16_t buffer[256];
             if (lba_identify(primary_controller, second_drive, &buffer[0])) {
                 primary_controller_drive_size[1] =
-                    (uint64_t)buffer[100] << 32 | (uint64_t)buffer[101] << 16 |
-                    (uint64_t)buffer[102] << 0;// get size in sectors
+                    (uint64_t)buffer[102] << 32 | (uint64_t)buffer[101] << 16 |
+                    (uint64_t)buffer[100] << 0;// get size in sectors
             }
         }
     }
@@ -61,8 +61,8 @@ void lba_init() {
             uint16_t buffer[256];
             if (lba_identify(secondary_controller, first_drive, &buffer[0])) {
                 secondary_controller_drive_size[0] =
-                    (uint64_t)buffer[100] << 32 | (uint64_t)buffer[101] << 16 |
-                    (uint64_t)buffer[102] << 0;// get size in sectors
+                    (uint64_t)buffer[102] << 32 | (uint64_t)buffer[101] << 16 |
+                    (uint64_t)buffer[100] << 0;// get size in sectors
             }
         }
         // test if fourth drive is present
@@ -73,8 +73,8 @@ void lba_init() {
             uint16_t buffer[256];
             if (lba_identify(secondary_controller, second_drive, &buffer[0])) {
                 secondary_controller_drive_size[1] =
-                    (uint64_t)buffer[100] << 32 | (uint64_t)buffer[101] << 16 |
-                    (uint64_t)buffer[102] << 0;// get size in sectors
+                    (uint64_t)buffer[102] << 32 | (uint64_t)buffer[101] << 16 |
+                    (uint64_t)buffer[100] << 0;// get size in sectors
             }
         }
     }
@@ -84,6 +84,7 @@ void lba_init() {
     serial_printf("primary drives present: %d %d\n",
     primary_controller_drives_present[0],
                   primary_controller_drives_present[1]);
+    serial_printf("third drive size: %lu\n", primary_controller_drive_size[0]);
     serial_printf("secondary drives present: %d %d\n",
     secondary_controller_drives_present[0], secondary_controller_drives_present[1]);
 }

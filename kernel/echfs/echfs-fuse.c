@@ -421,7 +421,7 @@ static void *echfs_init(struct fuse_conn_info *conn) {
             "NOT bootable");
     serial_printf("point6!\n");
     echfs.path_cache = init_table(1024);
-    serial_printf("bytes to allocate: %lu\n", echfs.dir_size);
+    serial_printf("bytes to allocate: %lu, image_size: %lu\n", echfs.dir_size*512, echfs.image_size);
     echfs.dir_table = malloc(echfs.dir_size * echfs.bytes_per_block);
 
     serial_printf("point7!\n");

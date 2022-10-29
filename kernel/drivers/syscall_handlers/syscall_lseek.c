@@ -2,6 +2,7 @@
 #include <multitasking/task.h>
 #include <virtual_fs/virtual_fs.h>
 #include <lib/stat.h>
+#include <drivers/serial.h>
 
 enum whence { SEEK_SET, SEEK_CUR, SEEK_END };
 
@@ -45,6 +46,7 @@ int64_t syscall_lseek(int fd, int64_t offset, int whence) {
             }
         }
         file->file_byte_ptr = file_size + offset;
+        serial_printf("SEEK_END: %lu\n", file->file_byte_ptr);
         return file->file_byte_ptr;
     }
 }
