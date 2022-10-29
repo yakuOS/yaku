@@ -84,7 +84,6 @@ void lba_init() {
     serial_printf("primary drives present: %d %d\n",
     primary_controller_drives_present[0],
                   primary_controller_drives_present[1]);
-    serial_printf("third drive size: %lu\n", primary_controller_drive_size[0]);
     serial_printf("secondary drives present: %d %d\n",
     secondary_controller_drives_present[0], secondary_controller_drives_present[1]);
 }
