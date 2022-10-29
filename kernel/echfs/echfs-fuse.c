@@ -376,7 +376,6 @@ static void *echfs_init(struct fuse_conn_info *conn) {
         fclose(echfs.image);
         return 0;
     }
-    serial_printf("point1!\n");
 
     echfs.fat_start = RESERVED_BLOCKS;
     echfs.bytes_per_block = rd_qword(28);
@@ -387,7 +386,6 @@ static void *echfs_init(struct fuse_conn_info *conn) {
         fclose(echfs.image);
         return 0;
     }
-    serial_printf("point2!\n");
 
     echfs.blocks = echfs.image_size / echfs.bytes_per_block;
     echfs_debug("echfs block count: %lu\n", echfs.blocks);
@@ -396,10 +394,8 @@ static void *echfs_init(struct fuse_conn_info *conn) {
         serial_printf("stderr: warning: declared block count mismatch, declared: "
                 "%lu, real: %lu\n", declared_blocks, echfs.blocks);
     }
-    serial_printf("point3!\n");
     echfs.sectors_per_block = echfs.bytes_per_block / BYTES_PER_SECT;
     echfs.entries_per_block = echfs.sectors_per_block * ENTRIES_PER_SECT;
-    serial_printf("point4!\n");
     echfs.fat_size = (echfs.blocks * sizeof(uint64_t)) / echfs.bytes_per_block;
     if ((echfs.blocks * sizeof(uint64_t)) % echfs.bytes_per_block) {
         echfs.fat_size++;
@@ -411,7 +407,6 @@ static void *echfs_init(struct fuse_conn_info *conn) {
     serial_printf("echfs dir size: %lu\n", echfs.dir_size);
     echfs.dir_start = echfs.fat_start + echfs.fat_size;
     echfs_debug("echfs dir start: %lu\n", echfs.dir_start);
-    serial_printf("point5!\n");
     echfs.data_start = RESERVED_BLOCKS + echfs.fat_size + echfs.dir_size;
     echfs_debug("echfs data start: %lu\n", echfs.data_start);
     echfs_debug("echfs usable blocks: %lu\n", echfs.blocks -
@@ -419,12 +414,10 @@ static void *echfs_init(struct fuse_conn_info *conn) {
 
     echfs_debug("image is %s\n", rd_word(510) == 0xAA55 ? "bootable" :
             "NOT bootable");
-    serial_printf("point6!\n");
     echfs.path_cache = init_table(1024);
     serial_printf("bytes to allocate: %lu, image_size: %lu\n", echfs.dir_size*512, echfs.image_size);
     echfs.dir_table = malloc(echfs.dir_size * echfs.bytes_per_block);
 
-    serial_printf("point7!\n");
     if (!echfs.dir_table) {
         serial_printf("stderr: error allocating dir_table!\n");
         cleanup_fuse();

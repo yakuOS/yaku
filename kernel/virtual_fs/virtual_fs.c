@@ -1,6 +1,7 @@
 #include "virtual_fs.h"
 #include <drivers/serial.h>
 #include <lib/fuse.h>
+#include <lib/stat.h>
 #include <string.h>
 #include <types.h>
 
@@ -144,15 +145,17 @@ uint8_t virtual_fs_remove_endpoint(char* path) {
     if (result->endpoint == NULL) {
         return 1;
     }
-    struct virtual_fs_directory* parent = (struct virtual_fs_directory*)result->parent->pointer;
+    struct virtual_fs_directory* parent =
+        (struct virtual_fs_directory*)result->parent->pointer;
     for (uint32_t i = 0; i < parent->entries_count; i++) {
         if (&parent->entries[i] == result->endpoint) {
             for (uint32_t j = i; j < parent->entries_count - 1; j++) {
                 parent->entries[j] = parent->entries[j + 1];
             }
             parent->entries_count--;
-            parent->entries = realloc(parent->entries, sizeof(struct virtual_fs_directory_entry) *
-                                                           parent->entries_count);
+            parent->entries =
+                realloc(parent->entries, sizeof(struct virtual_fs_directory_entry) *
+                                             parent->entries_count);
             free(result->endpoint->pointer);
             free(result);
             return 0;
@@ -374,12 +377,30 @@ int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
                        off_t offset, struct fuse_file_info* fi) {
     struct endpoint_path_result* result = virtual_fs_endpoint_path_resolver(path);
 
-    if (result->parent == NULL || result->endpoint == NULL ||
-        result->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+    if (result->parent == NULL) {
         free(result);
         return;
     }
-
+    if (result->endpoint == NULL || result->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+        for (int i = 0;
+             i < ((struct virtual_fs_directory*)result->parent->pointer)->entries_count;
+             i++) {
+            struct stat st = {
+                .st_mode = (((struct virtual_fs_directory*)(result->parent->pointer))
+                                    ->entries[i]
+                                    .type == ENTRY_TYPE_DIR ||
+                            ((struct virtual_fs_endpoint*)((struct virtual_fs_directory*)
+                                                               result->parent->pointer))
+                                    ->type == ENDPOINT_TYPE_DIRECTORY)
+                               ? S_IFDIR
+                               : S_IFREG,
+            };
+            filler(
+                buffer,
+                ((struct virtual_fs_directory*)result->parent->pointer)->entries[i].name, &st, 0, 0);
+                
+        }
+    }
     struct virtual_fs_endpoint* endpoint =
         (struct virtual_fs_endpoint*)result->endpoint->pointer;
     if (endpoint->fuse_ops.readdir == NULL || endpoint->type != ENDPOINT_TYPE_DIRECTORY) {

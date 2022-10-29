@@ -208,7 +208,6 @@ int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offse
                         struct fuse_file_info* file_info) {
 
     struct drive_image* image = &drive_images[file_info->fh];
-    serial_printf("write_to_drive_read on drive %d\n", image->drive);
     uint64_t byte_to_read_from = (uint64_t)offset;
     uint64_t sector_to_read_from = byte_to_read_from / 512;
     uint64_t byte_in_sector_to_read_from = byte_to_read_from % 512;
