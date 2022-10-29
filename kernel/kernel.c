@@ -9,7 +9,6 @@
 #include <lib/fuse.h>
 // #include <echfs/mkfs.echfs.h>
 // #include <echfs/echfs-fuse.h>
-#include <lib/file.h>
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
 #include <lib/datetime.h>
@@ -26,8 +25,9 @@
 #include <string.h>
 #include <types.h>
 // #include <drivers/lba/lba.h>
-#include <virtual_fs/virtual_fs.h>
+#include <echfs/echfs-fuse.h>
 #include <lib/write_to_drive.h>
+#include <virtual_fs/virtual_fs.h>
 
 extern int enable_sse();
 
@@ -81,26 +81,32 @@ void test_task2() {
     scheduler_sleep(1000);
     serial_printf("hello world\n");
 }
-int fill_dir(void *dh_, const char *name, const struct stat *statp,
-		    off_t off, enum fuse_fill_dir_flags flags){
-                serial_printf("dir: %s\n", name);
-                return 0;
-            }
+int fill_dir(void* dh_, const char* name, const struct stat* statp, off_t off,
+             enum fuse_fill_dir_flags flags) {
+    serial_printf("dir: %s\n", name);
+    return 0;
+}
 void start(stivale2_struct_t* stivale2_struct) {
     enable_sse();
     serial_init();
     pic_init();
     idt_init();
     pit_init(500);
-    
+
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
     pmm_init(memory_map);
     lba_init();
     virtual_fs_init();
     write_to_drive_init();
-    serial_printf("disk inited\n");
-    virtual_fs_readdir("/lba_drive", NULL, fill_dir, 0, NULL);
+    char* argv[4] = {"echfs", "", "512", "1"};
+    echfs_mkfs_main(4, argv);
+
+    // char* argv [4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
+    // int argc = 0;
+    // echfs_fuse_main(argc, argv);
+    // serial_printf("echfs fuse main done\n");
+
     // virtual_fs_create_directory("/hallo");
     // virtual_fs_create_endpoint(NULL, ENDPOINT_TYPE_FILE, "/hallo/b");
     // asm("cli");

@@ -1,7 +1,7 @@
+
 #include <types.h>
 #include <string.h>
 #include <lib/write_to_drive.h>
-#include <lib/stdio.h>
 
 #include "part.h"
 
@@ -14,10 +14,10 @@ struct mbr_entry {
 	uint32_t sect_count;
 } __attribute__((packed));
 
-int mbr_get_part(struct part *ret, FILE *file, int partition) {
-    fseek(file, 0x1BE, SEEK_SET);
+int mbr_get_part(struct part *ret, struct drive_image* file, int partition) {
+    write_to_drive_fseek(file, 0x1BE, SEEK_SET);
     struct mbr_entry entries[4];
-    fread(entries, sizeof(struct mbr_entry), 4, file);
+    write_to_drive_fread(entries, sizeof(struct mbr_entry), 4, file);
 
     if (!entries[partition].type)
         return -1;
@@ -79,12 +79,12 @@ struct gpt_entry {
 } __attribute__((packed));
 
 
-int gpt_get_part(struct part *ret, FILE *file, int partition) {
+int gpt_get_part(struct part *ret, struct drive_image* file, int partition) {
     struct gpt_table_header header = {0};
 
     // read header, located after the first block
-    fseek(file, 512, SEEK_SET);
-    fread(&header, 1, sizeof(header), file);
+    write_to_drive_fseek(file, 512, SEEK_SET);
+    write_to_drive_fread(&header, 1, sizeof(header), file);
 
     // check the header
     // 'EFI PART'
@@ -95,8 +95,8 @@ int gpt_get_part(struct part *ret, FILE *file, int partition) {
     if (partition >= header.number_of_partition_entries) return -1;
 
     struct gpt_entry entry = {0};
-    fseek(file, (header.partition_entry_lba * 512) + (partition * sizeof(entry)), SEEK_SET);
-    fread(&entry, 1, sizeof(entry), file);
+    write_to_drive_fseek(file, (header.partition_entry_lba * 512) + (partition * sizeof(entry)), SEEK_SET);
+    write_to_drive_fread(&entry, 1, sizeof(entry), file);
 
     if (entry.unique_partition_guid.low  == 0 &&
         entry.unique_partition_guid.high == 0) return -1;

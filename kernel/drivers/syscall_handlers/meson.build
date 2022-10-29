@@ -2,6 +2,7 @@ kernel_syscall_handlers_c_srcs = [
     'syscall.c',
     'syscall_create_task.c',
     'syscall_create_virtual_file.c',
+    'syscall_remove_virtual_file.c',
     'syscall_open.c',
     'syscall_read.c',
     'syscall_write.c',

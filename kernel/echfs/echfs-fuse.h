@@ -96,13 +96,5 @@ typedef unsigned short mode_t;
 #endif
 
 static void* echfs_init(struct fuse_conn_info* conn);
-static void echfs_destroy(
-    void* data);
-static int echfs_open(const char* file_path,
-                                      struct fuse_file_info* file_info);
-static int echfs_opendir(const char* dir_path, struct fuse_file_info* file_info);
-
-static int echfs_fgetattr(const char *path, struct stat *stat,
-        struct fuse_file_info *file_info);
 void echfs_get_fuse_operations(struct fuse_operations *buffer);
 int echfs_fuse_main(int argc, char* argv[]);

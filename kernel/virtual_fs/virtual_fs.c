@@ -139,6 +139,28 @@ uint8_t virtual_fs_create_endpoint(struct fuse_operations* fuse_operations,
     free(result);
     return 0;
 }
+uint8_t virtual_fs_remove_endpoint(char* path) {
+    struct endpoint_path_result* result = virtual_fs_endpoint_path_resolver(path);
+    if (result->endpoint == NULL) {
+        return 1;
+    }
+    struct virtual_fs_directory* parent = (struct virtual_fs_directory*)result->parent->pointer;
+    for (uint32_t i = 0; i < parent->entries_count; i++) {
+        if (&parent->entries[i] == result->endpoint) {
+            for (uint32_t j = i; j < parent->entries_count - 1; j++) {
+                parent->entries[j] = parent->entries[j + 1];
+            }
+            parent->entries_count--;
+            parent->entries = realloc(parent->entries, sizeof(struct virtual_fs_directory_entry) *
+                                                           parent->entries_count);
+            free(result->endpoint->pointer);
+            free(result);
+            return 0;
+        }
+    }
+    free(result);
+    return 1;
+}
 uint8_t virtual_fs_remove_directory_entries(struct virtual_fs_directory* directory) {
     for (uint32_t i = 0; i < directory->entries_count; i++) {
         if (directory->entries[i].type == ENTRY_TYPE_DIR) {

@@ -48,6 +48,10 @@ kernel_c_srcs = files([
     'lib/write_to_drive.c',
     'lib/file.c',
     'virtual_fs/virtual_fs.c',
+    'echfs/echfs-fuse.c',
+    'echfs/mkfs.echfs.c',
+    'echfs/part.c',
+    'lib/stdio.c',
 ])
 
 kernel_asmflags = ['-f', 'elf64']

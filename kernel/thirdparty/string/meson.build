@@ -25,7 +25,7 @@ kernel_third_party_string_c_srcs = files([
     'strerror.c',
     'strrchr.c',
     'memmem.c',
-    'strcspn.c'
+    'strcspn.c',
 ])
 
 kernel_third_party_string_objs = cc_gen.process(

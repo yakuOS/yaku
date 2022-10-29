@@ -63,7 +63,7 @@ void pmm_init(stivale2_struct_tag_memmap_t* memory_map) {
 
     serial_printf(
         "Initialized memory manager with %i KB of memory.\nTotal memory blocks: "
-        "%i\nAvailable memory blocks: %i\n\n",
+        "%i\nAvailable memory blocks: %lu\n\n",
         pmm_get_memory_size(), pmm_get_block_count(), pmm_get_free_block_count());
 }
 

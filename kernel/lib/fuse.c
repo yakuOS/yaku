@@ -1,8 +1,8 @@
 #include "fuse.h"
 #include <types.h>
-#include <serial.h>
-#include <string.h>
-static int add_opt_common(char **opts, const char *opt, int esc)
+#include <drivers/serial.h>
+#include <thirdparty/string/string.h>
+ int add_opt_common(char **opts, const char *opt, int esc)
 {
 	unsigned oldlen = *opts ? strlen(*opts) : 0;
 	char *d = realloc(*opts, oldlen + 1 + strlen(opt) * 2 + 1);
@@ -25,11 +25,11 @@ static int add_opt_common(char **opts, const char *opt, int esc)
 
 	return 0;
 }
-static int add_opt(struct fuse_opt_context *ctx, const char *opt)
+ int add_opt(struct fuse_opt_context *ctx, const char *opt)
 {
 	return add_opt_common(&ctx->opts, opt, 1);
 }
-static int process_gopt(struct fuse_opt_context *ctx, const char *arg, int iso)
+ int process_gopt(struct fuse_opt_context *ctx, const char *arg, int iso)
 {
 	unsigned sep;
 	const struct fuse_opt *opt = find_opt(ctx->opt, arg, &sep);
@@ -48,7 +48,7 @@ static int process_gopt(struct fuse_opt_context *ctx, const char *arg, int iso)
 	} else
 		return call_proc(ctx, arg, FUSE_OPT_KEY_OPT, iso);
 }
-static int process_real_option_group(struct fuse_opt_context *ctx, char *opts)
+ int process_real_option_group(struct fuse_opt_context *ctx, char *opts)
 {
 	char *s = opts;
 	char *d = s;
@@ -88,20 +88,20 @@ static int process_real_option_group(struct fuse_opt_context *ctx, char *opts)
 	return 0;
 }
 
-static int process_option_group(struct fuse_opt_context *ctx, const char *opts)
+ int process_option_group(struct fuse_opt_context *ctx, const char *opts)
 {
 	int res;
 	char *copy = strdup(opts);
 
 	if (!copy) {
-		fuse_log(FUSE_LOG_ERR, "fuse: memory allocation failed\n");
+		fuse_log(0, "fuse: memory allocation failed\n");
 		return -1;
 	}
 	res = process_real_option_group(ctx, copy);
 	free(copy);
 	return res;
 }
-static int call_proc(struct fuse_opt_context *ctx, const char *arg, int key,
+ int call_proc(struct fuse_opt_context *ctx, const char *arg, int key,
 		     int iso)
 {
 	if (key == FUSE_OPT_KEY_DISCARD)
@@ -118,7 +118,7 @@ static int call_proc(struct fuse_opt_context *ctx, const char *arg, int key,
 		return add_arg(ctx, arg);
 }
 
-static int process_one(struct fuse_opt_context *ctx, const char *arg)
+ int process_one(struct fuse_opt_context *ctx, const char *arg)
 {
 	if (ctx->nonopt || arg[0] != '-')
 		return call_proc(ctx, arg, FUSE_OPT_KEY_NONOPT, 0);
@@ -141,12 +141,12 @@ static int process_one(struct fuse_opt_context *ctx, const char *arg)
 		return process_gopt(ctx, arg, 0);
 }
 
-static int alloc_failed(void)
+ int alloc_failed(void)
 {
 	serial_printf("fuse: memory allocation failed\n");
 	return -1;
 }
-int fuse_opt_add_arg(struct fuse_args *args, const char *arg)
+ int fuse_opt_add_arg(struct fuse_args *args, const char *arg)
 {
 	char **newargv;
 	char *newarg;
@@ -172,11 +172,11 @@ int fuse_opt_add_arg(struct fuse_args *args, const char *arg)
 	args->argv[args->argc] = NULL;
 	return 0;
 }
-static int add_arg(struct fuse_opt_context *ctx, const char *arg)
+ int add_arg(struct fuse_opt_context *ctx, const char *arg)
 {
 	return fuse_opt_add_arg(&ctx->outargs, arg);
 }
-static int opt_parse(struct fuse_opt_context* ctx) {
+ int opt_parse(struct fuse_opt_context* ctx) {
     if (ctx->argc) {
         if (add_arg(ctx, ctx->argv[0]) == -1)
             return -1;
@@ -202,7 +202,7 @@ static int opt_parse(struct fuse_opt_context* ctx) {
     return 0;
 }
 
-int fuse_opt_parse(struct fuse_args* args, void* data, const struct fuse_opt opts[],
+ int fuse_opt_parse(struct fuse_args* args, void* data, const struct fuse_opt opts[],
                    fuse_opt_proc_t proc) {
     int res;
     struct fuse_opt_context ctx = {

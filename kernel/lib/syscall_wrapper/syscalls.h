@@ -12,6 +12,7 @@ enum syscalls {
     SYS_get_ticks,
     SYS_get_window_buffer,
     SYS_create_virtual_file,
+    SYS_remove_virtual_file,
     SYS_create_virtual_directory,
     SYS_open,
     SYS_getdents, 

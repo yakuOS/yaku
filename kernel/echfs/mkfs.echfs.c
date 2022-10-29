@@ -1,4 +1,5 @@
-#include <lib/write_to_drive.h>
+#include <lib/stdio.h>
+#include <lib/origin.h>
 #include <lib/atoi.h>
 #include <string.h>
 #include <types.h>
@@ -7,16 +8,16 @@
 // boot sector code in boot.asm
 const uint8_t _binary_boot_bin_start[];
 
-static struct drive_image* image;
+static FILE* image;
 
 static inline void wr_qword(uint64_t loc, uint64_t x) {
-    write_to_drive_fseek(image, (long)loc, SEEK_SET);
-    write_to_drive_fwrite(&x, 8, 1, image);
+    fseek(image, (long)loc, SEEK_SET);
+    fwrite(&x, 8, 1, image);
     return;
 }
 static inline void wr_blocks(uint64_t loc, uint8_t blocks, uint8_t* x) {
-    write_to_drive_fseek(image, (long)loc, SEEK_SET);
-    write_to_drive_fwrite(x, 512, blocks, image);
+    fseek(image, (long)loc, SEEK_SET);
+    fwrite(x, 512, blocks, image);
     return;
 }
 
@@ -29,29 +30,29 @@ int echfs_mkfs_main(int argc, char** argv) {
             argv[0]);
         return 1;
     }
-    image = write_to_drive_fopen(drive_first, R);
-    if (image == NULL) {
+    image = fopen("/lba_drive/first_drive", NULL);
+    if (image == -1) {
         serial_printf("%s: error: no valid image specified.\n", argv[0]);
     }
 
-    write_to_drive_fseek(image, 0L, SEEK_END);
-    uint64_t imgsize = (uint64_t)write_to_drive_ftell(image);
-    write_to_drive_rewind(image);
-    write_to_drive_fclose(image);
-    image = write_to_drive_fopen(drive_first, W);
+    fseek(image, 0L, SEEK_END);
+    uint64_t imgsize = (uint64_t)ftell(image);
+    rewind(image);
+    fclose(image);
+    image = fopen("/lba_drive/first_drive", NULL);
 
 
     uint64_t bytesperblock = atoi(argv[2]);
     serial_printf("%s: info: bytes per block: %lu\n", argv[0], bytesperblock);
     if ((bytesperblock <= 0) || (bytesperblock % 512)) {
         serial_printf("%s: error: block size MUST be a multiple of 512.\n", argv[0]);
-        write_to_drive_fclose(image);
+        fclose(image);
         return 1;
     }
 
     if (imgsize % bytesperblock) {
         serial_printf("%s: error: image is not block-aligned.\n", argv[0]);
-        write_to_drive_fclose(image);
+        fclose(image);
         return 1;
     }
 
@@ -60,7 +61,7 @@ int echfs_mkfs_main(int argc, char** argv) {
     if ((reserved_factor <= 0) || (reserved_factor >= 100)) {
         serial_printf("%s: error: reserved blocks factor must be between 1%% and 99%%\n",
                       argv[0]);
-        write_to_drive_fclose(image);
+        fclose(image);
         return 1;
     }
 
@@ -69,9 +70,10 @@ int echfs_mkfs_main(int argc, char** argv) {
     // fseek(image, 0, SEEK_SET);
     // fwrite(boot_sector, 512, 1, image);
 
-    write_to_drive_fseek(image, 4, SEEK_SET);
-    write_to_drive_fputs("_ECH_FS_", image);
+    fseek(image, 4, SEEK_SET);
+    fputs("_ECH_FS_", image);
     wr_qword(12, blocks);                           // blocks
+    serial_printf("reserved blocks: %lu\n", blocks / (100 / reserved_factor));
     wr_qword(20, blocks / (100 / reserved_factor)); // reserved blocks
     wr_qword(28, bytesperblock);                    // block size
     // mark reserved blocks
@@ -89,9 +91,12 @@ int echfs_mkfs_main(int argc, char** argv) {
         // wr_qword(loc, 0xfffffffffffffff0);
         wr_blocks(loc, 1, (uint8_t*)buffer);
         loc += sizeof(uint64_t)*64;
+        if (i %100000 == 0) {
+            serial_printf("progress formation: %d%%\n", (i*100)/(RESERVED_BLOCKS + fatsize + dirsize));
+        }
     }
-    write_to_drive_fflush(image);
-    write_to_drive_fclose(image);
+    fflush(image);
+    fclose(image);
     serial_printf("%s: info: formatting complete.\n", argv[0]);
     return 0;
 }

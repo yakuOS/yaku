@@ -132,9 +132,10 @@ void write_to_drive_release(const char* path, struct fuse_file_info* fh) {
 off_t write_to_drive_write(const char* path, const char* buf, size_t size, off_t offset,
                            struct fuse_file_info* fh) {
     struct drive_image* image = &drive_images[fh->fh];
-    if (image->access_mode != W) {
-        return 0;
-    }
+
+    // if (image->access_mode != W) {
+    //     return 0;
+    // }
     uint64_t byte_to_write_to = (uint64_t)offset;
     uint64_t sector_to_write_to = byte_to_write_to / 512;
     uint64_t byte_in_sector_to_write_to = byte_to_write_to % 512;
@@ -207,7 +208,7 @@ int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offse
                         struct fuse_file_info* file_info) {
 
     struct drive_image* image = &drive_images[file_info->fh];
-
+    serial_printf("write_to_drive_read on drive %d\n", image->drive);
     uint64_t byte_to_read_from = (uint64_t)offset;
     uint64_t sector_to_read_from = byte_to_read_from / 512;
     uint64_t byte_in_sector_to_read_from = byte_to_read_from % 512;
@@ -242,6 +243,7 @@ int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offse
     for (uint64_t i = byte_in_sector_to_read_from;
          i < byte_in_sector_to_read_from + to_read; i++) {
         buf[i - byte_in_sector_to_read_from] = buffer[i];
+        serial_printf("read %x\n", buffer[i]);
     }
     free(buffer);
     return to_read;

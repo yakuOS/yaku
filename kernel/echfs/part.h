@@ -8,5 +8,5 @@ struct part {
 	uint64_t sect_count;
 };
 
-int mbr_get_part(struct part *ret, struct drive_image* file, int partition);
-int gpt_get_part(struct part *ret, struct drive_image* file, int partition);
+int mbr_get_part(struct part *ret, FILE *file, int partition);
+int gpt_get_part(struct part *ret, FILE *file, int partition);
