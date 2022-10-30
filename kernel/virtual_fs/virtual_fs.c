@@ -124,9 +124,10 @@ uint8_t virtual_fs_create_directory(char* path) {
 }
 uint8_t virtual_fs_create_endpoint(struct fuse_operations* fuse_operations,
                                    enum endpoint_type endpoint_type, char* path) {
+
+    serial_printf("%s\n", path);
     struct create_fs_directory_entry_path_result* result =
         create_fs_entry_path_resolver(path, NULL);
-    serial_printf("%s\n", path);
     serial_printf("parent %s\n", result->parent->name);
     serial_printf("name %s\n", result->name);
     if (result->name == NULL || result->parent == NULL) {
@@ -266,6 +267,9 @@ int virtual_fs_opendir(const char* file_path, struct fuse_file_info* file_info,
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
     if (path->parent == NULL || path->endpoint == NULL ||
         path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+        if (path->parent != NULL) {
+            strcpy(endpoint_path_buffer, file_path);
+        }
         free(path);
         return;
     }

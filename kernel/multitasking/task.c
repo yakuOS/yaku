@@ -148,7 +148,7 @@ void task_resume(task_t* task) {
                           // set to task_state_running on next task_switch
 }
 
-int32_t task_add_file(task_t* task, FILE* file) {
+int32_t task_add_file(task_t* task, file_handle_t* file) {
     for (uint32_t i = 0; i < TASK_FILES_MAX; i++) {
         if (task->files[i] == NULL) {
             task->files[i] = file;

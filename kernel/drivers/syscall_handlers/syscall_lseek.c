@@ -8,7 +8,7 @@ enum whence { SEEK_SET, SEEK_CUR, SEEK_END };
 
 int64_t syscall_lseek(int fd, int64_t offset, int whence) {
     task_t* task = scheduler_get_current_task();
-    FILE* file = task->files[fd];
+    file_handle_t* file = task->files[fd];
     if (file == NULL) {
         return -1;
     }
@@ -46,7 +46,6 @@ int64_t syscall_lseek(int fd, int64_t offset, int whence) {
             }
         }
         file->file_byte_ptr = file_size + offset;
-        serial_printf("SEEK_END: %lu\n", file->file_byte_ptr);
         return file->file_byte_ptr;
     }
 }

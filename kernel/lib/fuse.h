@@ -12,7 +12,7 @@ typedef int gid_t;
 # define __SQUAD_TYPE		long int
 #define __OFF64_T_TYPE		__SQUAD_TYPE
 __STD_TYPE __OFF64_T_TYPE __off64_t;
-typedef __off64_t off_t;
+// typedef __off64_t off_t;
 # define __SWORD_TYPE		long int
 #define __SSIZE_T_TYPE		__SWORD_TYPE
 __STD_TYPE __SSIZE_T_TYPE __ssize_t; /* Type of a byte count, or error.  */

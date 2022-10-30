@@ -27,9 +27,11 @@
 // #include <drivers/lba/lba.h>
 #include <echfs/echfs-fuse.h>
 #include <echfs/echfs-utils.h>
+#include <lib/syscall_wrapper/open.h>
 #include <lib/write_to_drive.h>
 #include <virtual_fs/virtual_fs.h>
-#include <lib/syscall_wrapper/open.h>
+#include <echfs/mkfs.echfs.h>
+#include <lib/stdio.h>
 
 extern int enable_sse();
 
@@ -88,6 +90,20 @@ int fill_dir(void* dh_, const char* name, const struct stat* statp, off_t off,
     serial_printf("dir: %s\n", name);
     return 0;
 }
+void kernel_main_task() {
+    write_to_drive_init();
+    // char* argv[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
+    // echfs_mkfs_main(4, argv);
+
+    char* argv2[4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
+    echfs_fuse_main(4, argv2);
+    serial_printf("echfs fuse main done\n");
+
+    struct dir_entries entries[100];
+    get_dir_entries("/", entries, 100);
+    serial_printf("dir entries: %s, dir entry type %d\n", entries[0].name, entries[0].is_dir);
+
+}
 void start(stivale2_struct_t* stivale2_struct) {
     enable_sse();
     serial_init();
@@ -100,15 +116,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     pmm_init(memory_map);
     lba_init();
     virtual_fs_init();
-    write_to_drive_init();
-    char* argv[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
-    echfs_mkfs_main(4, argv);
-
-    char* argv2[4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
-    echfs_fuse_main(4, argv2);
-    serial_printf("echfs fuse main done\n");
-
-    
+    task_add(kernel_main_task, 0, 2, 0);
 
     // char* args[5] = {"", "", "format", "512"};
     // echfs_utils_main(4, args);
@@ -159,7 +167,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     // // fread(buffer, 1, 1, image);
     // // fopen("/b.txt", "w");
     // // fwrite(buffer, 11, 1, fopen("/b.txt", "w"));
-    
+
     // // char* args[5] = {"-v", "", "import", "/b.txt","r.a"};
     // // echfs_utils_main(5, args);
     // // char* args[4] = {"-v", "", "ls", "/"};

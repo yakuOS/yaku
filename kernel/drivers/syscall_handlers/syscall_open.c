@@ -2,10 +2,10 @@
 #include <virtual_fs/virtual_fs.h>
 #include <virtual_fs/FILE.h>
 #include <drivers/serial.h>
-#define O_DIRECTORY 0b1000000000000000
+#define O_DIRECTORY 0b1
 
 int64_t syscall_open(const char* path, int flags){
-    FILE* file = (FILE*)malloc(sizeof(FILE));
+    file_handle_t* file = (file_handle_t*)malloc(sizeof(file_handle_t));
     file->file_byte_ptr = 0;
     if (flags & O_DIRECTORY !=0){ // check if the directory flag is set
         virtual_fs_opendir(path, file, file->operations, file->path);

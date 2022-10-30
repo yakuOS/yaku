@@ -19,3 +19,9 @@ void rewind ( FILE * stream );
 
 
 int fprintf ( FILE * stream, const char * format, ... );
+
+struct dir_entries {
+    char name[256];
+    bool is_dir;
+};
+int get_dir_entries(char* path, struct dir_entries* dir_entries, uint64_t count);

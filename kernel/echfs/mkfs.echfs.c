@@ -41,7 +41,6 @@ int echfs_mkfs_main(int argc, char** argv) {
     fclose(image);
     image = fopen("/lba_drive/first_drive", NULL);
 
-
     uint64_t bytesperblock = atoi(argv[2]);
     serial_printf("%s: info: bytes per block: %lu\n", argv[0], bytesperblock);
     if ((bytesperblock <= 0) || (bytesperblock % 512)) {
@@ -93,6 +92,6 @@ int echfs_mkfs_main(int argc, char** argv) {
     }
     fflush(image);
     fclose(image);
-    serial_printf("%s: info: formatting complete.\n", argv[0]);
+    serial_printf("echfs: info: formatting complete.\n");
     return 0;
 }

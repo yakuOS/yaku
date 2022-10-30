@@ -4,7 +4,7 @@
 
 int64_t syscall_read(int fd, void* buf, size_t count){
     task_t* task = scheduler_get_current_task();
-    FILE* file = task->files[fd];
+    file_handle_t* file = task->files[fd];
     if (file == NULL){
         return -1;
     }

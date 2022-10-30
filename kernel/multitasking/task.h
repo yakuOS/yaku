@@ -31,7 +31,7 @@ typedef struct task {
     enum task_state task_state;
     enum task_priority priority;
     struct task* next;
-    FILE* files[100];
+    file_handle_t* files[100];
     char workdir[100];
 } task_t;
 typedef struct task_parameters {
@@ -59,5 +59,5 @@ void task_kill(uint32_t pid);
 void task_sleep(task_t* task, uint32_t ticks);
 void task_pause(task_t* task);
 void task_resume(task_t* task);
-int32_t task_add_file(task_t* task, FILE* file);
+int32_t task_add_file(task_t* task, file_handle_t* file);
 int task_remove_file(task_t* task, uint64_t file_id);

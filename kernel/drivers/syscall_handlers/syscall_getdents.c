@@ -6,6 +6,7 @@
 #include <thirdparty/string/string.h>
 #include <virtual_fs/FILE.h>
 #include <virtual_fs/virtual_fs.h>
+#include <drivers/serial.h>
 
 struct dirent {
     unsigned long d_ino;
@@ -19,7 +20,7 @@ struct dirent_buffer_info_pointer {
     struct dirent* dirent_buffer;
     uint64_t buffer_size;     // in bytes
     uint64_t max_buffer_size; // in bytes
-    FILE* file;
+    file_handle_t* file;
 };
 
 fuse_fill_dir_t syscall_getdents_fill_dir(void* buf, const char* name,
@@ -27,7 +28,6 @@ fuse_fill_dir_t syscall_getdents_fill_dir(void* buf, const char* name,
                                           enum fuse_fill_dir_flags flags) {
     struct dirent_buffer_info_pointer* dirent_buffer_info_pointer =
         (struct dirent_buffer_info_pointer*)buf;
-
     size_t name_length = strlen(name);
     size_t dirent_size = sizeof(struct dirent) + name_length;
     if (dirent_buffer_info_pointer->buffer_size + dirent_size >
@@ -35,9 +35,10 @@ fuse_fill_dir_t syscall_getdents_fill_dir(void* buf, const char* name,
         // buffer full
         return 1;
     }
+
     dirent_buffer_info_pointer->dirent_buffer->d_ino = stbuf->st_ino;
     dirent_buffer_info_pointer->dirent_buffer->d_off = off;
-    dirent_buffer_info_pointer->dirent_buffer->d_reclen = sizeof(struct dirent);
+    dirent_buffer_info_pointer->dirent_buffer->d_reclen = dirent_size;
     strcpy(&dirent_buffer_info_pointer->dirent_buffer->d_name, name);
 
     struct stat stat;
@@ -52,16 +53,16 @@ fuse_fill_dir_t syscall_getdents_fill_dir(void* buf, const char* name,
             file_path, &stat);
         stbuf = &stat;
     }
-
-    ((uint8_t*)dirent_buffer_info_pointer->dirent_buffer)[dirent_size - sizeof(mode_t)] =
-        stbuf->st_mode; // copies the mode to the end of the dirent
+    uint8_t* mode_pointer = ((uint8_t*)dirent_buffer_info_pointer->dirent_buffer)[dirent_size - sizeof(mode_t)];
+    *(mode_t*)mode_pointer = stbuf->st_mode;
+    serial_printf("mode pointer: %x, mode %x\n", &((uint8_t*)dirent_buffer_info_pointer->dirent_buffer)[dirent_size - sizeof(mode_t)], *(mode_t*)mode_pointer);
     dirent_buffer_info_pointer->buffer_size += dirent_size;
-    dirent_buffer_info_pointer->dirent_buffer++;
+    dirent_buffer_info_pointer->dirent_buffer= (struct dirent*)((uint64_t)dirent_buffer_info_pointer->dirent_buffer + (uint64_t)dirent_size);
     return 0;
 }
 
 int64_t syscall_getdents(int fd, void* dirp, size_t count) {
-    FILE* file = scheduler_get_current_task()->files[fd];
+    file_handle_t* file = scheduler_get_current_task()->files[fd];
     if (file->operations->readdir == NULL) {
         return -1;
     }
@@ -71,6 +72,12 @@ int64_t syscall_getdents(int fd, void* dirp, size_t count) {
     dirent_buffer_pointer->max_buffer_size = count;
     dirent_buffer_pointer->dirent_buffer = dirp;
     dirent_buffer_pointer->file = file;
-    file->operations->readdir(file->path, dirent_buffer_pointer,
-                              syscall_getdents_fill_dir, 0, &file->file_handle);
+    // file->operations->readdir(file->path, dirent_buffer_pointer,
+    //                           syscall_getdents_fill_dir, 0, &file->file_handle);
+    virtual_fs_readdir(file->path, dirent_buffer_pointer,
+                       syscall_getdents_fill_dir, 0, &file->file_handle);
+uint64_t size = dirent_buffer_pointer->buffer_size;
+    free(dirent_buffer_pointer);
+    serial_printf("syscall_getdents: %s\n", file->path);
+    return size;
 }
