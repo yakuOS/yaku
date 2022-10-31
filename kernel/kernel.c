@@ -33,6 +33,7 @@
 #include <echfs/mkfs.echfs.h>
 #include <lib/stdio.h>
 #include <lib/syscall_wrapper/mknod.h>
+#include <lib/syscall_wrapper/remove_virtual_file.h>
 
 extern int enable_sse();
 
@@ -96,39 +97,29 @@ void kernel_main_task() {
     // char* argv[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
     // echfs_mkfs_main(4, argv);
 
+    struct dir_entries entries[100];
     char* argv2[4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
     echfs_fuse_main(4, argv2);
     serial_printf("echfs fuse main done\n");
 
-    struct dir_entries entries[100];
+    get_dir_entries("/", entries, 100);
     // get_dir_entries("/", entries, 100);
     // serial_printf("dir entries: %s, dir entry type %d\n", entries[1].name, entries[0].is_dir);
 
-    serial_printf("kernel main check 1\n");
-    mknod("/echfsa/test", S_IFREG, 0);
-    serial_printf("kernel main check 2\n");
-    get_dir_entries("/echfsa/", entries, 100);
-    serial_printf("dir entries: %s, dir entry type %d\n", entries[0].name, entries[0].is_dir);
-    char* name = malloc(100);
-    name[0] = '/';
-    name[1] = 'e';
-    name[2] = 'c';
-    name[3] = 'h';
-    name[4] = 'f';
-    name[5] = 's';
-    name[6] = 'a';
-    name[7] = '/';
-    name[8] = 't';
-    name[9] = 'e';
-    name[10] = 's';
-    name[11] = 't';
-    FILE* file_des = fopen(name, "r");
-    fputs("hello world", file_des);
-    fseek(file_des, 0, SEEK_SET);
-    char buf[100];
-    fgets(buf, 2, file_des);
-    serial_printf("file contents: %s", buf);
-
+    // serial_printf("kernel main check 1\n");
+    // mknod("/echfsa/test", S_IFREG, 0);
+    // serial_printf("kernel main check 2\n");
+    // get_dir_entries("/", entries, 100);
+    // serial_printf("dir entries: %s, dir entry type %d\n", entries[0].name, entries[0].is_dir);
+    // char* name = "/echfs/test";
+    // FILE* file_des = fopen(name, "r");
+    // fputs("hello world", file_des);
+    // // fseek(file_des, 0, SEEK_SET);
+    // // char buf[100];
+    // // fgets(buf, 20, file_des);
+    // // serial_printf("file contents: %s \n", buf);
+    // fclose(file_des);
+    // remove_virtual_file("/echfsa");
 }
 void start(stivale2_struct_t* stivale2_struct) {
     enable_sse();

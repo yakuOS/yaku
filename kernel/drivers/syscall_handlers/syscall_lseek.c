@@ -7,6 +7,7 @@
 enum whence { SEEK_SET, SEEK_CUR, SEEK_END };
 
 int64_t syscall_lseek(int fd, int64_t offset, int whence) {
+    serial_printf("syscall_lseek: fd=%d, offset=%d, whence=%d\n", fd, offset, whence);
     task_t* task = scheduler_get_current_task();
     file_handle_t* file = task->files[fd];
     if (file == NULL) {

@@ -9,7 +9,7 @@ int64_t syscall_write(int fd, const void* buf, size_t count){
     if (file == NULL){
         return -1;
     }
-    if (file->operations->write == NULL){
+    if (file->operations == NULL || file->operations->write == NULL){
         return -1;
     }
     serial_printf("syscall_write: fd=%d, buf=%s, count=%d\n", fd, buf, count);

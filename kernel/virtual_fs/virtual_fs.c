@@ -26,7 +26,9 @@ virtual_fs_get_directory_entry(struct virtual_fs_directory* directory, char* nam
 // fills struct with directory the entry to be created is in and with name of entry to be
 // created
 struct create_fs_directory_entry_path_result*
-create_fs_entry_path_resolver(char* path, struct virtual_fs_directory_entry* parent) {
+create_fs_entry_path_resolver(char* path_2, struct virtual_fs_directory_entry* parent) {
+    char* path = (char*)malloc(strlen(path_2) + 1);
+    strcpy(path, path_2);
     struct create_fs_directory_entry_path_result* result =
         malloc(sizeof(struct create_fs_directory_entry_path_result));
     memset(result, 0, sizeof(struct create_fs_directory_entry_path_result));
@@ -56,6 +58,7 @@ create_fs_entry_path_resolver(char* path, struct virtual_fs_directory_entry* par
 // fills struct with endpoint pointer, directory of the endpoint and path relative to
 // endpoint
 struct endpoint_path_result* virtual_fs_endpoint_path_resolver(char* path) {
+    serial_printf("virtual_fs_endpoint_path_resolver: path=%s\n", path);
     struct endpoint_path_result* result = malloc(sizeof(struct endpoint_path_result));
     memset(result, 0, sizeof(struct endpoint_path_result));
     result->endpoint = NULL;
@@ -65,12 +68,15 @@ struct endpoint_path_result* virtual_fs_endpoint_path_resolver(char* path) {
     }
     char* name = strtok(path, "/");
     while (name != NULL) {
+        serial_printf("virtual_fs_endpoint_path_resolver1: name=%s\n", name);
         struct virtual_fs_directory_entry* entry =
             virtual_fs_get_directory_entry(result->parent->pointer, name);
         if (entry == NULL) {
+            serial_printf("virtual_fs_endpoint_path_resolver: entry not found\n");
             break;
         }
         if (entry->type == ENTRY_TYPE_ENDPOINT) {
+            serial_printf("virtual_fs_endpoint_path_resolver: endpoint found\n");
             result->endpoint = entry;
             name = strtok(NULL, "/");
             break;
@@ -78,12 +84,14 @@ struct endpoint_path_result* virtual_fs_endpoint_path_resolver(char* path) {
         result->parent = entry;
         name = strtok(NULL, "/");
     }
+    serial_printf("virtual_fs_endpoint_path_resolver: name=%s\n", name);
     if (name == 0 && result->endpoint!=NULL){
         strcpy(result->endpoint_path_to_be_passed, "/");
     }
     if (name != NULL) {
         strcpy(result->endpoint_path_to_be_passed, name);
     }
+    serial_printf("virtual_fs_endpoint_path_resolver: endpoint_path_to_be_passed=%s\n", result->endpoint_path_to_be_passed);
     return result;
 }
 
@@ -140,15 +148,32 @@ uint8_t virtual_fs_create_endpoint(struct fuse_operations* fuse_operations,
     struct virtual_fs_endpoint* endpoint = malloc(sizeof(struct virtual_fs_endpoint));
     memcpy(&endpoint->fuse_ops, fuse_operations, sizeof(struct fuse_operations));
     endpoint->type = endpoint_type;
+    for (uint64_t i = 0; i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count; i++) {
+        serial_printf("entry1 %s\n", ((struct virtual_fs_directory*)virtual_fs_root->pointer)
+                                          ->entries[i]
+                                          .name);
+    }
     virtual_fs_add_directory_entry(result->parent->pointer, result->name,
                                    ENTRY_TYPE_ENDPOINT, (uint64_t*)endpoint);
+
+    for (uint64_t i = 0; i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count; i++) {
+        serial_printf("entry %s\n", ((struct virtual_fs_directory*)virtual_fs_root->pointer)
+                                          ->entries[i]
+                                          .name);
+    }
     free(result);
+
     return 0;
 }
 uint8_t virtual_fs_remove_endpoint(char* path) {
     struct endpoint_path_result* result = virtual_fs_endpoint_path_resolver(path);
     if (result->endpoint == NULL) {
         return 1;
+    }
+    struct virtual_fs_endpoint* endpoint =
+        (struct virtual_fs_endpoint*)result->endpoint->pointer;
+    if (endpoint->fuse_ops.destroy != NULL) {
+        endpoint->fuse_ops.destroy(NULL);
     }
     struct virtual_fs_directory* parent =
         (struct virtual_fs_directory*)result->parent->pointer;
@@ -246,7 +271,8 @@ int virtual_fs_open(const char* file_path, struct fuse_file_info* file_info,
                     struct fuse_operations** fuse_ops, char* endpoint_path_buffer) {
     serial_printf("should open %s\n", file_path);
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
-
+    serial_printf("endpoint %s\n", path->endpoint->name);
+    serial_printf("parent %s\n", path->parent->name);
     if (path->parent == NULL || path->endpoint == NULL ||
         path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
         free(path);
@@ -428,10 +454,13 @@ int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
         free(result);
         return;
     }
+    serial_printf("virtual_fs_readdir2: %s\n", result->endpoint_path_to_be_passed);
     if (result->endpoint == NULL || result->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+        serial_printf("virtual_fs_readdir3: %s\n", result->endpoint_path_to_be_passed);
         for (int i = 0;
              i < ((struct virtual_fs_directory*)result->parent->pointer)->entries_count;
              i++) {
+            serial_printf("virtual_fs_readdir4: %s\n", result->endpoint_path_to_be_passed);
             struct stat st = {
                 .st_mode = (((struct virtual_fs_directory*)(result->parent->pointer))
                                     ->entries[i]
@@ -448,14 +477,5 @@ int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
                 
         }
     }
-    struct virtual_fs_endpoint* endpoint =
-        (struct virtual_fs_endpoint*)result->endpoint->pointer;
-    if (endpoint->fuse_ops.readdir == NULL || endpoint->type != ENDPOINT_TYPE_DIRECTORY) {
-        free(result);
-        return;
-    }
-    endpoint->fuse_ops.readdir(result->endpoint_path_to_be_passed, buffer, filler, offset,
-                               fi);
-    free(result);
     return 0;
 }

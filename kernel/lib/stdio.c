@@ -91,5 +91,7 @@ int get_dir_entries(char* path, struct dir_entries* dir_entries,
         files_read++;
         bpos += dirent->d_reclen;
     }
+    serial_printf("get_dir_entries: files_read=%d \n", files_read);
     close(fd);
+    serial_printf("get_dir_entries2: files_read=%d \n", files_read);
 }

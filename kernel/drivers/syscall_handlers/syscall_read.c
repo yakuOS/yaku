@@ -8,7 +8,7 @@ int64_t syscall_read(int fd, void* buf, size_t count){
     if (file == NULL){
         return -1;
     }
-    if (file->operations->read == NULL){
+    if (file->operations == NULL || file->operations->read == NULL){
         return -1;
     }
     uint64_t bytes_written = file->operations->read(file->path, buf, count, file->file_byte_ptr, &file->file_handle);
