@@ -117,6 +117,9 @@ void pmm_free_block(void* p) {
 }
 
 void* malloc(size_t size) {
+    if (size == 0) {
+        return 0;
+    }
     size = (size + 2 - 1) / PMM_BLOCK_SIZE + 1;
     if (pmm_get_free_block_count() <= size) {
         return 0;

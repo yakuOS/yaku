@@ -104,7 +104,9 @@ void kernel_main_task() {
     // get_dir_entries("/", entries, 100);
     // serial_printf("dir entries: %s, dir entry type %d\n", entries[1].name, entries[0].is_dir);
 
+    serial_printf("kernel main check 1\n");
     mknod("/echfsa/test", S_IFREG, 0);
+    serial_printf("kernel main check 2\n");
     get_dir_entries("/echfsa/", entries, 100);
     serial_printf("dir entries: %s, dir entry type %d\n", entries[0].name, entries[0].is_dir);
     char* name = malloc(100);
@@ -121,11 +123,11 @@ void kernel_main_task() {
     name[10] = 's';
     name[11] = 't';
     FILE* file_des = fopen(name, "r");
-    // fwrite("hello world", 1, 11, file_des);
-    // fseek(file_des, 0, SEEK_SET);
-    // char buf[100];
-    // fread(buf, 1, 100, file_des);
-    // serial_printf("file contents: %s", buf);
+    fputs("hello world", file_des);
+    fseek(file_des, 0, SEEK_SET);
+    char buf[100];
+    fgets(buf, 2, file_des);
+    serial_printf("file contents: %s", buf);
 
 }
 void start(stivale2_struct_t* stivale2_struct) {

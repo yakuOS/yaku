@@ -75,7 +75,8 @@ int64_t syscall_getdents(int fd, void* dirp, size_t count) {
     //                           syscall_getdents_fill_dir, 0, &file->file_handle);
 
     serial_printf("syscall_getdents: %x\n", file->operations);
-    if (file->operations->readdir == NULL) { // should guarantee that directory is part of a virtual_endpoint, if it's not, call the virtual_fs_readdir
+    serial_printf("file operations pointer: %x\n", file->operations);
+    if (file->operations == NULL) { // should guarantee that directory is part of a virtual_endpoint, if it's not, call the virtual_fs_readdir
         virtual_fs_readdir(file->path, dirent_buffer_pointer, syscall_getdents_fill_dir,
                            0, &file->file_handle);
         // serial_printf("syscall_getdents: %s\n", file->path);

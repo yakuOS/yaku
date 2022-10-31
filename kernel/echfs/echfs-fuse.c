@@ -323,11 +323,14 @@ static void cache_path(struct path_result_t *path_res) {
 
 static struct path_result_t *get_cached_path(const char *path) {
     uint64_t hash = hash_str(path);
+    serial_printf("get_cached check 1\n");
     uint64_t offset = hash % echfs.path_cache.size;
+    serial_printf("get_cached check 2\n");
     struct path_result_t *result = echfs.path_cache.table[offset];
     for (; result; result = result->next) {
         if (!strcmp(result->path, path)) return result;
     }
+    serial_printf("get_cached check 3\n");
     return NULL;
 }
 
@@ -494,20 +497,25 @@ static uint64_t search(const char *name, uint64_t parent) {
 }
 
 static struct path_result_t *resolve_path(const char *path) {
+    serial_printf("resolve_path check 0\n");
     struct path_result_t *path_result = get_cached_path(path);
+    serial_printf("resolve_path check 1\n");
     if (path_result) {
         echfs_debug("found cached path %s\n", path);
         path_result->failure = 0;
         return path_result;
     }
+    serial_printf("resolve_path check 1\n");
     path_result = malloc(sizeof(struct path_result_t));
     path_result->next = NULL;
+    serial_printf("resolve_path check 2\n");
     strcpy(path_result->path, path);
     path_result->type = DIRECTORY_TYPE;
-
+    serial_printf("resolve_path check 3\n");
     path_result->parent.payload = ROOT_ID;
-
+    serial_printf("resolve_path check 4\n");
     if (!strncmp(path, "/\0", 2)) {
+        serial_printf("resolve_path check 4.1\n");
         strncpy(path_result->name, "/\0", 2);
         path_result->failure = 0;
         path_result->target_entry = -1;
@@ -517,11 +525,13 @@ static struct path_result_t *resolve_path(const char *path) {
         path_result->target.payload = ROOT_ID;
         return path_result;
     }
+    serial_printf("resolve_path check 5\n");
 
     if (*path == '/') path++;
 
     struct entry_t entry;
     path_result->target.payload = ROOT_ID;
+    serial_printf("resolve_path check 6\n");
     do {
         const char *seg = path;
         path = internal_strchrnul(path, '/');
@@ -718,7 +728,6 @@ static int echfs_release(const char *path,
     if (handles[file_info->fh].path_res->type != FILE_TYPE) return -EISDIR;
     handles[file_info->fh].occupied = 0;
     free(handles[file_info->fh].alloc_map);
-    free(handles[file_info->fh].path_res);
 
     return 0;
 }
@@ -736,15 +745,16 @@ static int echfs_releasedir(const char *path,
 
 static int echfs_read(const char *path, char *buf, size_t to_read,
         off_t offset, struct fuse_file_info *file_info) {
-    echfs_debug("echfs_read() on %s, %lu\n", path, to_read);
+    serial_printf("echfs_read() on %s, %lu\n", path, to_read);
     if (file_info->fh >= MAX_HANDLES) return -EBADF;
     if (!handles[file_info->fh].occupied) return -EBADF;
     if (handles[file_info->fh].path_res->type != FILE_TYPE) return -EISDIR;
+    serial_printf("echfs_read() check 2\n");
 
     struct echfs_handle_t *handle = &handles[file_info->fh];
     if ((offset + to_read) >= handle->path_res->target.size)
         to_read = handle->path_res->target.size - offset;
-
+    serial_printf("echfs_read() check 3\n");
     uint64_t progress = 0;
     while (progress < to_read) {
         uint64_t block = (offset + progress) / echfs.bytes_per_block;
@@ -761,6 +771,7 @@ static int echfs_read(const char *path, char *buf, size_t to_read,
             return -EIO;
         progress += chunk;
     }
+    serial_printf("echfs_read() check 4\n");
 
     return to_read;
 }
@@ -805,7 +816,8 @@ static uint64_t get_block_pos(struct echfs_handle_t *handle, uint64_t block) {
 
 static int echfs_write(const char *path, const char *buf, size_t to_write,
         off_t offset, struct fuse_file_info *file_info) {
-    echfs_debug("echfs_write() on %s\n", path);
+    serial_printf("echfs_write() on %s, pos %lu, %lu bytes\n", path, offset,
+            to_write);
     if (file_info->fh >= MAX_HANDLES) return -EBADF;
     if (!handles[file_info->fh].occupied) return -EBADF;
     if (handles[file_info->fh].path_res->type != FILE_TYPE) return -EISDIR;
@@ -832,8 +844,9 @@ static int echfs_write(const char *path, const char *buf, size_t to_write,
 
         echfs_fseek(echfs.image, loc + buf_offset, SEEK_SET);
         ret = fwrite(buf + progress, 1, chunk, echfs.image);
-        if (ret != chunk)
-            return -EIO;
+        if (ret != chunk){
+            serial_printf("echfs_write() only wrote %lu bytes\n", ret);
+            return -EIO;}
         progress += chunk;
     }
     serial_printf("Wrote %lu bytes to %s\n", to_write, path);
@@ -856,29 +869,39 @@ static uint64_t find_free_entry() {
 
 static int echfs_create(const char *path, mode_t mode,
         struct fuse_file_info *file_info) {
+    serial_printf("echfs_create() on %s\n", path);
+    
     struct path_result_t *path_res = resolve_path(path);
+    serial_printf("echfs_create() check 0\n");
     if (!path_res->failure)
         return -EEXIST;
-
+    serial_printf("echfs_create() check 1\n");
     struct entry_t entry = {0};
     entry.parent_id = path_res->parent.payload;
+    serial_printf("echfs_create() check 2\n");
     entry.type = FILE_TYPE;
     strcpy(entry.name, path_res->name);
+    serial_printf("echfs_create() check 3\n");
     entry.perms = mode;
     entry.payload = END_OF_CHAIN;
+    serial_printf("echfs_create() check 4\n");
     entry.ctime = entry.atime = entry.mtime = get_time();
 
     uint64_t new_entry = find_free_entry();
+    serial_printf("echfs_create() check 5\n");
     if (new_entry == SEARCH_FAILURE) return -EIO;
     wr_entry(&entry, new_entry);
 
     path_res->target = entry;
+    serial_printf("echfs_create() check 6\n");
     path_res->target_entry = new_entry;
     path_res->type = FILE_TYPE;
     path_res->failure = 0;
+    serial_printf("echfs_create() check 7\n");
     cache_path(path_res);
-
+    serial_printf("echfs_create() check 8\n");
     int handle_num = get_handle();
+    serial_printf("echfs_create() check 9\n");
     if (handle_num < 0) return -ENOMEM;
     file_info->fh = handle_num;
 
@@ -888,6 +911,7 @@ static int echfs_create(const char *path, mode_t mode,
     handle->alloc_map = NULL;
 
     handle->total_blocks = 0;
+    serial_printf("echfs_create() check 10\n");
     return 0;
 }
 
