@@ -600,9 +600,7 @@ static int echfs_open(const char* file_path, struct fuse_file_info* file_info) {
     serial_printf("handle->alloc_map[0] = %lu\n", handle->alloc_map[0]);
     uint64_t i = 1;
     for (i = 1; handle->alloc_map[i - 1] != END_OF_CHAIN; i++) {
-        serial_printf("alloc_map1\n");
         handle->alloc_map = realloc(handle->alloc_map, sizeof(uint64_t) * (i + 1));
-        serial_printf("alloc_map2\n");
         handle->alloc_map[i] = echfs.fat[handle->alloc_map[i - 1]];
     }
     handle->total_blocks = i - 1;

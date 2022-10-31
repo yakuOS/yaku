@@ -2,9 +2,9 @@
 #include <drivers/serial.h>
 #include <lib/fuse.h>
 #include <lib/stat.h>
+#include <memory/pmm.h>
 #include <string.h>
 #include <types.h>
-#include <memory/pmm.h>
 
 struct virtual_fs_directory_entry* virtual_fs_root;
 
@@ -85,13 +85,14 @@ struct endpoint_path_result* virtual_fs_endpoint_path_resolver(char* path) {
         name = strtok(NULL, "/");
     }
     serial_printf("virtual_fs_endpoint_path_resolver: name=%s\n", name);
-    if (name == 0 && result->endpoint!=NULL){
+    if (name == 0 && result->endpoint != NULL) {
         strcpy(result->endpoint_path_to_be_passed, "/");
     }
     if (name != NULL) {
         strcpy(result->endpoint_path_to_be_passed, name);
     }
-    serial_printf("virtual_fs_endpoint_path_resolver: endpoint_path_to_be_passed=%s\n", result->endpoint_path_to_be_passed);
+    serial_printf("virtual_fs_endpoint_path_resolver: endpoint_path_to_be_passed=%s\n",
+                  result->endpoint_path_to_be_passed);
     return result;
 }
 
@@ -99,11 +100,27 @@ uint8_t virtual_fs_add_directory_entry(struct virtual_fs_directory* parent_direc
                                        char* name, enum entry_type entry_type,
                                        uint64_t* pointer) {
     parent_directory->entries_count++;
+    for (uint64_t i = 0;
+         i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count;
+         i++) {
+        serial_printf(
+            "entry0 %s\n",
+            ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries[i].name);
+    }
     parent_directory->entries =
         realloc(parent_directory->entries, sizeof(struct virtual_fs_directory_entry) *
                                                parent_directory->entries_count);
+
+    for (uint64_t i = 0;
+         i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count;
+         i++) {
+        serial_printf(
+            "entry0.1 %s\n",
+            ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries[i].name);
+    }
     struct virtual_fs_directory_entry* entry =
         &parent_directory->entries[parent_directory->entries_count - 1];
+
     strcpy(entry->name, name);
     entry->type = entry_type;
     entry->pointer = pointer;
@@ -148,18 +165,22 @@ uint8_t virtual_fs_create_endpoint(struct fuse_operations* fuse_operations,
     struct virtual_fs_endpoint* endpoint = malloc(sizeof(struct virtual_fs_endpoint));
     memcpy(&endpoint->fuse_ops, fuse_operations, sizeof(struct fuse_operations));
     endpoint->type = endpoint_type;
-    for (uint64_t i = 0; i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count; i++) {
-        serial_printf("entry1 %s\n", ((struct virtual_fs_directory*)virtual_fs_root->pointer)
-                                          ->entries[i]
-                                          .name);
+    for (uint64_t i = 0;
+         i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count;
+         i++) {
+        serial_printf(
+            "entry1 %s\n",
+            ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries[i].name);
     }
     virtual_fs_add_directory_entry(result->parent->pointer, result->name,
                                    ENTRY_TYPE_ENDPOINT, (uint64_t*)endpoint);
 
-    for (uint64_t i = 0; i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count; i++) {
-        serial_printf("entry %s\n", ((struct virtual_fs_directory*)virtual_fs_root->pointer)
-                                          ->entries[i]
-                                          .name);
+    for (uint64_t i = 0;
+         i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count;
+         i++) {
+        serial_printf(
+            "entry %s\n",
+            ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries[i].name);
     }
     free(result);
 
@@ -334,7 +355,7 @@ int virtual_fs_create(const char* file_path, mode_t mode,
         (struct virtual_fs_endpoint*)path->endpoint->pointer;
 
     if (endpoint->fuse_ops.create == NULL) {
-        if (endpoint->fuse_ops.mknod != NULL && endpoint->fuse_ops.open != 0){
+        if (endpoint->fuse_ops.mknod != NULL && endpoint->fuse_ops.open != 0) {
             endpoint->fuse_ops.mknod(path->endpoint_path_to_be_passed, mode, 0);
             endpoint->fuse_ops.open(path->endpoint_path_to_be_passed, file_info);
         }
@@ -369,7 +390,7 @@ int virtual_fs_unlink(const char* file_path) {
     return 0;
 }
 
-int virtual_fs_mknod(const char *pathname, mode_t mode, dev_t dev){
+int virtual_fs_mknod(const char* pathname, mode_t mode, dev_t dev) {
     serial_printf("mknod %s\n", pathname);
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(pathname);
     serial_printf("mknod check 1\n");
@@ -384,9 +405,10 @@ int virtual_fs_mknod(const char *pathname, mode_t mode, dev_t dev){
         (struct virtual_fs_endpoint*)path->endpoint->pointer;
 
     if (endpoint->fuse_ops.mknod == NULL) {
-        if (endpoint->fuse_ops.create != NULL){
+        if (endpoint->fuse_ops.create != NULL) {
             serial_printf("mknod check 3\n");
-            struct fuse_file_info* file_info = (struct fuse_file_info*)malloc(sizeof(struct fuse_file_info));
+            struct fuse_file_info* file_info =
+                (struct fuse_file_info*)malloc(sizeof(struct fuse_file_info));
             serial_printf("mknod check 4\n");
             endpoint->fuse_ops.create(path->endpoint_path_to_be_passed, mode, file_info);
             serial_printf("mknod check 5\n");
@@ -460,7 +482,8 @@ int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
         for (int i = 0;
              i < ((struct virtual_fs_directory*)result->parent->pointer)->entries_count;
              i++) {
-            serial_printf("virtual_fs_readdir4: %s\n", result->endpoint_path_to_be_passed);
+            serial_printf("virtual_fs_readdir4: %s\n",
+                          result->endpoint_path_to_be_passed);
             struct stat st = {
                 .st_mode = (((struct virtual_fs_directory*)(result->parent->pointer))
                                     ->entries[i]
@@ -473,8 +496,8 @@ int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
             };
             filler(
                 buffer,
-                ((struct virtual_fs_directory*)result->parent->pointer)->entries[i].name, &st, 0, 0);
-                
+                ((struct virtual_fs_directory*)result->parent->pointer)->entries[i].name,
+                &st, 0, 0);
         }
     }
     return 0;
