@@ -136,13 +136,18 @@ void* malloc(size_t size) {
     pmm_used_blocks += size;
     uint16_t blocks_allocated = (uint16_t)size;
     *((uint16_t*)addr) = blocks_allocated;
+
     return ((void*)addr) + 2;
 }
 
 void free(void* p) {
+    if (p == 0) {
+        return;
+    }
     uint64_t addr = (uint64_t)p - 2;
     uint16_t size = *((uint16_t*)addr);
     uint64_t frame = addr / PMM_BLOCK_SIZE;
+
 
     for (uint64_t i = 0; i < size; i++) {
         pmm_mmap_unset(frame + i);
@@ -156,21 +161,30 @@ void* calloc(size_t num, size_t size){
     return p;
 }
 void* realloc(void* p, size_t new_size){
+    serial_printf("realloc1\n");
     if (p == 0) {
         return malloc(new_size);
     }
+    serial_printf("realloc2\n");
     uint64_t addr = (uint64_t)p-2;
     uint16_t size = *((uint16_t*)addr);
-    uint64_t blocks_to_allocate = (new_size+2-1)/PMM_BLOCK_SIZE+1;
-    if (blocks_to_allocate > size) {
-        void* new_p = malloc(new_size);
-        memcpy(new_p, p, size);
-        free(p);
-        return new_p;
-    } else {
-        return p;
-    }
-}
+    serial_printf("realloc3\n");
+    // uint64_t blocks_to_allocate = (new_size+2-1)/PMM_BLOCK_SIZE+1;
+    // if (blocks_to_allocate > size) {
+    //     void* new_p = malloc(new_size);
+    //     memcpy(new_p, p, size);
+    //     free(p);
+    //     return new_p;
+    // } else {
+    //     return p;
+    // }
+    void* new_p = malloc(new_size);
+    serial_printf("new_p1\n");
+    memcpy(new_p, p, size);
+    serial_printf("new_p2\n");
+    free(p);
+    return new_p;
+} 
 
 uint64_t pmm_mmap_find_first_free() {
 

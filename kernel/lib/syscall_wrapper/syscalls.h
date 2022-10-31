@@ -15,11 +15,15 @@ enum syscalls {
     SYS_remove_virtual_file,
     SYS_create_virtual_directory,
     SYS_open,
+    SYS_mknod,
     SYS_getdents, 
     SYS_write,
     SYS_read,
     SYS_lseek,// - end offset calls getattr and size = end offset
-    SYS_close
+    SYS_close,
+    SYS_mkdir,
+    SYS_rmdir,
+    SYS_unlink,
 };
 
 extern uint64_t syscall(enum syscalls syscall, ...);

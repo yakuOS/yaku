@@ -32,6 +32,7 @@
 #include <virtual_fs/virtual_fs.h>
 #include <echfs/mkfs.echfs.h>
 #include <lib/stdio.h>
+#include <lib/syscall_wrapper/mknod.h>
 
 extern int enable_sse();
 
@@ -100,8 +101,31 @@ void kernel_main_task() {
     serial_printf("echfs fuse main done\n");
 
     struct dir_entries entries[100];
-    get_dir_entries("/", entries, 100);
+    // get_dir_entries("/", entries, 100);
+    // serial_printf("dir entries: %s, dir entry type %d\n", entries[1].name, entries[0].is_dir);
+
+    mknod("/echfsa/test", S_IFREG, 0);
+    get_dir_entries("/echfsa/", entries, 100);
     serial_printf("dir entries: %s, dir entry type %d\n", entries[0].name, entries[0].is_dir);
+    char* name = malloc(100);
+    name[0] = '/';
+    name[1] = 'e';
+    name[2] = 'c';
+    name[3] = 'h';
+    name[4] = 'f';
+    name[5] = 's';
+    name[6] = 'a';
+    name[7] = '/';
+    name[8] = 't';
+    name[9] = 'e';
+    name[10] = 's';
+    name[11] = 't';
+    FILE* file_des = fopen(name, "r");
+    // fwrite("hello world", 1, 11, file_des);
+    // fseek(file_des, 0, SEEK_SET);
+    // char buf[100];
+    // fread(buf, 1, 100, file_des);
+    // serial_printf("file contents: %s", buf);
 
 }
 void start(stivale2_struct_t* stivale2_struct) {

@@ -500,7 +500,6 @@ static struct path_result_t *resolve_path(const char *path) {
         path_result->failure = 0;
         return path_result;
     }
-
     path_result = malloc(sizeof(struct path_result_t));
     path_result->next = NULL;
     strcpy(path_result->path, path);
@@ -567,7 +566,7 @@ static int get_handle() {
 }
 
 static int echfs_open(const char *file_path, struct fuse_file_info *file_info) {
-    echfs_debug("opening file %s\n", file_path);
+    serial_printf("opening file %s\n", file_path);
     struct path_result_t *path_result = resolve_path(file_path);
     if (path_result->failure) return -ENOENT;
     if (path_result->target.type == DIRECTORY_TYPE) return -EISDIR;
@@ -584,11 +583,12 @@ static int echfs_open(const char *file_path, struct fuse_file_info *file_info) {
     handle->alloc_map[0] = path_result->target.payload;
     uint64_t i = 1;
     for (i = 1; handle->alloc_map[i - 1] != END_OF_CHAIN; i++) {
+        serial_printf("alloc_map1\n");
         handle->alloc_map = realloc(handle->alloc_map,
                 sizeof(uint64_t) * (i + 1));
+        serial_printf("alloc_map2\n");
         handle->alloc_map[i] = echfs.fat[handle->alloc_map[i - 1]];
     }
-
     handle->total_blocks = i - 1;
 
     return 0;
@@ -596,7 +596,7 @@ static int echfs_open(const char *file_path, struct fuse_file_info *file_info) {
 
 static int echfs_opendir(const char *dir_path,
         struct fuse_file_info *file_info) {
-    echfs_debug("opening dir %s\n", dir_path);
+    serial_printf("opening dir %s\n", dir_path);
     struct path_result_t *path_result = resolve_path(dir_path);
     if (path_result->failure) {
         return -ENOENT;
@@ -691,7 +691,7 @@ static int echfs_getattr(const char *path, struct stat *stat) {
 
 static int echfs_readdir(const char *path, void *buf, fuse_fill_dir_t fill,
         off_t offset, struct fuse_file_info *file_info) {
-    echfs_debug("readdir() on %s and offset %lu\n", path, offset);
+    serial_printf("readdir() on %s and offset %lu\n", path, offset);
 
     struct echfs_handle_t *handle = &handles[file_info->fh];
     if (!handle->occupied || file_info->fh >= MAX_HANDLES) return -EBADF;
@@ -716,10 +716,10 @@ static int echfs_release(const char *path,
     if (file_info->fh >= MAX_HANDLES) return -EBADF;
     if (!handles[file_info->fh].occupied) return -EBADF;
     if (handles[file_info->fh].path_res->type != FILE_TYPE) return -EISDIR;
-
-    echfs_debug("released handle for %s\n", path);
     handles[file_info->fh].occupied = 0;
     free(handles[file_info->fh].alloc_map);
+    free(handles[file_info->fh].path_res);
+
     return 0;
 }
 
@@ -836,7 +836,7 @@ static int echfs_write(const char *path, const char *buf, size_t to_write,
             return -EIO;
         progress += chunk;
     }
-
+    serial_printf("Wrote %lu bytes to %s\n", to_write, path);
     return to_write;
 }
 
@@ -856,7 +856,6 @@ static uint64_t find_free_entry() {
 
 static int echfs_create(const char *path, mode_t mode,
         struct fuse_file_info *file_info) {
-    echfs_debug("echfs_create() on %s\n", path);
     struct path_result_t *path_res = resolve_path(path);
     if (!path_res->failure)
         return -EEXIST;

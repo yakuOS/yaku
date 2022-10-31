@@ -9,4 +9,8 @@ kernel_syscall_handlers_c_srcs = [
     'syscall_close.c',
     'syscall_getdents.c',
     'syscall_lseek.c',
+    'syscall_mknod.c',
+    'syscall_mkdir.c',
+    'syscall_rmdir.c',
+    'syscall_unlink.c',
     ]

@@ -8,7 +8,9 @@
 #include <lib/syscall_wrapper/open.h>
 #include <lib/syscall_wrapper/read.h>
 #include <lib/syscall_wrapper/write.h>
+#include <lib/syscall_wrapper/mknod.h>
 #include <types.h>
+#include <thirdparty/string/string.h>
 
 int fprintf(FILE* stream, const char* format, ...) {
 
@@ -16,7 +18,11 @@ int fprintf(FILE* stream, const char* format, ...) {
 }
 
 FILE* fopen(const char* filename, const char* mode) {
-    return open(filename, mode);
+    serial_printf("fopen: filename=%s\n", filename);
+    if (mode[0]=='w'){
+        mknod(filename, S_IFREG, 0);
+    }
+    return open(filename, S_IFREG);
 }
 
 int fclose(FILE* stream) {
@@ -71,7 +77,7 @@ void rewind(FILE* stream) {
 
 int get_dir_entries(char* path, struct dir_entries* dir_entries,
                     uint64_t count /*in entries*/) {
-    FILE* fd = open(path, 1);
+    FILE* fd = open(path, S_IFDIR);
     char dirents[count * 200];
     uint64_t b_read = getdents(fd, dirents, count * 200);
 

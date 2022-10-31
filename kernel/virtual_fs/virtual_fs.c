@@ -77,6 +77,9 @@ struct endpoint_path_result* virtual_fs_endpoint_path_resolver(char* path) {
         result->parent = entry;
         name = strtok(NULL, "/");
     }
+    if (name == 0 && result->endpoint!=NULL){
+        strcpy(result->endpoint_path_to_be_passed, "/");
+    }
     if (name != NULL) {
         strcpy(result->endpoint_path_to_be_passed, name);
     }
@@ -240,6 +243,7 @@ uint8_t virtual_fs_init() {
 
 int virtual_fs_open(const char* file_path, struct fuse_file_info* file_info,
                     struct fuse_operations* fuse_ops, char* endpoint_path_buffer) {
+    serial_printf("should open %s\n", file_path);
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
 
     if (path->parent == NULL || path->endpoint == NULL ||
@@ -265,6 +269,7 @@ int virtual_fs_open(const char* file_path, struct fuse_file_info* file_info,
 int virtual_fs_opendir(const char* file_path, struct fuse_file_info* file_info,
                        struct fuse_operations* fuse_ops, char* endpoint_path_buffer) {
     struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(file_path);
+    serial_printf("opendir %s\n", file_path);
     if (path->parent == NULL || path->endpoint == NULL ||
         path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
         if (path->parent != NULL) {
@@ -273,13 +278,13 @@ int virtual_fs_opendir(const char* file_path, struct fuse_file_info* file_info,
         free(path);
         return;
     }
-
     struct virtual_fs_endpoint* endpoint =
         (struct virtual_fs_endpoint*)path->endpoint->pointer;
-    if (endpoint->fuse_ops.open == NULL) {
+    if (endpoint->fuse_ops.opendir == NULL) {
         free(path);
         return;
     }
+    serial_printf("opendir %s\n", path->endpoint_path_to_be_passed);
     endpoint->fuse_ops.opendir(path->endpoint_path_to_be_passed, file_info);
     memcpy(fuse_ops, &endpoint->fuse_ops, sizeof(struct fuse_operations));
     strcpy(endpoint_path_buffer, path->endpoint_path_to_be_passed);
@@ -302,6 +307,10 @@ int virtual_fs_create(const char* file_path, mode_t mode,
         (struct virtual_fs_endpoint*)path->endpoint->pointer;
 
     if (endpoint->fuse_ops.create == NULL) {
+        if (endpoint->fuse_ops.mknod != NULL && endpoint->fuse_ops.open != 0){
+            endpoint->fuse_ops.mknod(path->endpoint_path_to_be_passed, mode, 0);
+            endpoint->fuse_ops.open(path->endpoint_path_to_be_passed, file_info);
+        }
         free(path);
         return;
     }
@@ -329,6 +338,32 @@ int virtual_fs_unlink(const char* file_path) {
     }
 
     endpoint->fuse_ops.unlink(path->endpoint_path_to_be_passed);
+    free(path);
+    return 0;
+}
+
+int virtual_fs_mknod(const char *pathname, mode_t mode, dev_t dev){
+    struct endpoint_path_result* path = virtual_fs_endpoint_path_resolver(pathname);
+    if (path->parent == NULL || path->endpoint == NULL ||
+        path->endpoint->type != ENTRY_TYPE_ENDPOINT) {
+        free(path);
+        return;
+    }
+
+    struct virtual_fs_endpoint* endpoint =
+        (struct virtual_fs_endpoint*)path->endpoint->pointer;
+
+    if (endpoint->fuse_ops.mknod == NULL) {
+        if (endpoint->fuse_ops.create != NULL){
+            struct fuse_file_info* file_info = (struct fuse_file_info*)malloc(sizeof(struct fuse_file_info));
+            endpoint->fuse_ops.create(path->endpoint_path_to_be_passed, mode, file_info);
+            endpoint->fuse_ops.release(path->endpoint_path_to_be_passed, file_info);
+        }
+        free(path);
+        return;
+    }
+
+    endpoint->fuse_ops.mknod(path->endpoint_path_to_be_passed, mode, dev);
     free(path);
     return 0;
 }
@@ -380,7 +415,7 @@ int virtual_fs_rmdir(const char* file_path) {
 int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
                        off_t offset, struct fuse_file_info* fi) {
     struct endpoint_path_result* result = virtual_fs_endpoint_path_resolver(path);
-
+    serial_printf("virtual_fs_readdir: %s\n", path);
     if (result->parent == NULL) {
         free(result);
         return;

@@ -1,3 +1,4 @@
+#include <drivers/serial.h>
 #include <lib/fuse.h>
 #include <lib/stat.h>
 #include <memory/pmm.h>
@@ -6,7 +7,6 @@
 #include <thirdparty/string/string.h>
 #include <virtual_fs/FILE.h>
 #include <virtual_fs/virtual_fs.h>
-#include <drivers/serial.h>
 
 struct dirent {
     unsigned long d_ino;
@@ -49,23 +49,22 @@ fuse_fill_dir_t syscall_getdents_fill_dir(void* buf, const char* name,
             strcat(file_path, "/");
         }
         strcat(file_path, name);
-        dirent_buffer_info_pointer->file->operations->getattr(
-            file_path, &stat);
+        dirent_buffer_info_pointer->file->operations->getattr(file_path, &stat);
         stbuf = &stat;
     }
-    uint8_t* mode_pointer = ((uint8_t*)dirent_buffer_info_pointer->dirent_buffer)[dirent_size - sizeof(mode_t)];
+    uint8_t* mode_pointer =
+        ((uint8_t*)
+             dirent_buffer_info_pointer->dirent_buffer)[dirent_size - sizeof(mode_t)];
     *(mode_t*)mode_pointer = stbuf->st_mode;
-    serial_printf("mode pointer: %x, mode %x\n", &((uint8_t*)dirent_buffer_info_pointer->dirent_buffer)[dirent_size - sizeof(mode_t)], *(mode_t*)mode_pointer);
     dirent_buffer_info_pointer->buffer_size += dirent_size;
-    dirent_buffer_info_pointer->dirent_buffer= (struct dirent*)((uint64_t)dirent_buffer_info_pointer->dirent_buffer + (uint64_t)dirent_size);
+    dirent_buffer_info_pointer->dirent_buffer =
+        (struct dirent*)((uint64_t)dirent_buffer_info_pointer->dirent_buffer +
+                         (uint64_t)dirent_size);
     return 0;
 }
 
 int64_t syscall_getdents(int fd, void* dirp, size_t count) {
     file_handle_t* file = scheduler_get_current_task()->files[fd];
-    if (file->operations->readdir == NULL) {
-        return -1;
-    }
     struct dirent_buffer_info_pointer* dirent_buffer_pointer =
         malloc(sizeof(struct dirent_buffer_info_pointer));
     dirent_buffer_pointer->buffer_size = 0;
@@ -74,10 +73,18 @@ int64_t syscall_getdents(int fd, void* dirp, size_t count) {
     dirent_buffer_pointer->file = file;
     // file->operations->readdir(file->path, dirent_buffer_pointer,
     //                           syscall_getdents_fill_dir, 0, &file->file_handle);
-    virtual_fs_readdir(file->path, dirent_buffer_pointer,
-                       syscall_getdents_fill_dir, 0, &file->file_handle);
-uint64_t size = dirent_buffer_pointer->buffer_size;
+
+    serial_printf("syscall_getdents: %x\n", file->operations);
+    if (file->operations->readdir == NULL) { // should guarantee that directory is part of a virtual_endpoint, if it's not, call the virtual_fs_readdir
+        virtual_fs_readdir(file->path, dirent_buffer_pointer, syscall_getdents_fill_dir,
+                           0, &file->file_handle);
+        // serial_printf("syscall_getdents: %s\n", file->path);
+    } else {
+        file->operations->readdir(file->path, dirent_buffer_pointer,
+                                  syscall_getdents_fill_dir, 0, &file->file_handle);
+    }
+
+    uint64_t size = dirent_buffer_pointer->buffer_size;
     free(dirent_buffer_pointer);
-    serial_printf("syscall_getdents: %s\n", file->path);
     return size;
 }
