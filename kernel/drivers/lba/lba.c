@@ -213,3 +213,72 @@ bool lba_identify(enum ide_controller controller, enum drives drive, uint16_t* b
         return true;
     }
 }
+
+void ata_write(bool primary, uint16_t ata_register, uint16_t whattowrite)
+{
+    if (primary)
+    {
+        io_outb(ATA_PRIMARY + ata_register, whattowrite);
+    }
+    else
+    {
+        io_outb(ATA_SECONDARY + ata_register, whattowrite);
+    }
+}
+
+uint8_t ata_read(bool primary, uint16_t ata_register)
+{
+    if (primary)
+    {
+        return io_inb(ATA_PRIMARY + ata_register);
+    }
+    else
+    {
+        return io_inb(ATA_SECONDARY + ata_register);
+    }
+}
+static bool ata_lock = false;
+
+void read_ata(uint64_t where, uint32_t count, uint8_t *buffer)
+{
+    ata_lock = true;
+    // waiting_for_irq = 1;
+    ata_write(true, ATA_reg_selector, 0x40 | 0xE0);
+    ata_write(true, ATA_reg_error_feature, 0);
+
+    ata_write(true, ATA_reg_sector_count, count >> 8);
+    ata_write(true, ATA_reg_lba0, (uint8_t)(where >> 24));
+    ata_write(true, ATA_reg_lba1, (uint8_t)(where >> 32));
+    ata_write(true, ATA_reg_lba2, (uint8_t)(where >> 40));
+
+    ata_write(true, ATA_reg_sector_count, count);
+    ata_write(true, ATA_reg_lba0, (uint8_t)where);
+    ata_write(true, ATA_reg_lba1, (uint8_t)(where >> 8));
+    ata_write(true, ATA_reg_lba2, (uint8_t)(where >> 16));
+
+    ata_write(true, ATA_reg_command_status, ATA_cmd_read); // call the read command
+    wait(5);
+    uint32_t new_count = count;
+    uint32_t off = 0;
+
+    while (new_count-- > 0)
+    {
+        uint8_t status = poll_status();
+
+        if ((status & 0x1) || (status & 0x20))
+        {
+            wait(5);
+            uint8_t error = ata_read(true, ATA_reg_error_feature);
+            serial_printf("ata error: {%x}", error);
+            ata_lock = false;
+            return;
+        }
+        for (uint16_t i = 0; i < 256; i++)
+        {
+            *((unsigned short *)buffer + (off + i)) = io_inw(ATA_PRIMARY + ATA_reg_data);
+        }
+        off += 256;
+    }
+    ata_lock = false;
+    return;
+}

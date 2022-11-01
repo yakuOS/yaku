@@ -130,8 +130,8 @@ void write_to_drive_release(const char* path, struct fuse_file_info* fh) {
 // }
 
 int write_to_drive_write(const char* path, const char* buf, size_t size, off_t offset,
-                           struct fuse_file_info* fh) {
-    serial_printf("write_to_drive_write\n");
+                         struct fuse_file_info* fh) {
+    // serial_printf("write_to_drive_write\n");
     struct drive_image* image = &drive_images[fh->fh];
 
     // if (image->access_mode != W) {
@@ -199,7 +199,7 @@ int write_to_drive_write(const char* path, const char* buf, size_t size, off_t o
                                                         size / 512 + 1, (uint8_t*)buffer);
         }
     }
-    serial_printf("write to drive size %d offset %d\n", size, offset);
+    // serial_printf("write to drive size %d offset %d\n", size, offset);
     return size;
 }
 
@@ -213,40 +213,57 @@ int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offse
     uint64_t byte_to_read_from = (uint64_t)offset;
     uint64_t sector_to_read_from = byte_to_read_from / 512;
     uint64_t byte_in_sector_to_read_from = byte_to_read_from % 512;
-    uint8_t* buffer /*[(size_of_element * number_of_elements) +
-                    (512 - ((size_of_element * number_of_elements) %
-                            512))]*/
-        = (uint8_t*)malloc(
-            (to_read) +
-            (512 - ((to_read) % 512))); // buffer with size of element*number_of_elements
-                                        // rounded up to 512 (sector size)
+
     uint64_t sectors_to_read = 0;
     if (to_read % 512 == 0) {
         sectors_to_read = to_read / 512;
+        serial_printf("sectors to read %d \n", sectors_to_read);
+        if (image->drive == drive_first) {
+            lba_read_primary_controller_first_drive(sector_to_read_from, sectors_to_read,
+                                                    (uint8_t*)buf);
+        } else if (image->drive == drive_second) {
+            lba_read_primary_controller_second_drive(sector_to_read_from, sectors_to_read,
+                                                     (uint8_t*)buf);
+        } else if (image->drive == drive_third) {
+            lba_read_secondary_controller_first_drive(sector_to_read_from,
+                                                      sectors_to_read, (uint8_t*)buf);
+        } else if (image->drive == drive_fourth) {
+            lba_read_secondary_controller_second_drive(sector_to_read_from,
+                                                       sectors_to_read, (uint8_t*)buf);
+        }
+        return to_read;
     } else {
         sectors_to_read = to_read / 512 + 1;
-    }
-    if (image->drive == drive_first) {
-        lba_read_primary_controller_first_drive(sector_to_read_from, sectors_to_read,
-                                                (uint8_t*)buffer);
-    } else if (image->drive == drive_second) {
-        lba_read_primary_controller_second_drive(sector_to_read_from, sectors_to_read,
-                                                 (uint8_t*)buffer);
-    } else if (image->drive == drive_third) {
-        lba_read_secondary_controller_first_drive(sector_to_read_from, sectors_to_read,
-                                                  (uint8_t*)buffer);
-    } else if (image->drive == drive_fourth) {
-        lba_read_secondary_controller_second_drive(sector_to_read_from, sectors_to_read,
-                                                   (uint8_t*)buffer);
-    }
+        uint8_t* buffer /*[(size_of_element * number_of_elements) +
+                    (512 - ((size_of_element * number_of_elements) %
+                            512))]*/
+            = (uint8_t*)malloc(
+                (to_read) +
+                (512 -
+                 ((to_read) % 512))); // buffer with size of element*number_of_elements
+                                      // rounded up to 512 (sector size)
+        if (image->drive == drive_first) {
+            lba_read_primary_controller_first_drive(sector_to_read_from, sectors_to_read,
+                                                    (uint8_t*)buffer);
+        } else if (image->drive == drive_second) {
+            lba_read_primary_controller_second_drive(sector_to_read_from, sectors_to_read,
+                                                     (uint8_t*)buffer);
+        } else if (image->drive == drive_third) {
+            lba_read_secondary_controller_first_drive(sector_to_read_from,
+                                                      sectors_to_read, (uint8_t*)buffer);
+        } else if (image->drive == drive_fourth) {
+            lba_read_secondary_controller_second_drive(sector_to_read_from,
+                                                       sectors_to_read, (uint8_t*)buffer);
+        }
 
-    // copy the data from where to read from to the buffer
-    for (uint64_t i = byte_in_sector_to_read_from;
-         i < byte_in_sector_to_read_from + to_read; i++) {
-        buf[i - byte_in_sector_to_read_from] = buffer[i];
+        // copy the data from where to read from to the buffer
+        for (uint64_t i = byte_in_sector_to_read_from;
+             i < byte_in_sector_to_read_from + to_read; i++) {
+            buf[i - byte_in_sector_to_read_from] = buffer[i];
+        }
+        free(buffer);
+        return to_read;
     }
-    free(buffer);
-    return to_read;
 }
 
 int write_to_drive_readdir(const char* path, void* buf, fuse_fill_dir_t fill,
@@ -276,19 +293,19 @@ int write_to_drive_fgetattr(const char* path, struct stat* stat,
     stat->st_blksize = 512;
 
     if (image->drive == drive_first) {
-        stat->st_size = get_drive_size(primary_controller, first_drive)*512;
+        stat->st_size = get_drive_size(primary_controller, first_drive) * 512;
         stat->st_blksize = 512;
         stat->st_blocks = stat->st_size / 512;
     } else if (image->drive == drive_second) {
-        stat->st_size = get_drive_size(primary_controller, second_drive)*512;
+        stat->st_size = get_drive_size(primary_controller, second_drive) * 512;
         stat->st_blksize = 512;
         stat->st_blocks = stat->st_size / 512;
     } else if (image->drive == drive_third) {
-        stat->st_size = get_drive_size(secondary_controller, first_drive)*512;
+        stat->st_size = get_drive_size(secondary_controller, first_drive) * 512;
         stat->st_blksize = 512;
         stat->st_blocks = stat->st_size / 512;
     } else if (image->drive == drive_fourth) {
-        stat->st_size = get_drive_size(secondary_controller, second_drive)*512;
+        stat->st_size = get_drive_size(secondary_controller, second_drive) * 512;
         stat->st_blksize = 512;
         stat->st_blocks = stat->st_size / 512;
     }

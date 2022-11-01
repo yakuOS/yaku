@@ -172,7 +172,8 @@ void* realloc(void* p, size_t new_size){
     uint64_t blocks_to_allocate = (new_size+2-1)/PMM_BLOCK_SIZE+1;
     if (blocks_to_allocate > size) {
         void* new_p = malloc(new_size);
-        memcpy(new_p, p, size);
+        memcpy(new_p, p, size*PMM_BLOCK_SIZE-2);
+        // serial_printf("Reallocating %i blocks to %i blocks\n", size, blocks_to_allocate);
         free(p);
         return new_p;
     } else {
