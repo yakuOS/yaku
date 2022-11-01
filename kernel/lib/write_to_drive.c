@@ -129,6 +129,8 @@ void write_to_drive_release(const char* path, struct fuse_file_info* fh) {
 //     return 0;
 // }
 
+
+// TODO: for both, write and read, only read/write 255 sectors at a time (seems to work on qemu but shouldn't on real hardware)
 int write_to_drive_write(const char* path, const char* buf, size_t size, off_t offset,
                          struct fuse_file_info* fh) {
     // serial_printf("write_to_drive_write\n");
@@ -147,15 +149,15 @@ int write_to_drive_write(const char* path, const char* buf, size_t size, off_t o
                            // 512 just write the buffer to the drive
         if (image->drive == drive_first) {
 
-            lba_write_primary_controller_first_drive(sector_to_write_to, size / 512, ptr);
+            write_ata_primary_controller_first_drive(sector_to_write_to, size / 512, ptr);
         } else if (image->drive == drive_second) {
-            lba_write_primary_controller_second_drive(sector_to_write_to, size / 512,
+            write_ata_primary_controller_second_drive(sector_to_write_to, size / 512,
                                                       ptr);
         } else if (image->drive == drive_third) {
-            lba_write_secondary_controller_first_drive(sector_to_write_to, size / 512,
+            write_ata_secondary_controller_first_drive(sector_to_write_to, size / 512,
                                                        ptr);
         } else if (image->drive == drive_fourth) {
-            lba_write_secondary_controller_second_drive(sector_to_write_to, size / 512,
+            write_ata_secondary_controller_second_drive(sector_to_write_to, size / 512,
                                                         ptr);
         }
     } else { // else read the sector from the drive, add the buffer to it and write it
@@ -165,20 +167,20 @@ int write_to_drive_write(const char* path, const char* buf, size_t size, off_t o
                                                      // element*number_of_elements rounded
                                                      // up to 512 (sector size)
         if (image->drive == drive_first) {
-            lba_read_primary_controller_first_drive(
+            read_ata_primary_controller_first_drive(
                 sector_to_write_to, size / 512 + 1,
                 (uint8_t*)buffer); // size / 512+1->
                                    // because size % 512
                                    // != 0, we need to read one sector more than
                                    // size
         } else if (image->drive == drive_second) {
-            lba_read_primary_controller_second_drive(sector_to_write_to, size / 512 + 1,
+            read_ata_primary_controller_second_drive(sector_to_write_to, size / 512 + 1,
                                                      (uint8_t*)buffer);
         } else if (image->drive == drive_third) {
-            lba_read_secondary_controller_first_drive(sector_to_write_to, size / 512 + 1,
+            read_ata_secondary_controller_first_drive(sector_to_write_to, size / 512 + 1,
                                                       (uint8_t*)buffer);
         } else if (image->drive == drive_fourth) {
-            lba_read_secondary_controller_second_drive(sector_to_write_to, size / 512 + 1,
+            read_ata_secondary_controller_second_drive(sector_to_write_to, size / 512 + 1,
                                                        (uint8_t*)buffer);
         }
         for (uint64_t i = byte_in_sector_to_write_to;
@@ -186,16 +188,16 @@ int write_to_drive_write(const char* path, const char* buf, size_t size, off_t o
             buffer[i] = ptr[i - byte_in_sector_to_write_to];
         }
         if (image->drive == drive_first) {
-            lba_write_primary_controller_first_drive(sector_to_write_to, size / 512 + 1,
+            write_ata_primary_controller_first_drive(sector_to_write_to, size / 512 + 1,
                                                      (uint8_t*)buffer);
         } else if (image->drive == drive_second) {
-            lba_write_primary_controller_second_drive(sector_to_write_to, size / 512 + 1,
+            write_ata_primary_controller_second_drive(sector_to_write_to, size / 512 + 1,
                                                       (uint8_t*)buffer);
         } else if (image->drive == drive_third) {
-            lba_write_secondary_controller_first_drive(sector_to_write_to, size / 512 + 1,
+            write_ata_secondary_controller_first_drive(sector_to_write_to, size / 512 + 1,
                                                        (uint8_t*)buffer);
         } else if (image->drive == drive_fourth) {
-            lba_write_secondary_controller_second_drive(sector_to_write_to,
+            write_ata_secondary_controller_second_drive(sector_to_write_to,
                                                         size / 512 + 1, (uint8_t*)buffer);
         }
     }
@@ -219,16 +221,16 @@ int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offse
         sectors_to_read = to_read / 512;
         serial_printf("sectors to read %d \n", sectors_to_read);
         if (image->drive == drive_first) {
-            lba_read_primary_controller_first_drive(sector_to_read_from, sectors_to_read,
+            read_ata_primary_controller_first_drive(sector_to_read_from, sectors_to_read,
                                                     (uint8_t*)buf);
         } else if (image->drive == drive_second) {
-            lba_read_primary_controller_second_drive(sector_to_read_from, sectors_to_read,
+            read_ata_primary_controller_second_drive(sector_to_read_from, sectors_to_read,
                                                      (uint8_t*)buf);
         } else if (image->drive == drive_third) {
-            lba_read_secondary_controller_first_drive(sector_to_read_from,
+            read_ata_secondary_controller_first_drive(sector_to_read_from,
                                                       sectors_to_read, (uint8_t*)buf);
         } else if (image->drive == drive_fourth) {
-            lba_read_secondary_controller_second_drive(sector_to_read_from,
+            read_ata_secondary_controller_second_drive(sector_to_read_from,
                                                        sectors_to_read, (uint8_t*)buf);
         }
         return to_read;
@@ -243,16 +245,16 @@ int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offse
                  ((to_read) % 512))); // buffer with size of element*number_of_elements
                                       // rounded up to 512 (sector size)
         if (image->drive == drive_first) {
-            lba_read_primary_controller_first_drive(sector_to_read_from, sectors_to_read,
+            read_ata_primary_controller_first_drive(sector_to_read_from, sectors_to_read,
                                                     (uint8_t*)buffer);
         } else if (image->drive == drive_second) {
-            lba_read_primary_controller_second_drive(sector_to_read_from, sectors_to_read,
+            read_ata_primary_controller_second_drive(sector_to_read_from, sectors_to_read,
                                                      (uint8_t*)buffer);
         } else if (image->drive == drive_third) {
-            lba_read_secondary_controller_first_drive(sector_to_read_from,
+            read_ata_secondary_controller_first_drive(sector_to_read_from,
                                                       sectors_to_read, (uint8_t*)buffer);
         } else if (image->drive == drive_fourth) {
-            lba_read_secondary_controller_second_drive(sector_to_read_from,
+            read_ata_secondary_controller_second_drive(sector_to_read_from,
                                                        sectors_to_read, (uint8_t*)buffer);
         }
 

@@ -447,6 +447,9 @@ static void* echfs_init(struct fuse_conn_info* conn) {
     echfs_fseek(echfs.image, echfs.fat_start * echfs.bytes_per_block, SEEK_SET);
     ret = fread(echfs.fat, sizeof(char), echfs.fat_size * echfs.bytes_per_block,
                 echfs.image);
+    // for (uint64_t i = 0; i < echfs.fat_size * echfs.bytes_per_block; i++) {
+    //     serial_printf("fat[%lu] = %x\n", i, ((uint8_t*)echfs.fat)[i]);
+    // }
     if (ret != (echfs.fat_size * echfs.bytes_per_block)) {
         serial_printf("stderr: error reading allocation table!\n");
         cleanup_fuse();
@@ -455,7 +458,7 @@ static void* echfs_init(struct fuse_conn_info* conn) {
         free(echfs.fat);
         return 0;
     }
-
+    serial_printf("echfs: mounted image successfully!\n");
     return NULL;
 }
 

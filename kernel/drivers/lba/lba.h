@@ -48,6 +48,7 @@
 #define ATA_state_error  0x01
 #define ATA_cmd_identify  0xEC
 #define ATA_cmd_read  0x24
+#define ATA_cmd_write 0x34
 
 
 void lba_init();
@@ -61,7 +62,14 @@ enum ide_controller{
 };
 void ata_write(bool primary, uint16_t ata_register, uint16_t whattowrite);
 uint8_t ata_read(bool primary, uint16_t ata_register);
-void read_ata(uint64_t where, uint32_t count, uint8_t *buffer);
+void read_ata_primary_controller_first_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+void read_ata_primary_controller_second_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+void read_ata_secondary_controller_first_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+void read_ata_secondary_controller_second_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+// void write_ata_primary_controller_first_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+void write_ata_primary_controller_second_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+void write_ata_secondary_controller_first_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+void write_ata_secondary_controller_second_drive(uint64_t where, uint32_t count, uint8_t *buffer);
 static inline uint8_t poll_status()
     {
         uint8_t status = ata_read(true, ATA_reg_command_status);
@@ -83,6 +91,7 @@ static inline void wait(uint8_t time)
 bool lba_identify(enum ide_controller controller, enum drives drive, uint16_t* buffer) ;
 bool drive_present(enum ide_controller controller, enum drives drive);
 uint64_t get_drive_size(enum ide_controller controller, enum drives drive);
-extern void lba_read_primary_controller(uint64_t sector, uint8_t count, uint8_t* buffer);
-extern void lba_write_primary_controller(uint64_t sector, uint8_t count,
-                                         uint8_t* buffer);
+extern void write_ata_primary_controller_first_drive(uint64_t sector, uint8_t count, uint8_t* buffer);
+extern void write_ata_primary_controller_second_drive(uint64_t sector, uint8_t count, uint8_t* buffer);
+extern void write_ata_secondary_controller_first_drive(uint64_t sector, uint8_t count, uint8_t* buffer);
+extern void write_ata_secondary_controller_second_drive(uint64_t sector, uint8_t count, uint8_t* buffer);

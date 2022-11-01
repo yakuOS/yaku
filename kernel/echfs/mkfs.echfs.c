@@ -81,15 +81,19 @@ int echfs_mkfs_main(int argc, char** argv) {
 
     uint64_t fatsize = (blocks * sizeof(uint64_t)) / bytesperblock;
     uint64_t dirsize = blocks / (100 / reserved_factor);
-    uint64_t buffer[bytesperblock/sizeof(uint64_t)]; // one block
-    for (uint64_t i = 0; i < bytesperblock/sizeof(uint64_t); i++) { // bytesperblock/sizeof(uint64_t) = uint64_t per block
+    uint64_t buffer[bytesperblock/sizeof(uint64_t)+1]; // one block
+    for (uint64_t i = 0; i < bytesperblock/sizeof(uint64_t)+1; i++) { // bytesperblock/sizeof(uint64_t) = uint64_t per block
         buffer[i] = 0xfffffffffffffff0;
     }
+    // for (uint64_t i = 0; i < bytesperblock/sizeof(uint64_t); i++) { // bytesperblock/sizeof(uint64_t) = uint64_t per block
+    //     serial_printf("%x ", buffer[i]);
+    // }
     for (uint64_t i = 0; i < (RESERVED_BLOCKS + fatsize + dirsize); i+=(bytesperblock/sizeof(uint64_t))) {
         // wr_qword(loc, 0xfffffffffffffff0);
         wr_blocks(loc, 1, (uint8_t*)buffer);
         loc += sizeof(uint64_t)*(bytesperblock/sizeof(uint64_t));
     }
+    serial_printf("fat size: location %lu\n", loc);
     fflush(image);
     fclose(image);
     serial_printf("echfs: info: formatting complete.\n");

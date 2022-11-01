@@ -96,22 +96,25 @@ void kernel_main_task() {
     write_to_drive_init();
     uint8_t* buffer = malloc(2000 * 512);
     serial_printf("buffer: %p \n", buffer);
-    read_ata(0, 10, buffer);
-    for (int i = 0; i < 512; i++) {
-        serial_printf("%x ", buffer[i]);
-    }
-    // memset(buffer, 0, 2000 * 512);
-    serial_printf("\n\n");
-    // lba_read_primary_controller_first_drive(0, 1, buffer);
-    read_ata(100, 1, buffer);
-    // lba_read_primary_controller_first_drive(0, 10, buffer);
-    serial_printf("buffer: %p \n", buffer);
-    for (int i = 0; i < 512; i++) {
-        serial_printf("%x ", buffer[i]);
-    }
+    // FILE* file = fopen("/lba_drive/first_drive", "r");
+    // fputs("hello world", file);
+    // fclose(file);
+    // read_ata_primary_controller_first_drive(0, 1000, buffer);
+    // for (int i = 0; i < 512; i++) {
+    //     serial_printf("%x ", buffer[i]);
+    // }
+    // // memset(buffer, 0, 2000 * 512);
+    // serial_printf("\n\n");
+    // // lba_read_primary_controller_first_drive(0, 1, buffer);
+    // read_ata_primary_controller_first_drive(0, 1, buffer);
+    // // lba_read_primary_controller_first_drive(0, 10, buffer);
+    // serial_printf("buffer: %p \n", buffer);
+    // for (int i = 0; i < 512; i++) {
+    //     serial_printf("%x ", buffer[i]);
+    // }
     
-    // char* argv[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
-    // echfs_mkfs_main(4, argv);
+    char* argv[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
+    echfs_mkfs_main(4, argv);
 
     // FILE* a = fopen("/lba_drive/first_drive", "r");
     // fseek(a, 8192, SEEK_SET);
@@ -122,9 +125,9 @@ void kernel_main_task() {
     // serial_printf("buffer[2]=%x\n", buffer[2]);
 
     // struct dir_entries entries[100];
-    // char* argv2[4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
-    // echfs_fuse_main(4, argv2);
-    // serial_printf("echfs fuse main done\n");
+    char* argv2[4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
+    echfs_fuse_main(4, argv2);
+    serial_printf("echfs fuse main done\n");
 
     // get_dir_entries("/", entries, 100);
     // // get_dir_entries("/", entries, 100);
@@ -132,29 +135,29 @@ void kernel_main_task() {
     // entries[0].is_dir);
 
     // serial_printf("kernel main check 1\n");
-    // mknod("/echfsa/test", S_IFREG, 0);
-    // serial_printf("\n\n\n\n");
-    // // serial_printf("kernel main check 2\n");
-    // // get_dir_entries("/", entries, 100);
-    // // serial_printf("dir entries: %s, dir entry type %d\n", entries[0].name,
-    // entries[0].is_dir); char* name = malloc(1000); name[0] = 'e'; name[1] = 'c';
-    // name[2] = 'h';
-    // name[3] = 'f';
-    // name[4] = 's';
-    // name[5] = 'a';
-    // name[6] = '/';
-    // name[7] = 't';
-    // name[8] = 'e';
-    // name[9] = 's';
-    // name[10] = 't';
-    // FILE* file_des = fopen(name, "r");
-    // fputs("hello world", file_des);
-    // fseek(file_des, 0, SEEK_SET);
-    // char buf[100];
-    // fgets(buf, 20, file_des);
-    // serial_printf("file contents: %s \n", buf);
-    // fclose(file_des);
-    // remove_virtual_file("/echfsa");
+    mknod("/echfsa/test", S_IFREG, 0);
+    serial_printf("\n\n\n\n");
+    // serial_printf("kernel main check 2\n");
+    // get_dir_entries("/", entries, 100);
+    // serial_printf("dir entries: %s, dir entry type %d\n", entries[0].name,
+    char* name = malloc(1000); name[0] = 'e'; name[1] = 'c';
+    name[2] = 'h';
+    name[3] = 'f';
+    name[4] = 's';
+    name[5] = 'a';
+    name[6] = '/';
+    name[7] = 't';
+    name[8] = 'e';
+    name[9] = 's';
+    name[10] = 't';
+    FILE* file_des = fopen(name, "r");
+    fputs("hello world", file_des);
+    fseek(file_des, 0, SEEK_SET);
+    char buf[100];
+    fgets(buf, 20, file_des);
+    serial_printf("file contents: %s \n", buf);
+    fclose(file_des);
+    remove_virtual_file("/echfsa");
 }
 void start(stivale2_struct_t* stivale2_struct) {
     enable_sse();
