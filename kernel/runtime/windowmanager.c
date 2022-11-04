@@ -14,6 +14,7 @@
 #include <runtime/drawutils.h>
 #include <string.h>
 #include <types.h>
+#include <interrupts/pic.h>
 
 static window_t windows[64];
 static window_t* current_window;
@@ -28,18 +29,23 @@ void windowmanager_init(void) {
     cursor_pos_x = buffer.width / 2;
     cursor_pos_y = buffer.height / 2;
     // workaround because weird things with the memmap, this is on purpose
-    malloc(buffer.width * buffer.height * 4 / PMM_BLOCK_SIZE + 1);
-    buffer.buffer = malloc(buffer.width * buffer.height * 4 / PMM_BLOCK_SIZE + 1);
+    malloc(buffer.width * buffer.height * 4);
+    malloc(buffer.width * buffer.height * 4);
+    buffer.buffer = malloc(buffer.width * buffer.height * 4);
 }
-
+void draw(){
+    fb_draw_buffer(buffer.buffer);
+}
 void windowmanager_run(void) {
     windowmanager_startup_screen();
     fb_draw_buffer(buffer.buffer);
     scheduler_sleep(1000);
-
     for (;;) {
-        windowmanager_handle_events();
+
+        uint64_t time = pit_tick_get();
         windowmanager_draw();
+        time = pit_tick_get();
+        
         fb_draw_buffer(buffer.buffer);
     }
 }
@@ -52,62 +58,56 @@ void windowmanager_startup_screen() {
                               (buffer.height - YAKU_LOGO_HEIGHT) / 2, YAKU_LOGO_WIDTH,
                               YAKU_LOGO_HEIGHT, (const uint32_t*)yaku_logo);
 }
-
-void windowmanager_handle_events() {
-    input_event_t event;
-    if (input_event_get_event(&event)) {
-
-        // window movement
-        if (event.kind == EVENT_MOUSE_MOTION) {
-            if (current_window && click_down) {
-                if (current_window != NULL) {
-                    current_window->x += event.mouse_motion.x_rel;
-                    current_window->y -= event.mouse_motion.y_rel;
-                    if (current_window->x < 0) {
-                        current_window->x = 0;
-                    }
-                    if (current_window->y < 0) {
-                        current_window->y = 0;
-                    }
-                    if (current_window->x >= buffer.width) {
-                        current_window->x = buffer.width - 1;
-                    }
-                    if (current_window->y >= buffer.height) {
-                        current_window->y = buffer.height - 1;
-                    }
+void windowmanager_event_hander(input_event_t* event) {
+    // window movement
+    if (event->kind == EVENT_MOUSE_MOTION) {
+        if (current_window && click_down) {
+            if (current_window != NULL) {
+                current_window->x += event->mouse_motion.x_rel;
+                current_window->y -= event->mouse_motion.y_rel;
+                if (current_window->x < 0) {
+                    current_window->x = 0;
                 }
-            }
-
-            cursor_pos_x += event.mouse_motion.x_rel;
-            cursor_pos_y -= event.mouse_motion.y_rel;
-            if (cursor_pos_x < 0) {
-                cursor_pos_x = 0;
-            }
-            if (cursor_pos_y < 0) {
-                cursor_pos_y = 0;
-            }
-            if (cursor_pos_x >= buffer.width) {
-                cursor_pos_x = buffer.width - 1;
-            }
-            if (cursor_pos_y >= buffer.height) {
-                cursor_pos_y = buffer.height - 1;
-            }
-        } else if (event.kind == EVENT_MOUSE_BUTTON) {
-            if (event.mouse_button.button == MOUSE_BUTTON_LEFT) {
-                if (event.mouse_button.s_kind == MOUSE_BUTTON_DOWN) {
-                    click_down = true;
-                    current_window =
-                        windowmanager_get_window_at(cursor_pos_x, cursor_pos_y);
-                } else {
-                    click_down = false;
+                if (current_window->y < 0) {
+                    current_window->y = 0;
+                }
+                if (current_window->x >= buffer.width) {
+                    current_window->x = buffer.width - 1;
+                }
+                if (current_window->y >= buffer.height) {
+                    current_window->y = buffer.height - 1;
                 }
             }
         }
-        // TODO: also forward other events
-        else if (event.kind == EVENT_KEYBOARD) {
-            if (current_window != NULL && current_window->on_event != NULL) {
-                current_window->on_event(current_window, event);
+
+        cursor_pos_x += event->mouse_motion.x_rel;
+        cursor_pos_y -= event->mouse_motion.y_rel;
+        if (cursor_pos_x < 0) {
+            cursor_pos_x = 0;
+        }
+        if (cursor_pos_y < 0) {
+            cursor_pos_y = 0;
+        }
+        if (cursor_pos_x >= buffer.width) {
+            cursor_pos_x = buffer.width - 1;
+        }
+        if (cursor_pos_y >= buffer.height) {
+            cursor_pos_y = buffer.height - 1;
+        }
+    } else if (event->kind == EVENT_MOUSE_BUTTON) {
+        if (event->mouse_button.button == MOUSE_BUTTON_LEFT) {
+            if (event->mouse_button.s_kind == MOUSE_BUTTON_DOWN) {
+                click_down = true;
+                current_window = windowmanager_get_window_at(cursor_pos_x, cursor_pos_y);
+            } else {
+                click_down = false;
             }
+        }
+    }
+    // TODO: also forward other events
+    else if (event->kind == EVENT_KEYBOARD) {
+        if (current_window != NULL && current_window->on_event != NULL) {
+            current_window->on_event(current_window, *event);
         }
     }
 }
@@ -217,8 +217,7 @@ window_t* windowmanager_create_window(size_t width, size_t height, char* title) 
             windows[i].on_event = NULL;
             windows[i].buffer.height = height;
             windows[i].buffer.width = width;
-            windows[i].buffer.buffer =
-                malloc(width * height * sizeof(uint32_t) / PMM_BLOCK_SIZE + 1);
+            windows[i].buffer.buffer = malloc(width * height * sizeof(uint32_t));
 
             memset(windows[i].buffer.buffer, 0, width * height * sizeof(uint32_t));
 

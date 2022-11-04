@@ -1,5 +1,43 @@
 {
     "mesonbuild.buildFolder": "build",
     "files.insertFinalNewline": true,
-    "files.trimFinalNewlines": true
+    "files.trimFinalNewlines": true,
+    "files.associations": {
+        "windowmanager.h": "c",
+        "drawutils.h": "c"
+        "serial.h": "c",
+        "string.h": "c",
+        "cstdlib": "c",
+        "write_to_drive.h": "c",
+        "datetime.h": "c",
+        "pit.h": "c",
+        "rtc.h": "c",
+        "cstdio": "c",
+        "*.tcc": "c",
+        "chrono": "c",
+        "future": "c",
+        "iomanip": "c",
+        "limits": "c",
+        "numeric": "c",
+        "ratio": "c",
+        "streambuf": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "*.inc": "c",
+        "algorithm": "c",
+        "ctime": "c",
+        "memory": "c",
+        "new": "c",
+        "compare": "c",
+        "echfs.utils.h": "c",
+        "fstream": "c",
+        "file.h": "c",
+        "origin.h": "c",
+        "stat.h": "c",
+        "stdarg.h": "c",
+        "types.h": "c",
+        "stivale2.h": "c"
+        "types.h": "c",
+        "fuse.h": "c"
+    }
 }

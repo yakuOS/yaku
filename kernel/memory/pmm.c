@@ -63,7 +63,7 @@ void pmm_init(stivale2_struct_tag_memmap_t* memory_map) {
 
     serial_printf(
         "Initialized memory manager with %i KB of memory.\nTotal memory blocks: "
-        "%i\nAvailable memory blocks: %i\n\n",
+        "%i\nAvailable memory blocks: %lu\n\n",
         pmm_get_memory_size(), pmm_get_block_count(), pmm_get_free_block_count());
 }
 
@@ -117,7 +117,11 @@ void pmm_free_block(void* p) {
 }
 
 void* malloc(size_t size) {
-
+    // asm volatile("cli");
+    if (size == 0) {
+        return 0;
+    }
+    size = (size + 2 - 1) / PMM_BLOCK_SIZE + 1;
     if (pmm_get_free_block_count() <= size) {
         return 0;
     }
@@ -134,21 +138,51 @@ void* malloc(size_t size) {
 
     uint64_t addr = frame * PMM_BLOCK_SIZE;
     pmm_used_blocks += size;
-
-    return (void*)addr;
+    uint16_t blocks_allocated = (uint16_t)size;
+    *((uint16_t*)addr) = blocks_allocated;
+    // asm volatile("sti");
+    return ((void*)addr) + 2;
 }
 
-void free(void* p, size_t size) {
-
-    uint64_t addr = (uint64_t)p;
+void free(void* p) {
+    asm volatile("cli");
+    if (p == 0) {
+        return;
+    }
+    uint64_t addr = (uint64_t)p - 2;
+    uint16_t size = *((uint16_t*)addr);
     uint64_t frame = addr / PMM_BLOCK_SIZE;
+
 
     for (uint64_t i = 0; i < size; i++) {
         pmm_mmap_unset(frame + i);
     }
-
     pmm_used_blocks -= size;
+    asm volatile("sti");
 }
+void* calloc(size_t num, size_t size){
+    uint64_t bytes_to_allocate = num*size;
+    void* p = malloc(bytes_to_allocate);
+    memset(p, 0, bytes_to_allocate);
+    return p;
+}
+void* realloc(void* p, size_t new_size){
+     if (p == 0) {
+        return malloc(new_size);
+    }
+    uint64_t addr = (uint64_t)p-2;
+    uint16_t size = *((uint16_t*)addr);
+    uint64_t blocks_to_allocate = (new_size+2-1)/PMM_BLOCK_SIZE+1;
+    if (blocks_to_allocate > size) {
+        void* new_p = malloc(new_size);
+        memcpy(new_p, p, size*PMM_BLOCK_SIZE-2);
+        // serial_printf("Reallocating %i blocks to %i blocks\n", size, blocks_to_allocate);
+        free(p);
+        return new_p;
+    } else {
+        return p;
+    }
+} 
 
 uint64_t pmm_mmap_find_first_free() {
 

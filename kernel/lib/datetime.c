@@ -4,7 +4,7 @@
 #include <printf.h>
 #include <string.h>
 #include <types.h>
-
+#include <drivers/rtc.h>
 #define IS_LEAP_YEAR(YEAR) ((YEAR > 0) && !(YEAR % 4) && ((YEAR % 100) || !(YEAR % 400)))
 #define DAYS_PER_YEAR 365
 #define SECONDS_PER_DAY 86400
@@ -39,7 +39,12 @@ uint32_t datetime_to_timestamp(datetime_t* datetime, bool gmt) {
 
     return gmt ? timestamp : timestamp - 7200;
 }
-
+uint32_t datetime_get_timestamp() {
+    datetime_t rtc_time;
+    rtc_read_time(&rtc_time);
+    uint32_t timestamp = datetime_to_timestamp(&rtc_time, true);
+    return timestamp;
+}
 void datetime_from_timestamp(uint32_t timestamp, datetime_t* final_date) {
 
     long int currYear, daysTillNow, extraTime, extraDays, index, date, month, hours,

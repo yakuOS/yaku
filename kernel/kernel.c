@@ -16,6 +16,10 @@
 #include <stivale2.h>
 #include <string.h>
 #include <types.h>
+#include <virtual_fs/virtual_fs.h>
+#include <lib/write_to_drive.h>
+#include <lib/syscall_wrapper/get_open_pointer.h>
+#include <drivers/lba/lba.h>
 
 extern int enable_sse();
 
@@ -63,16 +67,24 @@ void* stivale2_get_tag(stivale2_struct_t* stivale2_struct, uint64_t id) {
 }
 
 void start(stivale2_struct_t* stivale2_struct) {
+    
     enable_sse();
+
     serial_init();
     pic_init();
     idt_init();
-    pit_init(500);
+    pit_init(1000);
 
+
+    uint64_t rflags;
+    rflags_copy((void*)&rflags);
+    serial_printf("rflags: %zu\n", rflags);
+    set_rflags(rflags);
+    lba_init();
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
     pmm_init(memory_map);
-
+    // malloc(300000);
     asm("cli");
     ps2_init();
     input_device_create_device("keyboard", "keyboard", keyboard_keymap,
@@ -83,8 +95,12 @@ void start(stivale2_struct_t* stivale2_struct) {
     stivale2_struct_tag_framebuffer_t* fb_tag;
     fb_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
     fb_init(fb_tag);
-
-    task_add(&runtime_start, TASK_PRIORITY_VERY_HIGH, 0);
+    serial_printf("fb init done\n");
+    virtual_fs_init();
+    serial_printf("vfs init done\n");
+    // get_open_pointer();
+    // get_open_pointer();
+    task_add(&runtime_start, 0, TASK_PRIORITY_VERY_HIGH, 0);
 
     for (;;) {
         asm("hlt");
