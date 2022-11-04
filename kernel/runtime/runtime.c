@@ -24,6 +24,9 @@ void runtime_start() {
     serial_printf("a %c\n", argv_fuse_mkfs[1]);
     echfs_mkfs_main(4, argv_fuse_mkfs);
     serial_printf("b\n");
+    char** argv2[4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
+    echfs_fuse_main(4, argv2);
+    serial_printf("echfs fuse main done\n");
     windowmanager_init();
     task_add(&windowmanager_run, NULL, TASK_PRIORITY_VERY_HIGH, 0);
 

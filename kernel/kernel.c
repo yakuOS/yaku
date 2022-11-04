@@ -83,7 +83,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
     pmm_init(memory_map);
-// malloc(200000);
+    // malloc(300000);
     asm("cli");
     ps2_init();
     input_device_create_device("keyboard", "keyboard", keyboard_keymap,
