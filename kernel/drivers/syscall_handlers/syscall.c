@@ -1,7 +1,7 @@
 #include "syscall.h"
 #include <drivers/serial.h>
 #include <lib/syscall_wrapper/syscalls.h>
-
+#include <virtual_fs/virtual_fs.h>
 
 
 
@@ -50,6 +50,8 @@ uint64_t isr_syscall(uint64_t rid, uint64_t rsi, uint64_t rdx, uint64_t rcx, uin
     case SYS_mknod:
         return syscall_mknod((const char*) rsi, (mode_t) rdx, (dev_t) rcx);
         break;
+    case SYS_get_open_pointer:
+        get_open_pointer_fs();
     default:
         break;
     }

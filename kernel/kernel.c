@@ -1,29 +1,13 @@
 #include <drivers/fb.h>
 #include <drivers/input/input_device.h>
 #include <drivers/input/ps2.h>
-#include <drivers/lba/lba.h>
 #include <drivers/pit.h>
 #include <drivers/serial.h>
 #include <drivers/vga_text.h>
-// #include <echfs/echfs-utils.h>
-#include <lib/fuse.h>
-// #include <echfs/mkfs.echfs.h>
-// #include <echfs/echfs-fuse.h>
-#include <drivers/lba/lba.h>
-#include <echfs/echfs-fuse.h>
-#include <echfs/echfs-utils.h>
-#include <echfs/mkfs.echfs.h>
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
-#include <lib/datetime.h>
-#include <lib/file.h>
 #include <lib/input/keyboard_handler.h>
 #include <lib/input/mouse_handler.h>
-#include <lib/stdio.h>
-#include <lib/syscall_wrapper/mknod.h>
-#include <lib/syscall_wrapper/open.h>
-#include <lib/syscall_wrapper/remove_virtual_file.h>
-#include <lib/write_to_drive.h>
 #include <memory/pmm.h>
 #include <multitasking/task.h>
 #include <printf.h>
@@ -33,6 +17,8 @@
 #include <string.h>
 #include <types.h>
 #include <virtual_fs/virtual_fs.h>
+#include <lib/write_to_drive.h>
+#include <lib/syscall_wrapper/get_open_pointer.h>
 
 extern int enable_sse();
 
@@ -79,173 +65,42 @@ void* stivale2_get_tag(stivale2_struct_t* stivale2_struct, uint64_t id) {
     }
 }
 
-void test_task() {
-    serial_printf("test task\n");
-}
-void test_task2() {
-    scheduler_sleep(1000);
-    serial_printf("hello world\n");
-}
-int fill_dir(void* dh_, const char* name, const struct stat* statp, off_t off,
-             enum fuse_fill_dir_flags flags) {
-    serial_printf("dir: %s\n", name);
-    return 0;
-}
-void kernel_main_task() {
-    malloc(1000);
-    write_to_drive_init();
-    uint8_t* buffer = malloc(2000 * 512);
-    serial_printf("buffer: %p \n", buffer);
-    // FILE* file = fopen("/lba_drive/first_drive", "r");
-    // fputs("hello world", file);
-    // fclose(file);
-    // read_ata_primary_controller_first_drive(0, 1000, buffer);
-    // for (int i = 0; i < 512; i++) {
-    //     serial_printf("%x ", buffer[i]);
-    // }
-    // // memset(buffer, 0, 2000 * 512);
-    // serial_printf("\n\n");
-    // // lba_read_primary_controller_first_drive(0, 1, buffer);
-    // read_ata_primary_controller_first_drive(0, 1, buffer);
-    // // lba_read_primary_controller_first_drive(0, 10, buffer);
-    // serial_printf("buffer: %p \n", buffer);
-    // for (int i = 0; i < 512; i++) {
-    //     serial_printf("%x ", buffer[i]);
-    // }
-    
-    char* argv[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
-    echfs_mkfs_main(4, argv);
-
-    // FILE* a = fopen("/lba_drive/first_drive", "r");
-    // fseek(a, 8192, SEEK_SET);
-    // uint64_t buffer[512];
-    // fread(buffer, 512, 1, a);
-    // serial_printf("buffer[0]=%x\n", buffer[0]);
-    // serial_printf("buffer[1]=%x\n", buffer[1]);
-    // serial_printf("buffer[2]=%x\n", buffer[2]);
-
-    // struct dir_entries entries[100];
-    char* argv2[4] = {"echfs", "", "/lba_drive/first_drive", "/echfsa"};
-    echfs_fuse_main(4, argv2);
-    serial_printf("echfs fuse main done\n");
-
-    // get_dir_entries("/", entries, 100);
-    // // get_dir_entries("/", entries, 100);
-    // // serial_printf("dir entries: %s, dir entry type %d\n", entries[1].name,
-    // entries[0].is_dir);
-
-    // serial_printf("kernel main check 1\n");
-    mknod("/echfsa/test", S_IFREG, 0);
-    serial_printf("\n\n\n\n");
-    // serial_printf("kernel main check 2\n");
-    // get_dir_entries("/", entries, 100);
-    // serial_printf("dir entries: %s, dir entry type %d\n", entries[0].name,
-    char* name = malloc(1000); name[0] = 'e'; name[1] = 'c';
-    name[2] = 'h';
-    name[3] = 'f';
-    name[4] = 's';
-    name[5] = 'a';
-    name[6] = '/';
-    name[7] = 't';
-    name[8] = 'e';
-    name[9] = 's';
-    name[10] = 't';
-    FILE* file_des = fopen(name, "r");
-    fputs("hello world", file_des);
-    fseek(file_des, 0, SEEK_SET);
-    char buf[100];
-    fgets(buf, 20, file_des);
-    serial_printf("file contents: %s \n", buf);
-    fclose(file_des);
-    remove_virtual_file("/echfsa");
-}
 void start(stivale2_struct_t* stivale2_struct) {
+    
     enable_sse();
+
     serial_init();
     pic_init();
     idt_init();
     pit_init(500);
 
+
+    uint64_t rflags;
+    rflags_copy((void*)&rflags);
+    serial_printf("rflags: %zu\n", rflags);
+    set_rflags(rflags);
+
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
     pmm_init(memory_map);
-    lba_init();
+// malloc(200000);
+    asm("cli");
+    ps2_init();
+    input_device_create_device("keyboard", "keyboard", keyboard_keymap,
+                               &keyboard_handler);
+    input_device_create_device("mouse", "mouse", NULL, &mouse_handler);
+    asm("sti");
+
+    stivale2_struct_tag_framebuffer_t* fb_tag;
+    fb_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
+    fb_init(fb_tag);
+    serial_printf("fb init done\n");
     virtual_fs_init();
-    task_add(kernel_main_task, 0, 2, 0);
+    serial_printf("vfs init done\n");
+    // get_open_pointer();
+    // get_open_pointer();
+    task_add(&runtime_start, 0, TASK_PRIORITY_VERY_HIGH, 0);
 
-    // char* args[5] = {"", "", "format", "512"};
-    // echfs_utils_main(4, args);
-
-    // virtual_fs_create_directory("/hallo");
-    // virtual_fs_create_endpoint(NULL, ENDPOINT_TYPE_FILE, "/hallo/b");
-    // asm("cli");
-    // ps2_init();
-    // input_device_create_device("keyboard", "keyboard", keyboard_keymap,
-    //                            &keyboard_handler);
-    // input_device_create_device("mouse", "mouse", NULL, &mouse_handler);
-    // asm("sti");
-    // // task_add(&test_task, TASK_PRIORITY_MEDIUM, 0);
-    // // task_add(&test_task2, TASK_PRIORITY_MEDIUM, 0);
-    // lba_init();
-    // // lba_read_primary_controller(2, 1);
-    // // lba_write_primary_controller(2, 1);
-    // // lba_read_primary_controller(2, 1);
-    // uint8_t buffer[512];
-    // buffer[0] = 0b11111111;
-    // void* adr = malloc(5000);
-    // ((uint8_t*)adr)[0] = 0b11111111;
-    // free(adr);
-    // // for (int i = 0; i < 256; i++) {
-    // //     buffer[i] = 0;
-    // // }
-    // // serial_printf("timestamp: %lu\n", datetime_get_timestamp());
-    // // FILE* file=fopen("/test.txt", "w");
-    // // fopen("/test.txt", "w");
-    // // fwrite(buffer, 512, 1, file);
-    // // uint8_t buffer2[512];
-    // // fseek(file, 0, SEEK_SET);
-    // // fread(buffer2, 512, 1, file);
-    // // buffer[0]=1;
-    // // lba_init();
-    // // lba_write_primary_controller_first_drive(0, 1, (uint8_t*)buffer);
-    // // buffer[0]=0;
-    // // lba_write_primary_controller(0, 1, &buffer[0]);
-
-    // // static struct drive_image* image;
-
-    // // image = write_to_drive_fopen(drive_first, W);
-    // // serial_printf("%p\n", image);
-    // // fseek(image, 0, SEEK_SET);
-    // // fwrite(buffer, 1, 10, image);
-    // // lba_read_primary_controller_first_drive(0, 1, (uint8_t*)buffer);
-
-    // // fread(buffer, 1, 1, image);
-    // // fopen("/b.txt", "w");
-    // // fwrite(buffer, 11, 1, fopen("/b.txt", "w"));
-
-    // // char* args[5] = {"-v", "", "import", "/b.txt","r.a"};
-    // // echfs_utils_main(5, args);
-    // // char* args[4] = {"-v", "", "ls", "/"};
-    // // echfs_utils_main(4, args);
-    // char* argv[4] = {"echfs", "", "512", "1"};
-    // echfs_mkfs_main(4, argv);
-    // malloc(1000*1000);
-    // struct fuse_operations fuse_ops;
-    // echfs_get_fuse_operations(&fuse_ops);
-    // fuse_ops.init(NULL);
-    // fuse_fill_dir_t ffill_dir = {0};
-    // struct fuse_file_info file_info = {0};
-    // fuse_ops.opendir("/", &file_info);
-
-    // fuse_ops.mkdir("/test", 0 | S_IFDIR);
-    // fuse_ops.mkdir("/jo", 0 | S_IFDIR);
-    // fuse_ops.create("/test.txt", 0 | S_IFREG, &file_info);
-
-    // fuse_ops.opendir("/", &file_info);
-    // fuse_ops.readdir("/", 0, fill_dir,0,&file_info);
-    // fuse_ops.init(NULL);
-    // echfs_fuse_main(NULL, NULL);
-    // FILE* file=fopen("/test.txt", "w");
     for (;;) {
         asm("hlt");
     }

@@ -34,13 +34,16 @@ int echfs_mkfs_main(int argc, char** argv) {
     if (image == -1) {
         serial_printf("%s: error: no valid image specified.\n", argv[0]);
     }
-
+    serial_printf("mkfs check 1\n");
     fseek(image, 0L, SEEK_END);
     uint64_t imgsize = (uint64_t)ftell(image);
     rewind(image);
     fclose(image);
+    serial_printf("/lba_drive/first_drive");
+    serial_printf("\n");
     image = fopen("/lba_drive/first_drive", NULL);
-
+    serial_printf("mkfs check 2\n");
+    serial_printf("%s\n", "mkfs check 3");
     uint64_t bytesperblock = atoi(argv[2]);
     serial_printf("%s: info: bytes per block: %lu\n", argv[0], bytesperblock);
     if ((bytesperblock <= 0) || (bytesperblock % 512)) {
@@ -48,6 +51,7 @@ int echfs_mkfs_main(int argc, char** argv) {
         fclose(image);
         return 1;
     }
+    serial_printf("mkfs check 3\n");
 
     if (imgsize % bytesperblock) {
         serial_printf("%s: error: image is not block-aligned.\n", argv[0]);

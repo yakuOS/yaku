@@ -69,3 +69,13 @@ switch_to_task:
     popa ; pop all registers
     sti
     iretq
+
+; paramterer in rdi, adress where to copy to
+global rflags_copy
+rflags_copy
+    push rax
+    pushfq
+    pop qword rax
+    mov [rdi], rax
+    pop rax
+    ret

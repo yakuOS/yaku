@@ -67,9 +67,9 @@ void read_ata_primary_controller_second_drive(uint64_t where, uint32_t count, ui
 void read_ata_secondary_controller_first_drive(uint64_t where, uint32_t count, uint8_t *buffer);
 void read_ata_secondary_controller_second_drive(uint64_t where, uint32_t count, uint8_t *buffer);
 // void write_ata_primary_controller_first_drive(uint64_t where, uint32_t count, uint8_t *buffer);
-void write_ata_primary_controller_second_drive(uint64_t where, uint32_t count, uint8_t *buffer);
-void write_ata_secondary_controller_first_drive(uint64_t where, uint32_t count, uint8_t *buffer);
-void write_ata_secondary_controller_second_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+// void write_ata_primary_controller_second_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+// void write_ata_secondary_controller_first_drive(uint64_t where, uint32_t count, uint8_t *buffer);
+// void write_ata_secondary_controller_second_drive(uint64_t where, uint32_t count, uint8_t *buffer);
 static inline uint8_t poll_status()
     {
         uint8_t status = ata_read(true, ATA_reg_command_status);

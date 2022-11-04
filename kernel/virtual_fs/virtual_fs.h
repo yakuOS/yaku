@@ -26,7 +26,7 @@ struct virtual_fs_directory {
     struct virtual_fs_directory_entry* entries;
 };
 struct virtual_fs_endpoint {
-    struct fuse_operations fuse_ops;
+    struct fuse_operations* fuse_ops;
     enum endpoint_type type;
 };
 
@@ -54,3 +54,4 @@ int virtual_fs_rmdir(const char* path);
 int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
                        off_t offset, struct fuse_file_info* fi);
 int virtual_fs_mknod(const char *pathname, mode_t mode, dev_t dev);
+void get_open_pointer_fs();

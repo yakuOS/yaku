@@ -117,6 +117,7 @@ void pmm_free_block(void* p) {
 }
 
 void* malloc(size_t size) {
+    asm volatile("cli");
     if (size == 0) {
         return 0;
     }
@@ -139,11 +140,12 @@ void* malloc(size_t size) {
     pmm_used_blocks += size;
     uint16_t blocks_allocated = (uint16_t)size;
     *((uint16_t*)addr) = blocks_allocated;
-
+    asm volatile("sti");
     return ((void*)addr) + 2;
 }
 
 void free(void* p) {
+    asm volatile("cli");
     if (p == 0) {
         return;
     }
@@ -156,6 +158,7 @@ void free(void* p) {
         pmm_mmap_unset(frame + i);
     }
     pmm_used_blocks -= size;
+    asm volatile("sti");
 }
 void* calloc(size_t num, size_t size){
     uint64_t bytes_to_allocate = num*size;

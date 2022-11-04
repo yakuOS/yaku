@@ -4,7 +4,7 @@
 #include <types.h>
 #include <virtual_fs/FILE.h>
 
-#define TASK_STACK_SIZE 1019
+#define TASK_STACK_SIZE 4000
 #define TASKS_MAX 500
 #define TASK_FILES_MAX 100
 enum task_state {
@@ -61,3 +61,4 @@ void task_pause(task_t* task);
 void task_resume(task_t* task);
 int32_t task_add_file(task_t* task, file_handle_t* file);
 int task_remove_file(task_t* task, uint64_t file_id);
+void set_rflags(uint64_t flags);

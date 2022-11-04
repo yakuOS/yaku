@@ -24,6 +24,7 @@ enum syscalls {
     SYS_mkdir,
     SYS_rmdir,
     SYS_unlink,
+    SYS_get_open_pointer,
 };
 
 extern uint64_t syscall(enum syscalls syscall, ...);

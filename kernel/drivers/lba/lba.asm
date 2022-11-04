@@ -73,8 +73,8 @@ write_ata_primary_controller_first_drive:
 ; @param EAX Logical Block Address of sector
 ; @param CL  Number of sectors to write
 ; @param RDI The address of data to write to the disk
-global lba_write_primary_controller_second_drive
-lba_write_primary_controller_second_drive:
+global write_ata_primary_controller_second_drive
+write_ata_primary_controller_second_drive:
     pushfq
     mov rax, rdi
     mov rcx, rsi
@@ -139,8 +139,8 @@ lba_write_primary_controller_second_drive:
 ; @param EAX Logical Block Address of sector
 ; @param CL  Number of sectors to write
 ; @param RDI The address of data to write to the disk
-global lba_write_secondary_controller_first_drive
-lba_write_secondary_controller_first_drive:
+global write_ata_secondary_controller_first_drive
+write_ata_secondary_controller_first_drive:
     pushfq
     mov rax, rdi
     mov rcx, rsi
@@ -205,8 +205,8 @@ lba_write_secondary_controller_first_drive:
 ; @param EAX Logical Block Address of sector
 ; @param CL  Number of sectors to write
 ; @param RDI The address of data to write to the disk
-global lba_write_secondary_controller_second_drive
-lba_write_secondary_controller_second_drive:
+global write_ata_secondary_controller_second_drive
+write_ata_secondary_controller_second_drive:
     pushfq
     mov rax, rdi
     mov rcx, rsi

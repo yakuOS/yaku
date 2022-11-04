@@ -14,9 +14,5 @@ uint64_t syscall_create_virtual_file(struct fuse_operations* operations, enum en
         operations->init(NULL);
     }
     serial_printf("syscall_create_virtual_file init finished\n");
-    FILE* fd = open("/", S_IFDIR);
-    uint8_t buf[100];
-    getdents(NULL, buf, 100);
-    serial_printf("\n\n\n\n");
     return virtual_fs_create_endpoint(operations, endpoint_type, path_copy);
 }

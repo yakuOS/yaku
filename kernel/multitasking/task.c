@@ -10,7 +10,8 @@
 static uint32_t number_of_tasks = 0;
 
 // create task and schedule it
-task_t* task_add(void* function, task_parameters_t* parameters, enum task_priority priority, uint32_t parent_pid) {
+task_t* task_add(void* function, task_parameters_t* parameters,
+                 enum task_priority priority, uint32_t parent_pid) {
     asm("cli");
 
     if (number_of_tasks == TASKS_MAX) {
@@ -162,22 +163,30 @@ int task_remove_file(task_t* task, uint64_t file_id) {
     free(task->files[file_id]);
     task->files[file_id] = NULL;
 }
-
+static uint64_t rflags;
+void set_rflags(uint64_t flags) {
+    rflags = flags;
+}
 // allocates memory for task and sets its stack up
 task_t* task_create(void* function, task_parameters_t* parameters) {
     task_t* new_task = (task_t*)malloc(sizeof(task_t)); // sizeof(task_t) = 8192
 
-    memset(&new_task->stack, 0, TASK_STACK_SIZE * 8);
+    memset(new_task, 0, sizeof(task_t));
 
     // 15 regs for poping in task_switch, 5 for return address
     new_task->rsp = &(new_task->stack[TASK_STACK_SIZE - 21]);
 
     new_task->stack[TASK_STACK_SIZE - 1] = (uint64_t)&task_exit;
-    new_task->stack[TASK_STACK_SIZE - 2] = 0x30; // return SS
+    // new_task->stack[TASK_STACK_SIZE - 2] = 0x00; // return SS
+    // get current ss and copy them into new_task->stack[TASK_STACK_SIZE - 2]
+    asm("mov %%ss, %0" : "=r"(new_task->stack[TASK_STACK_SIZE - 2]));
     new_task->stack[TASK_STACK_SIZE - 3] =
-        (uint64_t) & (new_task->stack[TASK_STACK_SIZE - 1]);   // return RSP
-    new_task->stack[TASK_STACK_SIZE - 4] = 0x203;              // return RFLAGS
-    new_task->stack[TASK_STACK_SIZE - 5] = 0x28;               // return cs
+        (uint64_t) & (new_task->stack[TASK_STACK_SIZE - 1]); // return RSP
+    new_task->stack[TASK_STACK_SIZE - 4] = rflags;              // return RFLAGS
+    // get current RFLAGS and copy them into new_task->stack[TASK_STACK_SIZE - 4]
+    // new_task->stack[TASK_STACK_SIZE - 5] = 0x28;               // return cs
+    // mov current cs to new_task->stack[TASK_STACK_SIZE - 5]
+    asm("mov %%cs, %0" : "=r"(new_task->stack[TASK_STACK_SIZE - 5]));
     new_task->stack[TASK_STACK_SIZE - 6] = (uint64_t)function; // return address -> rip
     new_task->stack[TASK_STACK_SIZE - 7] =
         (uint64_t) &
@@ -185,7 +194,8 @@ task_t* task_create(void* function, task_parameters_t* parameters) {
                                                 // TODO: add stack needed for iretq
 
     if (parameters != NULL) {
-        // add parameters to stack so they get popped into the right registers on first task_switch
+        // add parameters to stack so they get popped into the right registers on first
+        // task_switch
         new_task->stack[TASK_STACK_SIZE - 13] = parameters->first;
         new_task->stack[TASK_STACK_SIZE - 12] = parameters->second;
         new_task->stack[TASK_STACK_SIZE - 11] = parameters->third;

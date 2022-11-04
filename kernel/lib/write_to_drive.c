@@ -337,5 +337,7 @@ static struct fuse_operations operations = {
 };
 
 int write_to_drive_init() {
+    serial_printf("write to drive open pointer %p\n", write_to_drive_open);
+    serial_printf("write to drive open pointer2 %p\n", operations.open);
     create_virtual_file(&operations, ENDPOINT_TYPE_DIRECTORY_U, "/lba_drive");
 }
