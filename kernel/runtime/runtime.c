@@ -5,6 +5,10 @@
 #include <echfs/echfs-fuse.h>
 #include <echfs/mkfs.echfs.h>
 #include <drivers/serial.h>
+#include <lib/stdio.h>
+#include <lib/syscall_wrapper/mknod.h>
+#include <lib/syscall_wrapper/remove_virtual_file.h>
+
 
 // programs (will be read from hard drive later)
 #include <runtime/programs/cube.h>
@@ -35,4 +39,16 @@ void runtime_start() {
     task_add(&gradient_main, NULL, TASK_PRIORITY_LOW, 0);
     task_add(&tbz_main, NULL, TASK_PRIORITY_LOW, 0);
     task_add(&editor_main, NULL, TASK_PRIORITY_LOW, 0);
+
+
+
+    mknod("/echfsa/test", S_IFREG, 0);
+    FILE* file_des = fopen("echfsa/test/", "r");
+    fputs("hello world", file_des);
+    fseek(file_des, 0, SEEK_SET);
+    char buf[100];
+    fgets(buf, 20, file_des);
+    serial_printf("file contents: %s \n", buf);
+    fclose(file_des);
+    remove_virtual_file("/echfsa");
 }

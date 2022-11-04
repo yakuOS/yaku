@@ -44,11 +44,9 @@ void windowmanager_run(void) {
 
         uint64_t time = pit_tick_get();
         windowmanager_draw();
-        serial_printf("1: %lu\n", pit_tick_get() - time);
         time = pit_tick_get();
         
         fb_draw_buffer(buffer.buffer);
-        serial_printf("2: %lu\n", pit_tick_get() - time);
     }
 }
 

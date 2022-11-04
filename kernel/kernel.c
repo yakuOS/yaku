@@ -19,6 +19,7 @@
 #include <virtual_fs/virtual_fs.h>
 #include <lib/write_to_drive.h>
 #include <lib/syscall_wrapper/get_open_pointer.h>
+#include <drivers/lba/lba.h>
 
 extern int enable_sse();
 
@@ -79,7 +80,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     rflags_copy((void*)&rflags);
     serial_printf("rflags: %zu\n", rflags);
     set_rflags(rflags);
-
+    lba_init();
     stivale2_struct_tag_memmap_t* memory_map;
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
     pmm_init(memory_map);

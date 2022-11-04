@@ -12,6 +12,7 @@ static uint64_t secondary_controller_drive_size[2] = {0, 0}; // in sectors
 
 // returns drive size in sectors (512 bytes)
 uint64_t get_drive_size(enum ide_controller controller, enum drives drive) {
+    serial_printf("get_drive_size: controller=%d, drive=%d, size=%d\n", controller, drive, primary_controller_drive_size[drive]);
     if (controller == primary_controller) {
         return primary_controller_drive_size[drive];
     }
@@ -35,6 +36,7 @@ void lba_init() {
                 primary_controller_drive_size[0] =
                     (uint64_t)buffer[102] << 32 | (uint64_t)buffer[101] << 16 |
                     (uint64_t)buffer[100] << 0; // get size in sectors
+                serial_printf("lba_init: primary_controller_drive_size[0]=%lu\n", primary_controller_drive_size[0]);
             }
         }
         // test if second drive is present

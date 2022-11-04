@@ -7,7 +7,7 @@
 enum whence { SEEK_SET, SEEK_CUR, SEEK_END };
 
 int64_t syscall_lseek(int fd, int64_t offset, int whence) {
-    // serial_printf("syscall_lseek: fd=%d, offset=%d, whence=%d\n", fd, offset, whence);
+    serial_printf("syscall_lseek: fd=%d, offset=%d, whence=%d\n", fd, offset, whence);
     task_t* task = scheduler_get_current_task();
     file_handle_t* file = task->files[fd];
     if (file == NULL) {
@@ -32,12 +32,15 @@ int64_t syscall_lseek(int fd, int64_t offset, int whence) {
     if (whence == SEEK_END) {
         struct stat st;
         if (file->operations->fgetattr != NULL) {
+            serial_printf("syscall_lseek: fgetattr != NULL\n");
             file->operations->fgetattr(file->path, &st, &file->file_handle);
         }
         else if (file->operations->getattr != NULL) {
+            serial_printf("syscall_lseek: getattr\n");
             file->operations->getattr(file->path, &st);
         }
         else {
+            serial_printf("syscall_lseek: file->operations->fgetattr == NULL && file->operations->getattr == NULL\n");
             return -1;
         }
         uint64_t file_size = st.st_size;
@@ -47,6 +50,7 @@ int64_t syscall_lseek(int fd, int64_t offset, int whence) {
             }
         }
         file->file_byte_ptr = file_size + offset;
+        serial_printf("syscall_lseek: file_size=%d, file->file_byte_ptr=%d\n", file_size, file->file_byte_ptr);
         return file->file_byte_ptr;
     }
 }

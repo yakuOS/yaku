@@ -1,5 +1,6 @@
 #pragma once
 #include <types.h>
+#include <lib/origin.h>
 typedef uint64_t FILE;
 #define stderr 0
 #define stdout 1

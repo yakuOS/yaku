@@ -11,7 +11,7 @@ const char* drive_second_string = "drive_second";
 const char* drive_third_string = "drive_third";
 const char* drive_fourth_string = "drive_fourth";
 
-struct drive_image drive_images[100];
+static struct drive_image drive_images[100];
 
 int16_t get_handle() {
     for (int i = 0; i < 100; i++) {
@@ -133,7 +133,7 @@ void write_to_drive_release(const char* path, struct fuse_file_info* fh) {
 // TODO: for both, write and read, only read/write 255 sectors at a time (seems to work on qemu but shouldn't on real hardware)
 int write_to_drive_write(const char* path, const char* buf, size_t size, off_t offset,
                          struct fuse_file_info* fh) {
-    // serial_printf("write_to_drive_write\n");
+    serial_printf("write_to_drive_write\n");
     struct drive_image* image = &drive_images[fh->fh];
 
     // if (image->access_mode != W) {
@@ -291,6 +291,7 @@ int write_to_drive_readdir(const char* path, void* buf, fuse_fill_dir_t fill,
 
 int write_to_drive_fgetattr(const char* path, struct stat* stat,
                             struct fuse_file_info* file_info) {
+                                serial_printf("write_to_drive_fgetattr\n");
     struct drive_image* image = &drive_images[file_info->fh];
     stat->st_blksize = 512;
 

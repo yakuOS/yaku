@@ -505,7 +505,7 @@ static struct path_result_t* resolve_path(const char* path) {
     struct path_result_t* path_result = get_cached_path(path);
     serial_printf("resolve_path check 1\n");
     if (path_result) {
-        echfs_debug("found cached path %s\n", path);
+        serial_printf("found cached path %s\n", path);
         path_result->failure = 0;
         return path_result;
     }
@@ -585,12 +585,15 @@ static int echfs_open(const char* file_path, struct fuse_file_info* file_info) {
     serial_printf("opening file %s\n", file_path);
     struct path_result_t* path_result = resolve_path(file_path);
     if (path_result->failure)
+        serial_printf("echfs_open check 1\n");
         return -ENOENT;
     if (path_result->target.type == DIRECTORY_TYPE)
+        serial_printf("echfs_open check 2\n");
         return -EISDIR;
 
     int handle_num = get_handle();
     if (handle_num < 0)
+        serial_printf("echfs_open check 3\n");
         return -ENOMEM;
     file_info->fh = handle_num;
 
@@ -842,6 +845,7 @@ static int echfs_write(const char* path, const char* buf, size_t to_write, off_t
         return -EBADF;
     serial_printf("echfs_write() check 1\n");
     if (!handles[file_info->fh].occupied)
+        serial_printf("echfs_write() check 2.0\n");
         return -EBADF;
     serial_printf("echfs_write() check 3\n");
     if (handles[file_info->fh].path_res->type != FILE_TYPE)
@@ -918,9 +922,9 @@ static int echfs_create(const char* path, mode_t mode, struct fuse_file_info* fi
     serial_printf("echfs_create() check 5\n");
     if (new_entry == SEARCH_FAILURE)
         return -EIO;
+    serial_printf("echfs_create() check 6.0\n");
     wr_entry(&entry, new_entry);
-
-    path_res->target = entry;
+    memcpy(&path_res->target, &entry, sizeof(struct entry_t));
     serial_printf("echfs_create() check 6\n");
     path_res->target_entry = new_entry;
     path_res->type = FILE_TYPE;

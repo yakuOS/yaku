@@ -117,7 +117,7 @@ void pmm_free_block(void* p) {
 }
 
 void* malloc(size_t size) {
-    asm volatile("cli");
+    // asm volatile("cli");
     if (size == 0) {
         return 0;
     }
@@ -140,7 +140,7 @@ void* malloc(size_t size) {
     pmm_used_blocks += size;
     uint16_t blocks_allocated = (uint16_t)size;
     *((uint16_t*)addr) = blocks_allocated;
-    asm volatile("sti");
+    // asm volatile("sti");
     return ((void*)addr) + 2;
 }
 
