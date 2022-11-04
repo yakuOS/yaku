@@ -72,7 +72,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     serial_init();
     pic_init();
     idt_init();
-    pit_init(500);
+    pit_init(1000);
 
 
     uint64_t rflags;

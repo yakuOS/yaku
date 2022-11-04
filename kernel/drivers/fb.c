@@ -2,6 +2,7 @@
 
 #include <drivers/serial.h>
 #include <drivers/timer.h>
+#include <drivers/pit.h>
 #include <stivale2.h>
 #include <string.h>
 #include <types.h>
@@ -20,10 +21,12 @@ void fb_draw_pixel(int x, int y, uint32_t color) {
     fb += (y * fb_tag->framebuffer_pitch) + (x * fb_tag->framebuffer_bpp / 8);
     *(uint32_t*)fb = color;
 }
-
+static uint64_t frame=0;
 void fb_draw_buffer(void* buffer) {
     memcpy(fb_tag->framebuffer_addr, buffer,
            fb_tag->framebuffer_pitch * fb_tag->framebuffer_height);
+    frame++;
+    serial_printf("fps: %d\n", frame/(pit_tick_get()/1000+1));
 }
 
 uint16_t fb_get_width() {

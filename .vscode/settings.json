@@ -3,6 +3,8 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "files.associations": {
+        "windowmanager.h": "c",
+        "drawutils.h": "c"
         "serial.h": "c",
         "string.h": "c",
         "cstdlib": "c",
