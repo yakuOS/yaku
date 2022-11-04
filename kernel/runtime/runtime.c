@@ -20,9 +20,10 @@ void runtime_start() {
     serial_printf("write to drive init done\n");
     get_open_pointer();
     serial_printf("runtime_start\n");
-    char* argv_fuse_mkfs = {"echfs", "/write_to_drive/first_drive", "512", "1"};
+    char** argv_fuse_mkfs[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
+    serial_printf("a %c\n", argv_fuse_mkfs[1]);
     echfs_mkfs_main(4, argv_fuse_mkfs);
-
+    serial_printf("b\n");
     windowmanager_init();
     task_add(&windowmanager_run, NULL, TASK_PRIORITY_VERY_HIGH, 0);
 
