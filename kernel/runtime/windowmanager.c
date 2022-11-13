@@ -193,7 +193,7 @@ window_t* windowmanager_get_window_at(size_t x, size_t y) {
     }
 
     // other windows, in reverse order
-    for (size_t i = 63; i >= 0; i--) {
+    for (int i = 63; i >= 0; i--) {
         if (windows[i].width == 0) {
             continue;
         }
