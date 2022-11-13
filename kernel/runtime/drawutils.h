@@ -25,6 +25,9 @@ void drawutils_draw_rect_filled(framebuffer_t buffer, size_t x, size_t y, size_t
 void drawutils_draw_rect(framebuffer_t buffer, size_t x, size_t y, size_t width,
                          size_t height, size_t thickness, uint32_t color);
 
+void drawutils_draw_circle(framebuffer_t buffer, int x0, int y0, int radius,
+                           uint32_t color);
+
 void drawutils_draw_image_rgba(framebuffer_t buffer, size_t x, size_t y, size_t width,
                                size_t height, const uint32_t* image);
 

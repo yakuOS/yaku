@@ -92,10 +92,10 @@ task_t* task_get_ptr_by_parent_pid(uint32_t pid) {
     return NULL;
 }
 
-void task_kill(uint32_t pid) {
+void task_kill(task_t* task) {
     asm("cli");
 
-    task_t* task = task_get_ptr_by_pid(pid);
+    uint32_t task_pid = task->pid;
 
     bool task_found = false;
     task_t* task_pointing_to = task;
@@ -110,10 +110,10 @@ void task_kill(uint32_t pid) {
 
     task_terminate(task, task_pointing_to);
 
-    // terminate tasks where parent_pid == pid
+    // terminate tasks where parent_pid == task_pid
     bool nothing_left = false;
     while (!nothing_left) {
-        task = task_get_ptr_by_parent_pid(pid);
+        task = task_get_ptr_by_parent_pid(task_pid);
         task_terminate(task, task_pointing_to);
         if (task == NULL) {
             nothing_left = true;

@@ -5,8 +5,15 @@
 #include <multitasking/task.h>
 #include <runtime/windowmanager.h>
 
+void gradient_on_close(window_t* window) {
+    task_kill(window->data);
+    windowmanager_destroy_window(window);
+}
+
 void gradient_main(void) {
     window_t* window = windowmanager_create_window(250, 250, "Gradient");
+    window->data = scheduler_get_current_task();
+    window->on_close = &gradient_on_close;
 
     uint8_t tick = 0;
     int delta = 1;

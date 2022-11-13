@@ -68,6 +68,33 @@ void drawutils_draw_rect(framebuffer_t buffer, size_t x, size_t y, size_t width,
     }
 }
 
+void drawutils_draw_circle(framebuffer_t buffer, int x0, int y0, int radius,
+                           uint32_t color) {
+    int x = radius;
+    int y = 0;
+    int err = 0;
+
+    while (x >= y) {
+        drawutils_draw_pixel(buffer, x0 + x, y0 + y, color);
+        drawutils_draw_pixel(buffer, x0 + y, y0 + x, color);
+        drawutils_draw_pixel(buffer, x0 - y, y0 + x, color);
+        drawutils_draw_pixel(buffer, x0 - x, y0 + y, color);
+        drawutils_draw_pixel(buffer, x0 - x, y0 - y, color);
+        drawutils_draw_pixel(buffer, x0 - y, y0 - x, color);
+        drawutils_draw_pixel(buffer, x0 + y, y0 - x, color);
+        drawutils_draw_pixel(buffer, x0 + x, y0 - y, color);
+
+        if (err <= 0) {
+            y += 1;
+            err += 2 * y + 1;
+        }
+        if (err > 0) {
+            x -= 1;
+            err -= 2 * x + 1;
+        }
+    }
+}
+
 void drawutils_draw_image_rgba(framebuffer_t buffer, size_t x, size_t y, size_t width,
                                size_t height, const uint32_t* image) {
     for (size_t i = 0; i < height; i++) {

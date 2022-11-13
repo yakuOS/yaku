@@ -20,7 +20,7 @@ static window_t* current_window;
 static framebuffer_t buffer;
 static int cursor_pos_x;
 static int cursor_pos_y;
-static bool click_down;
+static bool click_down_bar;
 
 void windowmanager_init(void) {
     buffer.width = fb_get_width();
@@ -58,9 +58,9 @@ void windowmanager_handle_events() {
     input_event_t event;
     if (input_event_get_event(&event)) {
 
-        // window movement
         if (event.kind == EVENT_MOUSE_MOTION) {
-            if (current_window && click_down) {
+            // move window
+            if (current_window && click_down_bar) {
                 if (current_window != NULL) {
                     current_window->x += event.mouse_motion.x_rel;
                     current_window->y -= event.mouse_motion.y_rel;
@@ -79,6 +79,7 @@ void windowmanager_handle_events() {
                 }
             }
 
+            // move cursor
             cursor_pos_x += event.mouse_motion.x_rel;
             cursor_pos_y -= event.mouse_motion.y_rel;
             if (cursor_pos_x < 0) {
@@ -96,16 +97,44 @@ void windowmanager_handle_events() {
         } else if (event.kind == EVENT_MOUSE_BUTTON) {
             if (event.mouse_button.button == MOUSE_BUTTON_LEFT) {
                 if (event.mouse_button.s_kind == MOUSE_BUTTON_DOWN) {
-                    click_down = true;
                     current_window =
                         windowmanager_get_window_at(cursor_pos_x, cursor_pos_y);
+                    if (current_window != NULL) {
+                        // check if click on cross
+                        if (cursor_pos_x >=
+                                current_window->x + current_window->width - 27 &&
+                            cursor_pos_x <=
+                                current_window->x + current_window->width - 7 &&
+                            cursor_pos_y >= current_window->y + 7 &&
+                            cursor_pos_y <= current_window->y + 27) {
+                            // run window close handler (free resources etc)
+                            if (current_window->on_close != NULL) {
+                                current_window->on_close(current_window);
+                            }
+                            //  no handler, just destroy window
+                            else {
+                                windowmanager_destroy_window(current_window);
+                            }
+                        }
+                        // check if click on bar (move window)
+                        else if (cursor_pos_y - current_window->y < 30 + 2) {
+                            click_down_bar = true;
+                        }
+                        // forward mouse click event if neither cross nor bar
+                        else if (current_window->on_event != NULL) {
+                            current_window->on_event(current_window, event);
+                        }
+                    }
                 } else {
-                    click_down = false;
+                    click_down_bar = false;
+                }
+            } else {
+                // forward mouse button evenet
+                if (current_window != NULL && current_window->on_event != NULL) {
+                    current_window->on_event(current_window, event);
                 }
             }
-        }
-        // TODO: also forward other events
-        else if (event.kind == EVENT_KEYBOARD) {
+        } else if (event.kind == EVENT_KEYBOARD) {
             if (current_window != NULL && current_window->on_event != NULL) {
                 current_window->on_event(current_window, event);
             }
@@ -131,8 +160,7 @@ void windowmanager_draw(void) {
     }
 
     // cursor
-    drawutils_draw_image_rgba(buffer, cursor_pos_x - CURSOR_WIDTH / 2,
-                              cursor_pos_y - CURSOR_HEIGHT / 2, CURSOR_WIDTH,
+    drawutils_draw_image_rgba(buffer, cursor_pos_x, cursor_pos_y, CURSOR_WIDTH,
                               CURSOR_HEIGHT, (const uint32_t*)cursor);
 
     // task bar
@@ -216,6 +244,7 @@ window_t* windowmanager_create_window(size_t width, size_t height, char* title) 
             windows[i].height = height + 4 + 30; // +4 for border, +30 for bar
             windows[i].title = title;
             windows[i].on_event = NULL;
+            windows[i].on_close = NULL;
             windows[i].buffer.height = height;
             windows[i].buffer.width = width;
             windows[i].buffer.buffer = malloc(width * height * sizeof(uint32_t));
@@ -226,4 +255,22 @@ window_t* windowmanager_create_window(size_t width, size_t height, char* title) 
         }
     }
     return NULL;
+}
+
+void windowmanager_destroy_window(window_t* window) {
+    if (window == current_window) {
+        current_window = NULL;
+    }
+
+    if (window->buffer.buffer) {
+        free(window->buffer.buffer);
+    }
+
+    memset(window, 0, sizeof(window_t));
+}
+
+void windowmanager_get_relative_cursor_pos(window_t* window, size_t* x, size_t* y) {
+    // TODO: potentially bogus values if cursor is outside of window
+    *x = cursor_pos_x - window->x - 2;
+    *y = cursor_pos_y - window->y - 2 - 30;
 }

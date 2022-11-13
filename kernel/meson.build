@@ -34,15 +34,15 @@ kernel_c_srcs = files([
     'runtime/runtime.c',
     'runtime/drawutils.c',
     'runtime/programs/tbz.c',
-    'runtime/programs/cube.c',
     'runtime/programs/gradient.c',
     'runtime/programs/editor.c',
+    'runtime/programs/tictactoe.c',
     'multitasking/task.c',
     'multitasking/scheduler.c',
 ])
 
 kernel_asmflags = ['-f', 'elf64']
-kernel_ccflags = ['-c', '-m64', '-nostdlib', '-fno-builtin', '-ffreestanding', '-fno-stack-protector', '-mno-red-zone']
+kernel_ccflags = ['-c', '-m64', '-nostdlib', '-fno-builtin', '-ffreestanding', '-fno-stack-protector', '-mno-red-zone', '-O3']
 
 kernel_asm_objs = as_gen.process(kernel_asm_srcs, extra_args: kernel_asmflags)
 

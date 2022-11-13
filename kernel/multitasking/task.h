@@ -38,7 +38,7 @@ void task_exit();
 void task_terminate(task_t* task, task_t* task_pointing_to);
 task_t* task_get_ptr_by_pid(uint32_t pid);
 task_t* task_get_ptr_by_parent_pid(uint32_t pid);
-void task_kill(uint32_t pid);
+void task_kill(task_t* task);
 void task_sleep(task_t* task, uint32_t ticks);
 void task_pause(task_t* task);
 void task_resume(task_t* task);
