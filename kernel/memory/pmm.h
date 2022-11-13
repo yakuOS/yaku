@@ -18,7 +18,7 @@ void pmm_deinit_region(uint64_t* base, size_t size);
 void* pmm_alloc_block(void);
 void pmm_free_block(void* p);
 void* malloc(size_t size);
-void free(void* p, size_t size);
+void free(void* p);
 
 size_t pmm_get_memory_size(void);
 uint64_t pmm_get_block_count(void);

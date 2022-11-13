@@ -31,7 +31,7 @@ void editor_on_event(window_t* window, input_event_t event) {
 void editor_main(void) {
     window_t* window = windowmanager_create_window(400, 400, "Editor");
 
-    void* mem = malloc(5);
+    void* mem = malloc(5 * 4096);
     editor_state_t* state = mem;
     state->buffer = mem + sizeof(editor_state_t);
     memset(state->buffer, 0, mem - sizeof(editor_state_t));
