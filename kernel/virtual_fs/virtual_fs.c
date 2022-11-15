@@ -104,7 +104,11 @@ struct endpoint_path_result* virtual_fs_endpoint_path_resolver(char* path) {
         strcpy(result->endpoint_path_to_be_passed, "/");
     }
     if (name != NULL) {
-        strcpy(result->endpoint_path_to_be_passed, name);
+        char name2[strlen(name)+1];
+        name2[0] = '/';
+        strcpy(name2+1, name);
+
+        strcpy(result->endpoint_path_to_be_passed, name2);
     }
     serial_printf("virtual_fs_endpoint_path_resolver: endpoint_path_to_be_passed=%s\n",
                   result->endpoint_path_to_be_passed);
@@ -133,13 +137,13 @@ uint8_t virtual_fs_add_directory_entry(struct virtual_fs_directory* parent_direc
     entry->type = entry_type;
     entry->pointer = pointer;
 
-    for (uint64_t i = 0;
-         i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count;
-         i++) {
-        serial_printf(
-            "entry0.1 %p\n",
-            ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries[i]);
-    }
+    // for (uint64_t i = 0;
+    //      i < ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries_count;
+    //      i++) {
+    //     serial_printf(
+    //         "entry0.1 %p\n",
+    //         ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries[i]);
+    // }
     serial_printf("virtual_fs_add_directory_entry fuse_op open=%p\n", ((struct virtual_fs_endpoint*)entry->pointer)->fuse_ops->open);
     return 0;
 }

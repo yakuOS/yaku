@@ -65,11 +65,51 @@ void* stivale2_get_tag(stivale2_struct_t* stivale2_struct, uint64_t id) {
         current_tag = (void*)current_tag->next;
     }
 }
+extern enable_xsave();
+extern test_sse();
+struct entry_t {
+    uint64_t parent_id;
+    uint8_t type;
+    char name[100];
+    uint64_t atime;
+    uint64_t mtime;
+    uint16_t perms;
+    uint16_t owner;
+    uint16_t group;
+    uint64_t ctime;
+    uint64_t payload;
+    uint64_t size;
+}__attribute__((packed));
 
+struct path_result_t {
+    uint64_t target_entry;
+    struct entry_t target;
+    struct entry_t parent;
+    char name[100];
+    char path[1000];
+    int failure;
+    int not_found;
+    uint8_t type;
+    struct path_result_t *next;
+};
+struct path_result_table {
+    struct path_result_t **table;
+    uint64_t size;
+    uint64_t num_elements;
+};
+// extern enable_avx();
 void start(stivale2_struct_t* stivale2_struct) {
-    
+    serial_printf("Starting kernel\n");
+    // asm volatile("fninit");
     enable_sse();
+    // enable_xsave();
+    asm("fninit");
+    serial_printf("SSE enabled\n");
+    // enable_avx();
+    serial_printf("testing sse\n");
+    // serial_printf("%lu\n", test_sse());
 
+    serial_printf("testing sse done\n");
     serial_init();
     pic_init();
     idt_init();
@@ -81,9 +121,13 @@ void start(stivale2_struct_t* stivale2_struct) {
     serial_printf("rflags: %zu\n", rflags);
     set_rflags(rflags);
     lba_init();
+    serial_printf("lba init done\n");
     stivale2_struct_tag_memmap_t* memory_map;
+    serial_printf("stivale2_struct: %zu\n", stivale2_struct);
     memory_map = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
+    serial_printf("memory_map: %zu\n", memory_map);
     pmm_init(memory_map);
+    serial_printf("pmm init done\n");
     // malloc(300000);
     asm("cli");
     ps2_init();
@@ -99,7 +143,10 @@ void start(stivale2_struct_t* stivale2_struct) {
     virtual_fs_init();
     serial_printf("vfs init done\n");
     // get_open_pointer();
+
+    struct path_result_table table = {0};
     // get_open_pointer();
+    struct fuse_operations ops = {0};
     task_add(&runtime_start, 0, TASK_PRIORITY_VERY_HIGH, 0);
 
     for (;;) {

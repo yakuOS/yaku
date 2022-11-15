@@ -235,18 +235,21 @@ int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offse
         }
         return to_read;
     } else {
+        serial_printf("to read %d \n", to_read);
         sectors_to_read = to_read / 512 + 1;
         uint8_t* buffer /*[(size_of_element * number_of_elements) +
                     (512 - ((size_of_element * number_of_elements) %
                             512))]*/
             = (uint8_t*)malloc(
-                (to_read) +
-                (512 -
-                 ((to_read) % 512))); // buffer with size of element*number_of_elements
+                sectors_to_read * 512); // buffer with size of element*number_of_elements
                                       // rounded up to 512 (sector size)
+        serial_printf("sectors to read %d \n", sectors_to_read);
         if (image->drive == drive_first) {
+            serial_printf("read from drive first\n");
             read_ata_primary_controller_first_drive(sector_to_read_from, sectors_to_read,
                                                     (uint8_t*)buffer);
+            serial_printf("read from drive first done\n");
+
         } else if (image->drive == drive_second) {
             read_ata_primary_controller_second_drive(sector_to_read_from, sectors_to_read,
                                                      (uint8_t*)buffer);
@@ -261,9 +264,12 @@ int write_to_drive_read(const char* path, char* buf, size_t to_read, off_t offse
         // copy the data from where to read from to the buffer
         for (uint64_t i = byte_in_sector_to_read_from;
              i < byte_in_sector_to_read_from + to_read; i++) {
+            serial_printf("i %d, byte in buffer to write to %lu \n", i, i - byte_in_sector_to_read_from);
             buf[i - byte_in_sector_to_read_from] = buffer[i];
         }
+        serial_printf("read from drive size %d offset %d\n", to_read, offset);
         free(buffer);
+        serial_printf("read from drive size %d offset %d done\n", to_read, offset);
         return to_read;
     }
 }

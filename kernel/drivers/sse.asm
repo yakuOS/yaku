@@ -10,3 +10,11 @@ enable_sse:
     or ax, 3 << 9
     mov cr4, eax
     ret
+
+bits 64
+global test_sse
+test_sse:
+    ; pxor	xmm0, xmm0
+	movaps	[rbp-32],xmm0
+	; movq	[rbp-16],xmm0
+    ret
