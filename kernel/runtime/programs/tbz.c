@@ -5,7 +5,7 @@
 #include <runtime/windowmanager.h>
 
 void tbz_main() {
-    window_t* window = windowmanager_create_window(350, 150, "TBZ");
+    window_t* window = windowmanager_create_default_window(350, 150, "TBZ");
 
     drawutils_draw_rect_filled(window->buffer, 0, 0, 350, 150, RGB(255, 255, 255));
 

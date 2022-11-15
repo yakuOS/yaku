@@ -15,6 +15,12 @@
 #include <string.h>
 #include <types.h>
 
+// programs (will be read from hard drive later)
+#include <runtime/programs/editor.h>
+#include <runtime/programs/gradient.h>
+#include <runtime/programs/tbz.h>
+#include <runtime/programs/tictactoe.h>
+
 static window_t windows[64];
 static window_t* current_window;
 static framebuffer_t buffer;
@@ -22,7 +28,8 @@ static int cursor_pos_x;
 static int cursor_pos_y;
 static bool click_down_bar;
 
-void windowmanager_init(void) {
+void windowmanager_main(void) {
+    // init
     buffer.width = fb_get_width();
     buffer.height = fb_get_height();
     cursor_pos_x = buffer.width / 2;
@@ -31,9 +38,7 @@ void windowmanager_init(void) {
     malloc(buffer.width * buffer.height * 4);
     malloc(buffer.width * buffer.height * 4);
     buffer.buffer = malloc(buffer.width * buffer.height * 4);
-}
 
-void windowmanager_run(void) {
     windowmanager_startup_screen();
     fb_draw_buffer(buffer.buffer);
     scheduler_sleep(1000);
@@ -57,7 +62,6 @@ void windowmanager_startup_screen() {
 void windowmanager_handle_events() {
     input_event_t event;
     if (input_event_get_event(&event)) {
-
         if (event.kind == EVENT_MOUSE_MOTION) {
             // move window
             if (current_window && click_down_bar) {
@@ -135,7 +139,20 @@ void windowmanager_handle_events() {
                 }
             }
         } else if (event.kind == EVENT_KEYBOARD) {
-            if (current_window != NULL && current_window->on_event != NULL) {
+
+            if (event.keyboard.s_kind == KEYBOARD_KEY_DOWN &&
+                event.keyboard.keycode == KB_2) {
+                task_add(&gradient_main, TASK_PRIORITY_LOW, 0);
+            } else if (event.keyboard.s_kind == KEYBOARD_KEY_DOWN &&
+                       event.keyboard.keycode == KB_3) {
+                task_add(&tictactoe_main, TASK_PRIORITY_LOW, 0);
+            } else if (event.keyboard.s_kind == KEYBOARD_KEY_DOWN &&
+                       event.keyboard.keycode == KB_4) {
+                task_add(&editor_main, TASK_PRIORITY_LOW, 0);
+            } else if (event.keyboard.s_kind == KEYBOARD_KEY_DOWN &&
+                       event.keyboard.keycode == KB_5) {
+                task_add(&tbz_main, TASK_PRIORITY_LOW, 0);
+            } else if (current_window != NULL && current_window->on_event != NULL) {
                 current_window->on_event(current_window, event);
             }
         }
@@ -159,10 +176,6 @@ void windowmanager_draw(void) {
         windowmanager_draw_window(current_window);
     }
 
-    // cursor
-    drawutils_draw_image_rgba(buffer, cursor_pos_x, cursor_pos_y, CURSOR_WIDTH,
-                              CURSOR_HEIGHT, (const uint32_t*)cursor);
-
     // task bar
     drawutils_draw_bordered_rect_default(buffer, 0, buffer.height - 30, buffer.width, 30);
 
@@ -179,6 +192,10 @@ void windowmanager_draw(void) {
                           time_str, 1, RGB(255, 255, 255));
     drawutils_draw_string(buffer, buffer.width - (8 * 8 + 5), buffer.height - 13,
                           date_str, 1, RGB(255, 255, 255));
+
+    // cursor
+    drawutils_draw_image_rgba(buffer, cursor_pos_x, cursor_pos_y, CURSOR_WIDTH,
+                              CURSOR_HEIGHT, (const uint32_t*)cursor);
 }
 
 void windowmanager_draw_window(window_t* window) {
@@ -235,11 +252,12 @@ window_t* windowmanager_get_window_at(size_t x, size_t y) {
     return NULL;
 }
 
-window_t* windowmanager_create_window(size_t width, size_t height, char* title) {
+window_t* windowmanager_create_window(size_t width, size_t height, size_t x, size_t y,
+                                      char* title) {
     for (size_t i = 0; i < 64; i++) {
         if (windows[i].width == 0) {
-            windows[i].x = 0;
-            windows[i].y = 0;
+            windows[i].x = x;
+            windows[i].y = y;
             windows[i].width = width + 4;        // +4 for border
             windows[i].height = height + 4 + 30; // +4 for border, +30 for bar
             windows[i].title = title;
@@ -255,6 +273,10 @@ window_t* windowmanager_create_window(size_t width, size_t height, char* title) 
         }
     }
     return NULL;
+}
+
+window_t* windowmanager_create_default_window(size_t width, size_t height, char* title) {
+    return windowmanager_create_window(width, height, 0, 0, title);
 }
 
 void windowmanager_destroy_window(window_t* window) {

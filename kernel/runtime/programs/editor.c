@@ -42,7 +42,7 @@ void editor_on_close(window_t* window) {
 }
 
 void editor_main(void) {
-    window_t* window = windowmanager_create_window(400, 400, "Editor");
+    window_t* window = windowmanager_create_default_window(400, 400, "Editor");
 
     editor_state_t* state = malloc(sizeof(editor_state_t));
     state->buffer = malloc(4096);

@@ -11,7 +11,7 @@ void gradient_on_close(window_t* window) {
 }
 
 void gradient_main(void) {
-    window_t* window = windowmanager_create_window(250, 250, "Gradient");
+    window_t* window = windowmanager_create_default_window(250, 250, "Gradient");
     window->data = scheduler_get_current_task();
     window->on_close = &gradient_on_close;
 

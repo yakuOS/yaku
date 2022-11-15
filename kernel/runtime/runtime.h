@@ -1,3 +1,3 @@
 #pragma once
 
-void runtime_start(void);
+void runtime_init(void);

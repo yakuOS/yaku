@@ -148,7 +148,7 @@ void tictactoe_on_close(window_t* window) {
 }
 
 void tictactoe_main() {
-    window_t* window = windowmanager_create_window(WIDTH, HEIGHT, "TicTacToe");
+    window_t* window = windowmanager_create_default_window(WIDTH, HEIGHT, "TicTacToe");
     malloc(sizeof(tictactoe_state_t));
     tictactoe_state_t* state = malloc(sizeof(tictactoe_state_t));
     memset(state, 0, sizeof(tictactoe_state_t));

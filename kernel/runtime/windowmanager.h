@@ -14,13 +14,15 @@ typedef struct window {
     void* data;
 } window_t;
 
-void windowmanager_init(void);
+void windowmanager_main(void);
 void windowmanager_handle_events(void);
-void windowmanager_run(void);
 void windowmanager_startup_screen(void);
 void windowmanager_draw(void);
 void windowmanager_draw_window(window_t* window);
 window_t* windowmanager_get_window_at(size_t x, size_t y);
-window_t* windowmanager_create_window(size_t width, size_t height, char* title);
+
+window_t* windowmanager_create_window(size_t width, size_t height, size_t x, size_t y,
+                                      char* title);
+window_t* windowmanager_create_default_window(size_t width, size_t height, char* title);
 void windowmanager_destroy_window(window_t* window);
 void windowmanager_get_relative_cursor_pos(window_t* window, size_t* x, size_t* y);
