@@ -177,6 +177,7 @@ task_t* task_create(void* function, task_parameters_t* parameters) {
     serial_printf("Stack end addr aligned: %lu\n", ((uint64_t)new_task->stack_end_addr)%16);
     serial_printf("Stack end addr: %lu\n", (uint64_t)new_task->stack_end_addr);
     new_task->stack_end_addr = (void*)((uint64_t)new_task->stack_end_addr - ((uint64_t)new_task->stack_end_addr)%16);
+    //new_task->stack_end_addr -= 8;
     serial_printf("Stack end addr aligned: %lu\n", ((uint64_t)new_task->stack_end_addr)%16);
     serial_printf("Stack end addr: %lu\n", (uint64_t)new_task->stack_end_addr);
     // 15 regs for poping in task_switch, 5 for return address

@@ -452,6 +452,7 @@ int virtual_fs_mknod(const char* pathname, mode_t mode, dev_t dev) {
         }
         serial_printf("mknod check 6\n");
         free(path);
+        serial_printf("mknod check 7\n");
         return;
     }
     serial_printf("mknod check 7\n");

@@ -608,11 +608,12 @@ static struct path_result_t *resolve_path(const char *path) {
         serial_printf("resolve_path(): found %s\n", seg_buf);
         free(seg_buf);
     } while (*path);
-
+    serial_printf("resolve path check 10\n");
     strcpy(path_result->name, entry.name);
     path_result->type = path_result->target.type;
     path_result->failure = 0;
     cache_path(path_result);
+    serial_printf("resolve path check 11\n");
     return path_result;
 }
 
@@ -628,24 +629,31 @@ static int echfs_open(const char *file_path, struct fuse_file_info *file_info) {
     struct path_result_t *path_result = resolve_path(file_path);
     if (path_result->failure) return -ENOENT;
     if (path_result->target.type == DIRECTORY_TYPE) return -EISDIR;
-
+    serial_printf("echfsopen check 1\n");
     int handle_num = get_handle();
     if (handle_num < 0) return -ENOMEM;
     file_info->fh = handle_num;
 
+    serial_printf("echfsopen check 2\n");
     struct echfs_handle_t *handle = &handles[file_info->fh];
     handle->path_res = path_result;
     handle->occupied = 1;
 
+    serial_printf("echfsopen check 3\n");
     handle->alloc_map = malloc(sizeof(uint64_t));
+    serial_printf("echfsopen check 3.1");
     handle->alloc_map[0] = path_result->target.payload;
+    serial_printf("echfsopen check 3.2");
     uint64_t i = 1;
     for (i = 1; handle->alloc_map[i - 1] != END_OF_CHAIN; i++) {
+        serial_printf("echfsopen check 3.2.1\n");
         handle->alloc_map = realloc(handle->alloc_map,
                 sizeof(uint64_t) * (i + 1));
+                serial_printf("echfsopen check 3.2\n");
         handle->alloc_map[i] = echfs.fat[handle->alloc_map[i - 1]];
     }
 
+    serial_printf("echfsopen check 4\n");
     handle->total_blocks = i - 1;
 
     return 0;

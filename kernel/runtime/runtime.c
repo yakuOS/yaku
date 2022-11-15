@@ -53,7 +53,7 @@ struct path_result_table {
 void runtime_start() {
     test_sse();
     serial_printf("Starting runtime\n");
-asm("cli");
+    asm("cli");
     struct path_result_table table = {0};
     asm("sti");
     serial_printf("Starting runtime2\n");
@@ -64,7 +64,7 @@ asm("cli");
     serial_printf("runtime_start\n");
     char** argv_fuse_mkfs[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
     serial_printf("a %c\n", argv_fuse_mkfs[1]);
-    echfs_mkfs_main(4, argv_fuse_mkfs);
+    // echfs_mkfs_main(4, argv_fuse_mkfs);
     serial_printf("b\n");
     // enable_sse();
     serial_printf("%lu\n", test_sse());
@@ -87,8 +87,10 @@ asm("cli");
     // task_add(&editor_main, NULL, TASK_PRIORITY_LOW, 0);
 
     
-    mknod("/echfsa/test", S_IFREG, 0);
+    // mknod("/echfsa/test", S_IFREG, 0);
+    // serial_printf("runtime check 4\n");
     FILE* file_des = fopen("echfsa/test/", "r");
+    serial_printf("runtime check 3");
     // fputs("hello world", file_des);
     // fseek(file_des, 0, SEEK_SET);
     // char buf[100];

@@ -22,7 +22,10 @@ FILE* fopen(const char* filename, const char* mode) {
     if (mode[0]=='w'){
         mknod(filename, S_IFREG, 0);
     }
-    return open(filename, S_IFREG);
+    serial_printf("fopen check1");
+    uint64_t a =  open(filename, S_IFREG);
+    serial_printf("fopen check2");
+    return a;
 }
 
 int fclose(FILE* stream) {
