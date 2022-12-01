@@ -1,6 +1,7 @@
 #include "input_device.h"
 #include <string.h>
 #include <types.h>
+#include <drivers/serial.h>
 input_device_t devices[64];
 uint8_t device_count = 0;
 
@@ -62,6 +63,7 @@ input_device_info_t input_device_of_type_get_info(char* type) {
 }
 
 void input_device_send_key(uint8_t device_id, uint8_t key) {
+    serial_printf("Keycode: %lu\n", key);
     if (devices[device_id].has_keymap) {
         devices[device_id].handler(devices[device_id].keymap[key - 1]);
     } else {

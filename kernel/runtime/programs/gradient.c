@@ -6,7 +6,7 @@
 #include <runtime/windowmanager.h>
 
 void gradient_on_close(window_t* window) {
-    task_kill(window->data);
+    ((task_t*)window->data)->task_state=TASK_STATE_TERMINATED;
     windowmanager_destroy_window(window);
 }
 
