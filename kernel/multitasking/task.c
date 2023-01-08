@@ -143,10 +143,12 @@ void task_resume(task_t* task) {
 
 // allocates memory for task and sets its stack up
 task_t* task_create(void* function) {
+
+    // puffer at end of stack so task_exit can use this memory
+
     task_t* new_task = (task_t*)malloc(sizeof(task_t)); // sizeof(task_t) = 8192
 
     memset(&new_task->stack, 0, TASK_STACK_SIZE * 8);
-
     // 15 regs for poping in task_switch, 5 for return address
     new_task->rsp = &(new_task->stack[TASK_STACK_SIZE - 21]);
 
@@ -161,6 +163,7 @@ task_t* task_create(void* function) {
         (uint64_t) &
         (new_task->stack[TASK_STACK_SIZE - 1]); // rbp popped manually
                                                 // TODO: add stack needed for iretq
+    serial_printf("rsp offset 16 bytes aligment: %d\n", (uint64_t)new_task->rsp % 16);
 
     return new_task;
 }

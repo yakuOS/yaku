@@ -1,5 +1,8 @@
 {
     "mesonbuild.buildFolder": "build",
     "files.insertFinalNewline": true,
-    "files.trimFinalNewlines": true
+    "files.trimFinalNewlines": true,
+    "files.associations": {
+        "scheduler.h": "c"
+    }
 }
