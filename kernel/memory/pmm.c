@@ -136,7 +136,8 @@ void* malloc(size_t size) {
     pmm_used_blocks += size;
     uint16_t blocks_allocated = (uint16_t)size;
     *((uint16_t*)addr) = blocks_allocated;
-    return ((void*)addr) + 2;
+    return ((void*)addr) +
+           16; // 2 bytes for size, 14 bytes for padding -> 16-bytes-alignment
 }
 
 void free(void* p) {
