@@ -22,8 +22,8 @@ enum task_priority {
 };
 
 typedef struct task {
+    uint64_t stack[TASK_STACK_SIZE + 100];
     uint64_t* rsp;
-    uint64_t stack[TASK_STACK_SIZE];
     uint32_t sleep_till;
     uint32_t pid;
     uint32_t parent_pid;

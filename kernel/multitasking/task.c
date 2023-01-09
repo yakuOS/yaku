@@ -146,7 +146,6 @@ task_t* task_create(void* function) {
     task_t* new_task = (task_t*)malloc(sizeof(task_t)); // sizeof(task_t) = 8192
 
     memset(&new_task->stack, 0, TASK_STACK_SIZE * 8);
-
     // 15 regs for poping in task_switch, 5 for return address
     new_task->rsp = &(new_task->stack[TASK_STACK_SIZE - 21]);
 
@@ -161,6 +160,5 @@ task_t* task_create(void* function) {
         (uint64_t) &
         (new_task->stack[TASK_STACK_SIZE - 1]); // rbp popped manually
                                                 // TODO: add stack needed for iretq
-
     return new_task;
 }
