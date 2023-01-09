@@ -141,7 +141,7 @@ void* malloc(size_t size) {
 }
 
 void free(void* p) {
-    uint64_t addr = (uint64_t)p - 2;
+    uint64_t addr = (uint64_t)p - 16;
     uint16_t size = *((uint16_t*)addr);
     uint64_t frame = addr / PMM_BLOCK_SIZE;
 
