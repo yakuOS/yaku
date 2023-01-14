@@ -1,6 +1,7 @@
 #include <drivers/fb.h>
 #include <drivers/input/input_device.h>
 #include <drivers/input/ps2.h>
+#include <drivers/lba/lba.h>
 #include <drivers/pit.h>
 #include <drivers/serial.h>
 #include <drivers/vga_text.h>
@@ -8,6 +9,8 @@
 #include <interrupts/pic.h>
 #include <lib/input/keyboard_handler.h>
 #include <lib/input/mouse_handler.h>
+#include <lib/syscall_wrapper/get_open_pointer.h>
+#include <lib/write_to_drive.h>
 #include <memory/pmm.h>
 #include <multitasking/task.h>
 #include <printf.h>
@@ -17,9 +20,6 @@
 #include <string.h>
 #include <types.h>
 #include <virtual_fs/virtual_fs.h>
-#include <lib/write_to_drive.h>
-#include <lib/syscall_wrapper/get_open_pointer.h>
-#include <drivers/lba/lba.h>
 
 extern int enable_sse();
 
@@ -79,7 +79,7 @@ struct entry_t {
     uint64_t ctime;
     uint64_t payload;
     uint64_t size;
-}__attribute__((packed));
+} __attribute__((packed));
 
 struct path_result_t {
     uint64_t target_entry;
@@ -90,10 +90,10 @@ struct path_result_t {
     int failure;
     int not_found;
     uint8_t type;
-    struct path_result_t *next;
+    struct path_result_t* next;
 };
 struct path_result_table {
-    struct path_result_t **table;
+    struct path_result_t** table;
     uint64_t size;
     uint64_t num_elements;
 };
@@ -114,7 +114,6 @@ void start(stivale2_struct_t* stivale2_struct) {
     pic_init();
     idt_init();
     pit_init(1000);
-
 
     uint64_t rflags;
     rflags_copy((void*)&rflags);
@@ -147,6 +146,7 @@ void start(stivale2_struct_t* stivale2_struct) {
     struct path_result_table table = {0};
     // get_open_pointer();
     struct fuse_operations ops = {0};
+    malloc(100000);
     task_add(&runtime_start, 0, TASK_PRIORITY_VERY_HIGH, 0);
 
     for (;;) {

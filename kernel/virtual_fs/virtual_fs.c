@@ -16,12 +16,8 @@ struct create_fs_directory_entry_path_result {
 struct virtual_fs_directory_entry*
 virtual_fs_get_directory_entry(struct virtual_fs_directory* directory, char* name) {
     serial_printf("virtual_fs_get_directory_entry: %s\n", name);
-    for (uint64_t i = 0;
-         i < directory->entries_count;
-         i++) {
-        serial_printf(
-            "entry0.1 %p\n",
-            directory->entries[i]);
+    for (uint64_t i = 0; i < directory->entries_count; i++) {
+        serial_printf("entry0.1 %p\n", directory->entries[i]);
     }
     for (uint32_t i = 0; i < directory->entries_count; i++) {
         if (strcmp(directory->entries[i].name, name) == 0) {
@@ -104,9 +100,9 @@ struct endpoint_path_result* virtual_fs_endpoint_path_resolver(char* path) {
         strcpy(result->endpoint_path_to_be_passed, "/");
     }
     if (name != NULL) {
-        char name2[strlen(name)+1];
+        char name2[strlen(name) + 1];
         name2[0] = '/';
-        strcpy(name2+1, name);
+        strcpy(name2 + 1, name);
 
         strcpy(result->endpoint_path_to_be_passed, name2);
     }
@@ -144,7 +140,8 @@ uint8_t virtual_fs_add_directory_entry(struct virtual_fs_directory* parent_direc
     //         "entry0.1 %p\n",
     //         ((struct virtual_fs_directory*)virtual_fs_root->pointer)->entries[i]);
     // }
-    serial_printf("virtual_fs_add_directory_entry fuse_op open=%p\n", ((struct virtual_fs_endpoint*)entry->pointer)->fuse_ops->open);
+    serial_printf("virtual_fs_add_directory_entry fuse_op open=%p\n",
+                  ((struct virtual_fs_endpoint*)entry->pointer)->fuse_ops->open);
     return 0;
 }
 
@@ -213,7 +210,6 @@ uint8_t virtual_fs_create_endpoint(struct fuse_operations* fuse_operations,
     // struct virtual_fs_endpoint* endpoint2 =
     //     (struct virtual_fs_endpoint*)result2->endpoint->pointer;
     // serial_printf("fuse_ops3 %p\n", endpoint2->fuse_ops->open);
-
 
     return 0;
 }
@@ -342,7 +338,9 @@ int virtual_fs_open(const char* file_path, struct fuse_file_info* file_info,
     }
     serial_printf("endpoint path check 2\n");
     endpoint->fuse_ops->open(path->endpoint_path_to_be_passed, file_info);
+    serial_printf("endpoint path check 2.3\n");
     *fuse_ops = endpoint->fuse_ops;
+    serial_printf("endpoint path check 2.4\n");
     strcpy(endpoint_path_buffer, path->endpoint_path_to_be_passed);
     serial_printf("endpoint path check 3\n");
     free(path);
@@ -452,7 +450,7 @@ int virtual_fs_mknod(const char* pathname, mode_t mode, dev_t dev) {
         }
         serial_printf("mknod check 6\n");
         free(path);
-        serial_printf("mknod check 7\n");
+        serial_printf("mknod check 7.1\n");
         return;
     }
     serial_printf("mknod check 7\n");
@@ -539,7 +537,9 @@ int virtual_fs_readdir(const char* path, void* buffer, fuse_fill_dir_t filler,
     }
     return 0;
 }
-void get_open_pointer_fs(){
+void get_open_pointer_fs() {
     struct endpoint_path_result* result = virtual_fs_endpoint_path_resolver("lba_drive");
-    serial_printf("virtual_fs_ get open pointer: %p\n", ((struct virtual_fs_endpoint*)(result->endpoint->pointer))->fuse_ops->open);
+    serial_printf(
+        "virtual_fs_ get open pointer: %p\n",
+        ((struct virtual_fs_endpoint*)(result->endpoint->pointer))->fuse_ops->open);
 }

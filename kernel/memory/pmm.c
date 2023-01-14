@@ -19,18 +19,11 @@ void pmm_mmap_unset(uint64_t bit) {
 }
 
 bool pmm_mmap_test(uint64_t bit) {
-    serial_printf("pmm mmap check 1\n");
     uint64_t b = bit / 32;
-    serial_printf("pmm  mmap check 1.1\n");
     uint64_t c = (1 << (bit % 32));
-    serial_printf("pmm  mmap check 1.2\n");
-    serial_printf("pmm mmap pointer %p\n", pmm_memory_map);
-    serial_printf("pmm mmap bit/32 %lu\n", b);
     uint64_t d = (pmm_memory_map[bit / 32]);
-    serial_printf("pmm  mmap check 1.3\n");
 
     bool a = pmm_memory_map[bit / 32] & (1 << (bit % 32));
-    serial_printf("pm mmap check 2\n");
     return a;
 }
 
@@ -133,15 +126,11 @@ void* malloc(size_t size) {
     if (size == 0) {
         return 0;
     }
-    size = (size + 2 - 1) / PMM_BLOCK_SIZE + 1;
-    serial_printf("malloc: size to allocate %lu\n", size);
+    size = (size + 16 - 1) / PMM_BLOCK_SIZE + 1;
     if (pmm_get_free_block_count() <= size) {
         return 0;
     }
-    serial_printf("malloc check 1\n");
     uint64_t frame = pmm_mmap_find_first_free_size(size);
-
-    serial_printf("malloc check 2\n");
     if (frame == (uint64_t)-1) {
         return 0;
     }
@@ -155,7 +144,7 @@ void* malloc(size_t size) {
     uint16_t blocks_allocated = (uint16_t)size;
     *((uint16_t*)addr) = blocks_allocated;
     asm volatile("sti");
-    return ((void*)addr) + 2;
+    return ((void*)addr) + 16;
 }
 
 void free(void* p) {
@@ -163,10 +152,9 @@ void free(void* p) {
     if (p == 0) {
         return;
     }
-    uint64_t addr = (uint64_t)p - 2;
+    uint64_t addr = (uint64_t)p - 16;
     uint16_t size = *((uint16_t*)addr);
     uint64_t frame = addr / PMM_BLOCK_SIZE;
-
 
     for (uint64_t i = 0; i < size; i++) {
         pmm_mmap_unset(frame + i);
@@ -174,33 +162,29 @@ void free(void* p) {
     pmm_used_blocks -= size;
     asm volatile("sti");
 }
-void* calloc(size_t num, size_t size){
-    uint64_t bytes_to_allocate = num*size;
+void* calloc(size_t num, size_t size) {
+    uint64_t bytes_to_allocate = num * size;
     void* p = malloc(bytes_to_allocate);
     memset(p, 0, bytes_to_allocate);
     return p;
 }
-void* realloc(void* p, size_t new_size){
+void* realloc(void* p, size_t new_size) {
     serial_printf("realloc allocating %lu bytes pointer: %p\n", new_size, p);
-     if (p == 0) {
+    if (p == 0) {
         return malloc(new_size);
     }
-    uint64_t addr = (uint64_t)p-2;
+    uint64_t addr = (uint64_t)p - 16;
     uint16_t size = *((uint16_t*)addr);
-    uint64_t blocks_to_allocate = (new_size+2-1)/PMM_BLOCK_SIZE+1;
-    serial_printf("realloc check 0.2\n");
+    uint64_t blocks_to_allocate = (new_size + 16 - 1) / PMM_BLOCK_SIZE + 1;
     if (blocks_to_allocate > size) {
-        serial_printf("realloc: blocks to allocate %lu, old size: %lu\n", blocks_to_allocate, size);
         void* new_p = malloc(new_size);
-        serial_printf("realloc check 1\n");
-        memcpy(new_p, p, size*PMM_BLOCK_SIZE-2);
-        serial_printf("Reallocating %i blocks to %i blocks\n", size, blocks_to_allocate);
+        memcpy(new_p, p, size * PMM_BLOCK_SIZE - 16);
         free(p);
         return new_p;
     } else {
         return p;
     }
-} 
+}
 
 uint64_t pmm_mmap_find_first_free() {
 
@@ -220,13 +204,10 @@ uint64_t pmm_mmap_find_first_free() {
 }
 
 uint64_t pmm_mmap_find_first_free_size(size_t size) {
-    serial_printf("pmm mmap find check 1\n");
     if (size == 0)
         return -1;
-serial_printf("pmm mmap find check 2\n");
     if (size == 1)
         return pmm_mmap_find_first_free();
-serial_printf("pmm mmap find check 3\n");
     for (uint64_t i = 0; i < pmm_get_block_count() / 32; i++) {
         if (pmm_memory_map[i] != 0xFFFFFFFF) {
             for (uint64_t j = 0; j < 32; j++) {
@@ -234,19 +215,13 @@ serial_printf("pmm mmap find check 3\n");
                 uint64_t bit = 1 << j;
                 // serial_printf("pmm mmap find check 5\n");
                 if (!(pmm_memory_map[i] & bit)) {
-                    serial_printf("pmm mmap find check 6\n");
                     uint64_t start_bit = i * 32;
                     start_bit += bit;
-serial_printf("pmm mmap find check 7\n");
                     uint64_t free = 0;
                     for (uint64_t count = 0; count <= size; count++) {
-                        serial_printf("pmm mmap find check 7.1\n");
-                        serial_printf("pmm mmap %lu\n", start_bit+count);
                         if (!(pmm_mmap_test(start_bit + count))) {
-                            serial_printf("pmm mmap find check 7.2\n");
                             free++;
                         }
-                        serial_printf("pmm mmap find check 8\n");
 
                         if (free == size) {
                             return i * 4 * 8 + j;

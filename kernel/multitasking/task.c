@@ -135,6 +135,7 @@ void task_kill(uint32_t pid) {
 // returned to at the end of a task, sets its state to terminated and waits
 void task_exit() {
     scheduler_set_task_terminated();
+    asm("sti");
     for (;;) {
         asm("hlt");
     }
@@ -157,6 +158,7 @@ int32_t task_add_file(task_t* task, file_handle_t* file) {
             return (int32_t)i;
         }
     }
+    serial_printf("Max files reached\n");
     return -1;
 }
 
@@ -170,46 +172,36 @@ void set_rflags(uint64_t flags) {
 }
 // allocates memory for task and sets its stack up
 task_t* task_create(void* function, task_parameters_t* parameters) {
-    task_t* new_task = (task_t*)malloc(sizeof(task_t) + 16); // sizeof(task_t) = 8192
+    task_t* new_task = (task_t*)malloc(sizeof(task_t)); // sizeof(task_t) = 8192
 
     memset(new_task, 0, sizeof(task_t));
-    new_task->stack_end_addr = &new_task->stack[TASK_STACK_SIZE-1];
-    serial_printf("Stack end addr aligned: %lu\n", ((uint64_t)new_task->stack_end_addr)%16);
-    serial_printf("Stack end addr: %lu\n", (uint64_t)new_task->stack_end_addr);
-    new_task->stack_end_addr = (void*)((uint64_t)new_task->stack_end_addr - ((uint64_t)new_task->stack_end_addr)%16);
-    //new_task->stack_end_addr -= 8;
-    serial_printf("Stack end addr aligned: %lu\n", ((uint64_t)new_task->stack_end_addr)%16);
-    serial_printf("Stack end addr: %lu\n", (uint64_t)new_task->stack_end_addr);
+
     // 15 regs for poping in task_switch, 5 for return address
-    ((task_t*)(((uint64_t)new_task)))->rsp = &(new_task->stack_end_addr[-21]);
-    serial_printf("Stack rsp: %lu\n", (uint64_t)new_task->rsp);
-    *(uint64_t*)(new_task->stack_end_addr[-1]) = (uint64_t)&task_exit;
-    // new_task->stack[TASK_STACK_SIZE - 2] = 0x00; // return SS
-    // get current ss and copy them into new_task->stack[TASK_STACK_SIZE - 2]
-    asm("mov %%ss, %0" : "=r"(new_task->stack_end_addr[-2]));
-    new_task->stack_end_addr[-3] =
-        (uint64_t) & (new_task->stack_end_addr[-1]); // return RSP
-    new_task->stack_end_addr[-4] = rflags;           // return RFLAGS
-    // get current RFLAGS and copy them into new_task->stack[TASK_STACK_SIZE - 4]
-    // new_task->stack[TASK_STACK_SIZE - 5] = 0x28;               // return cs
-    // mov current cs to new_task->stack[TASK_STACK_SIZE - 5]
-    serial_printf("Stack end addr: %lu\n", &new_task->stack_end_addr[-5]);
-    asm("mov %%cs, %0" : "=r"(new_task->stack_end_addr[-5]));
-    new_task->stack_end_addr[-6] = (uint64_t)function; // return address -> rip
-    new_task->stack_end_addr[-7] =
-        (uint64_t) & (new_task->stack_end_addr[-1]); // rbp popped manually
-                                                     // TODO: add stack needed for iretq
+    new_task->rsp = &(new_task->stack[TASK_STACK_SIZE - 21]);
+
+    new_task->stack[TASK_STACK_SIZE - 1] = (uint64_t)&task_exit;
+    new_task->stack[TASK_STACK_SIZE - 2] = 0x30; // return SS
+    new_task->stack[TASK_STACK_SIZE - 3] =
+        (uint64_t) & (new_task->stack[TASK_STACK_SIZE - 1]);   // return RSP
+    new_task->stack[TASK_STACK_SIZE - 4] = 0x203;              // return RFLAGS
+    new_task->stack[TASK_STACK_SIZE - 5] = 0x28;               // return cs
+    new_task->stack[TASK_STACK_SIZE - 6] = (uint64_t)function; // return address -> rip
+    new_task->stack[TASK_STACK_SIZE - 7] =
+        (uint64_t) &
+        (new_task->stack[TASK_STACK_SIZE - 1]); // rbp popped manually
+                                                // TODO: add stack needed for iretq
 
     if (parameters != NULL) {
         // add parameters to stack so they get popped into the right registers on first
         // task_switch
-        new_task->stack_end_addr[-13] = parameters->first;
-        new_task->stack_end_addr[-12] = parameters->second;
-        new_task->stack_end_addr[-11] = parameters->third;
-        new_task->stack_end_addr[-10] = parameters->fourth;
-        new_task->stack_end_addr[-14] = parameters->fifth;
-        new_task->stack_end_addr[-15] = parameters->sixth;
+        new_task->stack[TASK_STACK_SIZE - 13] = parameters->first;
+        new_task->stack[TASK_STACK_SIZE - 12] = parameters->second;
+        new_task->stack[TASK_STACK_SIZE - 11] = parameters->third;
+        new_task->stack[TASK_STACK_SIZE - 10] = parameters->fourth;
+        new_task->stack[TASK_STACK_SIZE - 14] = parameters->fifth;
+        new_task->stack[TASK_STACK_SIZE - 15] = parameters->sixth;
     }
-
+    // serial_printf("task created, rbp alignment2: %d\n",
+    //               (uint64_t) & (new_task->stack[TASK_STACK_SIZE - 1]) % 16);
     return new_task;
 }

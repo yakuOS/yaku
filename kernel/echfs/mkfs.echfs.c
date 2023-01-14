@@ -1,6 +1,6 @@
-#include <lib/stdio.h>
-#include <lib/origin.h>
 #include <lib/atoi.h>
+#include <lib/origin.h>
+#include <lib/stdio.h>
 #include <string.h>
 #include <types.h>
 #define RESERVED_BLOCKS 16
@@ -22,8 +22,9 @@ static inline void wr_blocks(uint64_t loc, uint8_t blocks, uint8_t* x) {
 }
 
 int echfs_mkfs_main(int argc, char** argv) {
+    serial_printf("echfs_mkfs_main\n");
     const uint8_t* boot_sector = _binary_boot_bin_start;
-    
+
     if (argc < 4) {
         serial_printf(
             "%s: usage: %s <image> <bytes per block> <reserved blocks factor>\n", argv[0],
@@ -44,7 +45,7 @@ int echfs_mkfs_main(int argc, char** argv) {
     image = fopen("/lba_drive/first_drive", NULL);
     serial_printf("mkfs check 2\n");
     serial_printf("%s\n", "mkfs check 3");
-    uint64_t bytesperblock = atoi(argv[2]);
+    uint64_t bytesperblock = 512; // atoi(argv[2]);
     serial_printf("%s: info: bytes per block: %lu\n", argv[0], bytesperblock);
     if ((bytesperblock <= 0) || (bytesperblock % 512)) {
         serial_printf("%s: error: block size MUST be a multiple of 512.\n", argv[0]);
@@ -59,7 +60,7 @@ int echfs_mkfs_main(int argc, char** argv) {
         return 1;
     }
 
-    uint64_t reserved_factor = atoi(argv[3]);
+    uint64_t reserved_factor = 1; // atoi(argv[3]);
 
     if ((reserved_factor <= 0) || (reserved_factor >= 100)) {
         serial_printf("%s: error: reserved blocks factor must be between 1%% and 99%%\n",
@@ -68,12 +69,12 @@ int echfs_mkfs_main(int argc, char** argv) {
         return 1;
     }
 
-    uint64_t blocks = imgsize/bytesperblock;
+    uint64_t blocks = imgsize / bytesperblock;
 
     // fseek(image, 0, SEEK_SET);
     // fwrite(boot_sector, 512, 1, image);
 
-    serial_printf("formatting image \"%s\", size %lu kB\n", argv[1], imgsize/1024);
+    // serial_printf("formatting image \"%s\", size %lu kB\n", argv[1], imgsize / 1024);
 
     fseek(image, 4, SEEK_SET);
     fputs("_ECH_FS_", image);
@@ -85,17 +86,20 @@ int echfs_mkfs_main(int argc, char** argv) {
 
     uint64_t fatsize = (blocks * sizeof(uint64_t)) / bytesperblock;
     uint64_t dirsize = blocks / (100 / reserved_factor);
-    uint64_t buffer[bytesperblock/sizeof(uint64_t)+1]; // one block
-    for (uint64_t i = 0; i < bytesperblock/sizeof(uint64_t)+1; i++) { // bytesperblock/sizeof(uint64_t) = uint64_t per block
+    uint64_t buffer[bytesperblock / sizeof(uint64_t) + 1]; // one block
+    for (uint64_t i = 0; i < bytesperblock / sizeof(uint64_t) + 1;
+         i++) { // bytesperblock/sizeof(uint64_t) = uint64_t per block
         buffer[i] = 0xfffffffffffffff0;
     }
-    // for (uint64_t i = 0; i < bytesperblock/sizeof(uint64_t); i++) { // bytesperblock/sizeof(uint64_t) = uint64_t per block
+    // for (uint64_t i = 0; i < bytesperblock/sizeof(uint64_t); i++) { //
+    // bytesperblock/sizeof(uint64_t) = uint64_t per block
     //     serial_printf("%x ", buffer[i]);
     // }
-    for (uint64_t i = 0; i < (RESERVED_BLOCKS + fatsize + dirsize); i+=(bytesperblock/sizeof(uint64_t))) {
+    for (uint64_t i = 0; i < (RESERVED_BLOCKS + fatsize + dirsize);
+         i += (bytesperblock / sizeof(uint64_t))) {
         // wr_qword(loc, 0xfffffffffffffff0);
         wr_blocks(loc, 1, (uint8_t*)buffer);
-        loc += sizeof(uint64_t)*(bytesperblock/sizeof(uint64_t));
+        loc += sizeof(uint64_t) * (bytesperblock / sizeof(uint64_t));
     }
     serial_printf("fat size: location %lu\n", loc);
     fflush(image);

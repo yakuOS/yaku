@@ -1,0 +1,22 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build_Kernel",
+            "type": "shell",
+            "command": "meson compile -C build"
+        },
+        {
+            "label": "Launch_Qemu",
+            "type": "shell",
+            "command": "qemu-system-x86_64 -S -gdb tcp::1234 -cdrom build/yaku.iso -drive file=build/sata0.img,index=0,media=disk,format=raw -m 2048M",
+            "presentation": {
+                "close": true
+            }
+        },
+        {
+            "label": "Debug_Kernel",
+            "dependsOn": ["Build_Kernel", "Launch_Qemu"]
+        }
+    ]
+}

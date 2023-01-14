@@ -1,13 +1,11 @@
 #include "tbz.h"
 
+#include <drivers/serial.h>
 #include <resources/tbz_logo.h>
 #include <runtime/drawutils.h>
 #include <runtime/windowmanager.h>
-#include <drivers/serial.h>
 
 void tbz_main() {
-    return;
-    serial_printf("TBZ main\n");
     window_t* window = windowmanager_create_window(350, 150, "TBZ");
     serial_printf("TBZ main 2\n");
     drawutils_draw_rect_filled(window->buffer, 0, 0, 350, 150, RGB(255, 255, 255));
