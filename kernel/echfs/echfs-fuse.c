@@ -45,7 +45,7 @@ struct entry_t {
     uint64_t ctime;
     uint64_t payload;
     uint64_t size;
-} __attribute__((packed));
+};
 
 struct path_result_t {
     uint64_t target_entry;
@@ -966,7 +966,11 @@ static int echfs_create(const char* path, mode_t mode, struct fuse_file_info* fi
         return -EIO;
     wr_entry(&entry, new_entry);
     serial_printf("Created file 1\n");
+    // path_res->target = entry;
+    serial_printf("addr 16 byte allignment: %d", (uint64_t)&entry % 16);
+    serial_printf("addr 16 byte allignment2: %d", (uint64_t)&path_res->target % 16);
     path_res->target = entry;
+
     serial_printf("Created file 2\n");
     path_res->target_entry = new_entry;
     path_res->type = FILE_TYPE;

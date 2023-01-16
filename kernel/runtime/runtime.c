@@ -96,6 +96,6 @@ void runtime_start() {
     char buf[100];
     fgets(buf, 20, file_des);
     serial_printf("file contents: %s \n", buf);
-    // fclose(file_des);
-    // remove_virtual_file("/echfsa");
+    fclose(file_des);
+    remove_virtual_file("/echfsa");
 }
