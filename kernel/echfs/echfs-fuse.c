@@ -662,7 +662,11 @@ static int echfs_open(const char* file_path, struct fuse_file_info* file_info) {
         serial_printf("echfsopen check 3.2.1\n");
         handle->alloc_map = realloc(handle->alloc_map, sizeof(uint64_t) * (i + 1));
         serial_printf("echfsopen check 3.2\n");
+        serial_printf("echfs.fat[handle->alloc_map[i - 1]] = %x\n",
+                      echfs.fat[handle->alloc_map[i - 1]]);
+
         handle->alloc_map[i] = echfs.fat[handle->alloc_map[i - 1]];
+        serial_printf("handle->alloc_map[i] = %x", handle->alloc_map[i]);
     }
 
     serial_printf("echfsopen check 4\n");

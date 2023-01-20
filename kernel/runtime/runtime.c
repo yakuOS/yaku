@@ -32,7 +32,7 @@ struct entry_t {
     uint64_t ctime;
     uint64_t payload;
     uint64_t size;
-} __attribute__((packed));
+};
 
 struct path_result_t {
     uint64_t target_entry;
@@ -62,9 +62,9 @@ void runtime_start() {
     serial_printf("write to drive init done\n");
     // get_open_pointer();
     // serial_printf("runtime_start\n");
-    char* argv_fuse_mkfs[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
+    // char* argv_fuse_mkfs[4] = {"echfs", "/lba_drive/first_drive", "512", "1"};
     // serial_printf("a %c\n", argv_fuse_mkfs[1]);
-    echfs_mkfs_main(4, NULL);
+    // echfs_mkfs_main(4, NULL);
     // serial_printf("b\n");
     // // enable_sse();
     // serial_printf("%lu\n", test_sse());
@@ -77,25 +77,24 @@ void runtime_start() {
     // // struct path_result_table table = {0};
     serial_printf("c\n");
     echfs_fuse_main(4, argv_fuse_mkfs2);
-    // serial_printf("echfs fuse main done\n");
-    // windowmanager_init();
-    // task_add(&windowmanager_run, NULL, TASK_PRIORITY_VERY_HIGH, 0);
-
-    // program startup
-    // task_add(&cube_main, NULL, TASK_PRIORITY_MEDIUM, 0);
-    // task_add(&gradient_main, NULL, TASK_PRIORITY_LOW, 0);
-    // task_add(&tbz_main, NULL, TASK_PRIORITY_LOW, 0);
-    // task_add(&editor_main, NULL, TASK_PRIORITY_LOW, 0);
-
-    mknod("/echfsa/test", S_IFREG, 0);
+    // mknod("/echfsa/test", S_IFREG, 0);
     // serial_printf("runtime check 4\n");
     FILE* file_des = fopen("/echfsa/test/", "r");
-    serial_printf("runtime check 3");
-    fputs("hello world", file_des);
-    fseek(file_des, 0, SEEK_SET);
+    // serial_printf("runtime check 3");
+    // fputs("hello world", file_des);
+    // fseek(file_des, 0, SEEK_SET);
     char buf[100];
     fgets(buf, 20, file_des);
     serial_printf("file contents: %s \n", buf);
     fclose(file_des);
     remove_virtual_file("/echfsa");
+    // serial_printf("echfs fuse main done\n");
+    windowmanager_init();
+    task_add(&windowmanager_run, NULL, TASK_PRIORITY_VERY_HIGH, 0);
+
+    // program startup
+    // task_add(&cube_main, NULL, TASK_PRIORITY_MEDIUM, 0);
+    task_add(&gradient_main, NULL, TASK_PRIORITY_LOW, 0);
+    task_add(&tbz_main, NULL, TASK_PRIORITY_LOW, 0);
+    task_add(&editor_main, NULL, TASK_PRIORITY_LOW, 0);
 }

@@ -79,7 +79,7 @@ struct entry_t {
     uint64_t ctime;
     uint64_t payload;
     uint64_t size;
-} __attribute__((packed));
+};
 
 struct path_result_t {
     uint64_t target_entry;

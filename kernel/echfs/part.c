@@ -1,20 +1,20 @@
-#include <types.h>
-#include <string.h>
-#include <lib/write_to_drive.h>
 #include <lib/stdio.h>
+#include <lib/write_to_drive.h>
+#include <string.h>
+#include <types.h>
 
 #include "part.h"
 
 struct mbr_entry {
-	uint8_t status;
-	uint8_t chs_first_sect[3];
-	uint8_t type;
-	uint8_t chs_last_sect[3];
-	uint32_t first_sect;
-	uint32_t sect_count;
-} __attribute__((packed));
+    uint8_t status;
+    uint8_t chs_first_sect[3];
+    uint8_t type;
+    uint8_t chs_last_sect[3];
+    uint32_t first_sect;
+    uint32_t sect_count;
+};
 
-int mbr_get_part(struct part *ret, FILE *file, int partition) {
+int mbr_get_part(struct part* ret, FILE* file, int partition) {
     fseek(file, 0x1BE, SEEK_SET);
     struct mbr_entry entries[4];
     fread(entries, sizeof(struct mbr_entry), 4, file);
@@ -30,7 +30,7 @@ int mbr_get_part(struct part *ret, FILE *file, int partition) {
 
 struct gpt_table_header {
     // the head
-    char     signature[8];
+    char signature[8];
     uint32_t revision;
     uint32_t header_size;
     uint32_t crc32;
@@ -53,7 +53,7 @@ struct gpt_table_header {
     uint32_t number_of_partition_entries;
     uint32_t size_of_partition_entry;
     uint32_t partition_entry_array_crc32;
-} __attribute__((packed));
+};
 
 #define GPT_ATTR_IMPORTANT (1u << 0u)
 #define GPT_ATTR_DONT_MOUNT (1u << 1u)
@@ -76,10 +76,9 @@ struct gpt_entry {
     uint64_t attributes;
 
     uint16_t partition_name[36];
-} __attribute__((packed));
+};
 
-
-int gpt_get_part(struct part *ret, FILE *file, int partition) {
+int gpt_get_part(struct part* ret, FILE* file, int partition) {
     struct gpt_table_header header = {0};
 
     // read header, located after the first block
@@ -88,18 +87,22 @@ int gpt_get_part(struct part *ret, FILE *file, int partition) {
 
     // check the header
     // 'EFI PART'
-    if (strncmp(header.signature, "EFI PART", 8)) return -1;
-    if (header.revision != 0x00010000) return -1;
+    if (strncmp(header.signature, "EFI PART", 8))
+        return -1;
+    if (header.revision != 0x00010000)
+        return -1;
 
     // parse the entries if reached here
-    if (partition >= header.number_of_partition_entries) return -1;
+    if (partition >= header.number_of_partition_entries)
+        return -1;
 
     struct gpt_entry entry = {0};
-    fseek(file, (header.partition_entry_lba * 512) + (partition * sizeof(entry)), SEEK_SET);
+    fseek(file, (header.partition_entry_lba * 512) + (partition * sizeof(entry)),
+          SEEK_SET);
     fread(&entry, 1, sizeof(entry), file);
 
-    if (entry.unique_partition_guid.low  == 0 &&
-        entry.unique_partition_guid.high == 0) return -1;
+    if (entry.unique_partition_guid.low == 0 && entry.unique_partition_guid.high == 0)
+        return -1;
 
     ret->first_sect = entry.starting_lba;
     ret->sect_count = (entry.ending_lba - entry.starting_lba) + 1;
