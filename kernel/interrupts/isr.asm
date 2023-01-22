@@ -143,7 +143,9 @@ isr_stub_128: ; syscall software interrupt
     push r13
     push r14
     push r15
+    sub rsp, 8
     call isr_syscall
+    add rsp, 8
     pop r15
     pop r14
     pop r13

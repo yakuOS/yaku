@@ -169,7 +169,6 @@ void* calloc(size_t num, size_t size) {
     return p;
 }
 void* realloc(void* p, size_t new_size) {
-    serial_printf("realloc allocating %lu bytes pointer: %p\n", new_size, p);
     if (p == 0) {
         return malloc(new_size);
     }
